@@ -16,7 +16,7 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 }
 
 function Dashboard() {
-  const { role, user, planId, tenantId, tenantName, loading, memberships, platformRole } = useSession();
+  const { role, user, tenantId, tenantName, loading, memberships, platformRole } = useSession();
   const { data } = useQuery(classesQuery(tenantId, 0));
   const { data: plan } = useQuery(myPlanQuery(tenantId,user?.id));
   if (loading) return null;

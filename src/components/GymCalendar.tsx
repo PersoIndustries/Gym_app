@@ -14,7 +14,7 @@ import { classState, STATE_LABEL, STATE_STYLE } from "@/lib/access/class-state";
 import { occupied } from "@/lib/access/attendance";
 import { cn } from "@/lib/utils";
 
-export function GymCalendar({ staff = false }: { staff?: boolean }) {
+export function GymCalendar({ staff = false, onWeekChange }: { staff?: boolean; onWeekChange?: (week: number) => void }) {
  const { tenantId, user, realRole } = useSession();
  const [mode, setMode] = useState<"week" | "month">("week");
  const [offset, setOffset] = useState(0);
@@ -38,12 +38,12 @@ export function GymCalendar({ staff = false }: { staff?: boolean }) {
  const weeklyCount = Object.values(week.data?.mine ?? {}).filter(m => m.intent !== "not_going" && ["booked", "waitlist"].includes(m.status) && week.data?.classes.some(c => c.id === m.class_id && c.status !== "cancelled")).length;
  const move = (direction: number) => {
    if (mode === "month") { const next = new Date(month.getFullYear(), month.getMonth() + direction, 1); setMonth(next); setSelected(dateKey(next)); }
-   else { const next = offset + direction; setOffset(next); setSelected(dateKey(weekRange(next).from)); }
+   else { const next = offset + direction; setOffset(next); onWeekChange?.(next); setSelected(dateKey(weekRange(next).from)); }
  };
  return <div className="space-y-4">
   <div className="flex flex-wrap items-center justify-between gap-3">
    <div className="flex items-center gap-2"><Button size="icon" variant="ghost" aria-label="Periodo anterior" onClick={() => move(-1)}><ChevronLeft /></Button><h2 className="text-base font-semibold capitalize">{mode === "month" ? month.toLocaleDateString("es-ES", { month: "long", year: "numeric" }) : `Semana del ${from.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}`}</h2><Button size="icon" variant="ghost" aria-label="Periodo siguiente" onClick={() => move(1)}><ChevronRight /></Button></div>
-   <div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => { setOffset(0); setMonth(new Date(new Date().getFullYear(),new Date().getMonth(),1)); setSelected(dateKey(new Date())); }}>Hoy</Button>{(["week","month"] as const).map(m => <Button key={m} size="sm" variant={mode === m ? "default" : "secondary"} onClick={() => setMode(m)}>{m === "week" ? "Semana" : "Mes"}</Button>)}</div>
+   <div className="flex gap-1"><Button variant="ghost" size="sm" onClick={() => { setOffset(0); onWeekChange?.(0); setMonth(new Date(new Date().getFullYear(),new Date().getMonth(),1)); setSelected(dateKey(new Date())); }}>Hoy</Button>{(["week","month"] as const).map(m => <Button key={m} size="sm" variant={mode === m ? "default" : "secondary"} onClick={() => {setMode(m);setSelected(dateKey(m === "week" ? weekRange(offset).from : month));}}>{m === "week" ? "Semana" : "Mes"}</Button>)}</div>
   </div>
   <div className="flex flex-wrap gap-3 text-xs">{(["pending","live","finished","cancelled"] as const).map(s => <span key={s} className={cn("rounded px-2 py-1",STATE_STYLE[s])}>{STATE_LABEL[s]}</span>)}<span className="rounded bg-warning/15 px-2 py-1 text-warning">Vacaciones / cierre</span></div>
   {active.isError && <p role="alert" className="text-destructive">No se pudo cargar el calendario.</p>}

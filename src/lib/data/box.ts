@@ -75,7 +75,8 @@ export async function saveRm(lift: string, kg: number | null) {
 }
 export const monthClassesQuery = (tenant: string | null, year: number, month: number) => queryOptions({ queryKey: ["classes", tenant, "month", year, month], enabled: !!tenant, queryFn: async () => {
   if (!tenant) return { classes: [] as BoxClass[], counts: {} as Record<string, Counts>, mine: {} as Record<string, MyEnrollment> };
-  const from = new Date(year, month, 1); const to = new Date(year, month + 1, 1);
+  const from = new Date(year, month, 1); from.setDate(from.getDate()-((from.getDay()+6)%7));
+  const to = new Date(year, month + 1, 1); to.setDate(to.getDate()+((7-((to.getDay()+6)%7))%7));
   const classes = must<BoxClass[]>(await supabase.from("classes").select("*").eq("tenant_id", tenant).gte("starts_at", from.toISOString()).lt("starts_at", to.toISOString()).order("starts_at"));
   const att = must<(Counts & { class_id: string })[]>(await supabase.rpc("class_attendance", { _tenant: tenant, _from: from.toISOString(), _to: to.toISOString() }));
   const { data } = await supabase.auth.getUser(); if (!data.user) throw new Error("Inicia sesión");

@@ -55,9 +55,7 @@ function Week({ tenantId }: { tenantId: string }) {
   return (
     <div className="mt-4 space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Select value={String(week)} onValueChange={(v) => setWeek(Number(v))}><SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
-          <SelectContent>{[-1, 0, 1, 2].map((w) => <SelectItem key={w} value={String(w)}>{w === 0 ? "Esta semana" : w === -1 ? "Semana pasada" : `Dentro de ${w} sem.`}</SelectItem>)}</SelectContent></Select>
-        <Button onClick={() => gen.mutate()} disabled={gen.isPending}>Crear semana desde el horario</Button>
+        <Button onClick={() => gen.mutate()} disabled={gen.isPending}>Crear semana del {weekRange(week).from.toLocaleDateString("es-ES",{day:"numeric",month:"short"})}</Button>
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs text-muted-foreground">Clases</p><p className="font-display text-xl font-bold">{classes.length}</p></div>
@@ -65,7 +63,7 @@ function Week({ tenantId }: { tenantId: string }) {
         <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs text-muted-foreground">Ocupación</p><p className="font-display text-xl font-bold">{cap ? Math.round((total / cap) * 100) : 0}%</p></div>
       </div>
       {classes.length === 0 && <p className="rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted-foreground">No hay clases esta semana. Pulsa "Crear semana desde el horario".</p>}
-      <GymCalendar staff />
+      <GymCalendar staff onWeekChange={setWeek} />
     </div>
   );
 }

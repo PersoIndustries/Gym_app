@@ -13,6 +13,7 @@ export interface MembershipPlan {
   /** vacío = todas las actividades */
   allowed_activity_type_ids: string[];
   weekly_class_limit: number | null;
+  facility_windows?: { weekday: number; from: string; to: string }[];
 }
 export interface GymClass { id: string; tenant_id: string; activity_type_id: string; title: string; coach: string; starts_at: string; ends_at: string; capacity: number; booked: number; }
 export interface Member { id: string; tenant_id: string; name: string; email: string; role: TenantRole; plan_id: string | null; }

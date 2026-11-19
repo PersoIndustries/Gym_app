@@ -20,8 +20,6 @@ interface SessionCtx {
   boxMode: "athlete" | "staff"; setBoxMode: (m: "athlete" | "staff") => void;
   tenantId: string | null; setTenantId: (id: string | null) => void;
   tenantName: string | null;
-  /** Cuota de demostración hasta conectar user_memberships. */
-  planId: string | null; setPlanId: (id: string | null) => void;
   refresh: () => void;
 }
 const Ctx = createContext<SessionCtx | null>(null);
@@ -31,7 +29,6 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useLocalState<"box" | "console">("bf.view", "box");
   const [storedTenant, setTenantId] = useLocalState<string | null>("bf.tenant.v2", null);
   const [boxMode, setBoxMode] = useLocalState<"athlete" | "staff">("bf.boxMode", "staff");
-  const [planId, setPlanId] = useLocalState<string | null>("bf.plan", "p-full");
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
     const { data } = supabase.auth.onAuthStateChange((e, s) => { setUser(s?.user ?? null); if (e === "SIGNED_OUT") sessionStorage.removeItem("bf.viewPicked"); });
@@ -40,9 +37,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const q = useQuery({
     queryKey: ["session-roles", user?.id], enabled: !!user,
     queryFn: async () => {
+      if (!user) return { memberships: [] as Membership[], platformRole: null };
       const [m, p] = await Promise.all([
-        supabase.from("tenant_members").select("tenant_id, role, tenants(name)").eq("user_id", user!.id),
-        supabase.from("platform_roles").select("role").eq("user_id", user!.id),
+        supabase.from("tenant_members").select("tenant_id, role, tenants(name)").eq("user_id", user.id),
+        supabase.from("platform_roles").select("role").eq("user_id", user.id),
       ]);
       if (m.error) throw m.error;
       const memberships: Membership[] = (m.data ?? []).map((r) => ({ tenant_id: r.tenant_id, role: r.role, tenant_name: (r.tenants as { name: string } | null)?.name ?? "Box" }));
@@ -59,8 +57,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const realRole = active?.role ?? null;
     const boxRole: TenantRole = realRole && realRole !== "athlete" && boxMode === "athlete" ? "athlete" : realRole ?? "athlete";
     const role: AppRole = effView === "console" && platformRole ? platformRole : boxRole;
-    return { user, loading: !user || q.isLoading, memberships, platformRole, role, view: effView, setView, realRole, boxMode, setBoxMode, tenantId: active?.tenant_id ?? null, tenantName: active?.tenant_name ?? null, setTenantId, planId, setPlanId, refresh: () => void q.refetch() };
-  }, [user, q.data, q.isLoading, storedTenant, view, planId, boxMode]); // eslint-disable-line react-hooks/exhaustive-deps
+    return { user, loading: !user || q.isLoading, memberships, platformRole, role, view: effView, setView, realRole, boxMode, setBoxMode, tenantId: active?.tenant_id ?? null, tenantName: active?.tenant_name ?? null, setTenantId, refresh: () => void q.refetch() };
+  }, [user, q.data, q.isLoading, storedTenant, view, boxMode]); // eslint-disable-line react-hooks/exhaustive-deps
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 export function useSession() { const c = useContext(Ctx); if (!c) throw new Error("SessionProvider missing"); return c; }

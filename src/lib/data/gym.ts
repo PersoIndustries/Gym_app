@@ -16,7 +16,13 @@ export const myPlanQuery = (tenant: string | null, user: string | undefined) => 
     if (!tenant || !user) return null;
     const day = new Date().toLocaleDateString("sv-SE");
     const rows = result(await supabase.from("user_memberships").select("*, membership_plans(*)").eq("tenant_id", tenant).eq("user_id", user).eq("status", "active").lte("starts_on", day).or(`ends_on.is.null,ends_on.gte.${day}`).order("starts_on", { ascending: false }).order("created_at", { ascending: false }).limit(1));
-    return rows[0]?.membership_plans as MembershipPlan | null ?? null;
+    const plan = rows[0]?.membership_plans;
+    if (!plan) return null;
+    const windows = Array.isArray(plan.facility_windows) ? plan.facility_windows.flatMap(w => {
+      if (!w || typeof w !== "object" || Array.isArray(w) || typeof w.weekday !== "number" || typeof w.from !== "string" || typeof w.to !== "string") return [];
+      return [{weekday:w.weekday,from:w.from,to:w.to}];
+    }) : [];
+    return { ...plan, facility_windows: windows } satisfies MembershipPlan;
   },
 });
 export const tenantLinksQuery = () => queryOptions({ queryKey: ["tenant-links"], queryFn: async () => result(await supabase.from("tenants").select("id,name,city,slug,tenant_invites(code)").order("name")) });
