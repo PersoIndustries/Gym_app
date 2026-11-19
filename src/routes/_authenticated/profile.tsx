@@ -10,7 +10,8 @@ import { myPlanQuery } from "@/lib/data/gym";
 import type { FacilityWindow } from "@/lib/access/membership";
 import { WEEKDAYS } from "@/lib/data/box";
 import { myRmsQuery, saveRm, myProfileQuery, setAttendancePrivacy } from "@/lib/data/box";
-import { levelsQuery, setPreferredLevel } from "@/lib/data/levels";
+import { levelsQuery, setPreferredLevel, myExerciseLevelsQuery, setExerciseLevel } from "@/lib/data/levels";
+import { exercisesQuery } from "@/lib/data/box";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSession } from "@/lib/auth/session";
 import { pageHead } from "@/lib/seo";
@@ -26,6 +27,9 @@ function Profile() {
   const privacy = useMutation({ mutationFn: async (hidden: boolean) => { if (!user) throw new Error("Inicia sesión"); await setAttendancePrivacy(user.id, hidden); }, onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); qc.invalidateQueries({ queryKey: ["class"] }); }, onError: () => toast.error("No se pudo guardar tu privacidad") });
   const { data: levels = [] } = useQuery(levelsQuery(tenantId));
   const level = useMutation({ mutationFn: (v: string) => setPreferredLevel(user!.id, v === "none" ? null : v), onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success("Nivel guardado"); }, onError: () => toast.error("No se pudo guardar el nivel") });
+  const { data: exercises = [] } = useQuery(exercisesQuery(tenantId));
+  const { data: exLevels = {} } = useQuery(myExerciseLevelsQuery(tenantId, user?.id));
+  const exLevel = useMutation({ mutationFn: (v: { ex: string; level: string }) => setExerciseLevel(tenantId!, user!.id, v.ex, v.level === "default" ? null : v.level), onSuccess: () => { qc.invalidateQueries({ queryKey: ["exercise-levels"] }); toast.success("Nivel guardado"); }, onError: () => toast.error("No se pudo guardar el nivel") });
   const [draft, setDraft] = useState<Record<string, string>>({});
   useEffect(() => { setDraft(Object.fromEntries(Object.entries(rms).map(([k, v]) => [k, String(v).replace(".", ",")]))); }, [rms]);
   const save = useMutation({ mutationFn: (v: { lift: string; kg: number | null }) => saveRm(v.lift, v.kg), onSuccess: () => { toast.success("RM guardado"); qc.invalidateQueries({ queryKey: ["rms"] }); }, onError: () => toast.error("No se pudo guardar") });
@@ -44,6 +48,7 @@ function Profile() {
       </section>
       <label className="my-5 flex items-center justify-between gap-4 border-y border-border py-4"><span>Ocultar mi asistencia</span><Switch checked={prof?.hide_attendance ?? false} disabled={!prof || privacy.isPending} onCheckedChange={v => privacy.mutate(v)} /></label>
       {levels.length > 0 && <label className="mb-5 flex items-center justify-between gap-4 border-b border-border pb-4"><span><span className="block">Mi nivel en los WOD</span><span className="text-xs text-muted-foreground">Se resalta en cada ejercicio con niveles.</span></span><Select value={prof?.preferred_level_name ?? "none"} onValueChange={v => level.mutate(v)}><SelectTrigger className="w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Sin preferencia</SelectItem>{levels.map(l => <SelectItem key={l.id} value={l.name}>{l.name}</SelectItem>)}</SelectContent></Select></label>}
+      {levels.length > 0 && exercises.length > 0 && <details className="mb-5 border-b border-border pb-4"><summary className="cursor-pointer font-medium">Mi nivel por ejercicio</summary><p className="mt-1 text-xs text-muted-foreground">Si no eliges, se usa tu nivel general.</p><div className="mt-3 space-y-2">{exercises.map(e => <div key={e.id} className="flex items-center justify-between gap-3 text-sm"><span className="min-w-0 break-words">{e.name}</span><Select value={exLevels[e.id] ?? "default"} onValueChange={v => exLevel.mutate({ ex: e.id, level: v })}><SelectTrigger className="w-36 shrink-0" aria-label={`Nivel en ${e.name}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="default">General</SelectItem>{levels.map(l => <SelectItem key={l.id} value={l.name}>{l.name}</SelectItem>)}</SelectContent></Select></div>)}</div></details>}
       <h2 className="mt-6 mb-1 font-semibold">Mis RMs (1RM, kg)</h2>
       <p className="mb-3 text-xs text-muted-foreground">Se usan para calcular tus kilos en cada WOD. Se guardan al salir del campo.</p>
       <div className="grid gap-2 sm:grid-cols-2">

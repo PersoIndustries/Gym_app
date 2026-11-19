@@ -105,3 +105,27 @@ export const myProfileQuery = (uid: string | undefined) => queryOptions({ queryK
 export async function setAttendancePrivacy(uid: string, hidden: boolean) { must(await supabase.from("profiles").update({ hide_attendance: hidden }).eq("id", uid)); }
 
 export async function deleteGroupItems(classId: string, groupKey: string) { must(await supabase.from("wod_items").delete().eq("class_id", classId).eq("group_key", groupKey)); }
+
+/** Copia/pega la programación (fases, bloques, ejercicios y pesos por nivel) entre clases. */
+const CLIP = "boxflow-class-clipboard";
+type ClipItem = Omit<WodItem, "id" | "class_id"> & { ref: string; levels: { level_id: string; load_kg: number | null; percent_rm: number | null; reps: string | null; notes: string | null }[] };
+export function hasClassClipboard() { try { return !!localStorage.getItem(CLIP); } catch { return false; } }
+export function clipboardTitle() { try { return (JSON.parse(localStorage.getItem(CLIP) ?? "null") as { title?: string } | null)?.title ?? null; } catch { return null; } }
+export async function copyClassSetup(classId: string, title: string, phases: Phase[], wod: WodItem[]) {
+  const lv = wod.length ? must<{ wod_item_id: string; level_id: string; load_kg: number | null; percent_rm: number | null; reps: string | null; notes: string | null }[]>(await supabase.from("wod_item_levels").select("wod_item_id,level_id,load_kg,percent_rm,reps,notes").in("wod_item_id", wod.map(w => w.id))) : [];
+  const items: ClipItem[] = wod.map(({ id, class_id: _c, ...rest }) => ({ ...rest, ref: id, levels: lv.filter(l => l.wod_item_id === id).map(({ wod_item_id: _w, ...l }) => l) }));
+  localStorage.setItem(CLIP, JSON.stringify({ from: classId, title, phases, items }));
+}
+export async function pasteClassSetup(tenant: string, classId: string) {
+  const clip = JSON.parse(localStorage.getItem(CLIP) ?? "null") as { phases: Phase[]; items: ClipItem[] } | null;
+  if (!clip) throw new Error("No hay ninguna clase copiada");
+  must(await supabase.from("wod_items").delete().eq("class_id", classId));
+  await updatePhases(classId, clip.phases);
+  const ids = new Map<string, string>();
+  const ordered = [...clip.items.filter(i => !i.alternative_to), ...clip.items.filter(i => i.alternative_to)];
+  for (const it of ordered) {
+    const row = must<{ id: string }>(await supabase.from("wod_items").insert({ tenant_id: tenant, class_id: classId, block: it.block, position: it.position, exercise_id: it.exercise_id, label: it.label, sets: it.sets, reps: it.reps, percent_rm: it.percent_rm, notes: it.notes, alternatives: it.alternatives, alternative_to: it.alternative_to ? ids.get(it.alternative_to) ?? null : null, group_key: it.group_key ?? null }).select("id").single());
+    ids.set(it.ref, row.id);
+    if (it.levels.length) must(await supabase.from("wod_item_levels").insert(it.levels.map(l => ({ ...l, tenant_id: tenant, wod_item_id: row.id }))));
+  }
+}

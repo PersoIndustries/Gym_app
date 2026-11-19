@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Eye, Pencil, Plus, Trash2, X } from "lucide-react";
+import { ArrowLeft, Check, ClipboardPaste, Copy, Eye, Pencil, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { BLOCKS, classDetailQuery, exercisesQuery, myRmsQuery, settingsQuery, updateClass, updatePhases, deletePhase, deleteWod, deleteGroupItems, groupTitle, FORMAT_LABEL, type WodGroup, type GroupFormat, addWod, addAttendee, markAttendee, saveRm, type WodItem, type Phase } from "@/lib/data/box";
+import { BLOCKS, classDetailQuery, exercisesQuery, myRmsQuery, settingsQuery, updateClass, updatePhases, deletePhase, deleteWod, deleteGroupItems, groupTitle, FORMAT_LABEL, type WodGroup, type GroupFormat, addWod, addAttendee, markAttendee, saveRm, copyClassSetup, pasteClassSetup, hasClassClipboard, clipboardTitle, type WodItem, type Phase } from "@/lib/data/box";
 import { coachesQuery, membersQuery } from "@/lib/data/gym";
 import { classState, STATE_LABEL, STATE_STYLE, INTENT_STYLE } from "@/lib/access/class-state";
 import { useClassActions } from "@/lib/data/use-class-actions";
@@ -17,7 +17,7 @@ import { PersonAvatar } from "@/components/PersonAvatar";
 import { INTENT_LABEL, confirmed, type Intent } from "@/lib/access/attendance";
 import { recommendedKg } from "@/lib/training/weights";
 import { isBoxStaff, useSession } from "@/lib/auth/session";
-import { classLevelsQuery, levelsQuery, saveItemLevel, deleteItemLevel, type Level, type ItemLevel } from "@/lib/data/levels";
+import { myExerciseLevelsQuery, classLevelsQuery, levelsQuery, saveItemLevel, deleteItemLevel, type Level, type ItemLevel } from "@/lib/data/levels";
 import { myProfileQuery } from "@/lib/data/box";
 import { pageHead } from "@/lib/seo";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/class/$classId")({
   component: ClassPage,
   errorComponent: () => <div role="alert" className="p-6">No se pudo cargar la clase.</div>,
 });
-const errorToast = (e: unknown) => toast.error(e instanceof Error ? e.message : String(e));
+const errorToast = (e: unknown) => toast.error(e instanceof Error ? e.message : (e && typeof e === "object" && "message" in e ? String((e as { message: unknown }).message) : "Algo ha fallado"));
 function ClassPage() {
   const { classId } = Route.useParams();
   const { role, tenantId, user } = useSession();
@@ -43,6 +43,7 @@ function ClassPage() {
   const { data: levels = [] } = useQuery(levelsQuery(tenantId));
   const { data: itemLevels = [] } = useQuery(classLevelsQuery((data?.wod ?? []).map(w => w.id)));
   const { data: prof } = useQuery(myProfileQuery(user?.id));
+  const { data: exLevels = {} } = useQuery(myExerciseLevelsQuery(tenantId, user?.id));
   const { book, busy } = useClassActions();
   const refresh = () => { qc.invalidateQueries({ queryKey: ["item-levels"] }); qc.invalidateQueries({ queryKey: ["class", classId] }); qc.invalidateQueries({ queryKey: ["classes"] }); };
   const cancel = useMutation({ mutationFn: (s: string) => updateClass(classId, { status: s, cancelled_reason: s === "cancelled" ? "Cancelada por el box" : null }), onSuccess: refresh, onError: errorToast });
@@ -64,12 +65,12 @@ function ClassPage() {
         {w.percent_rm && ex?.rm_lift && <LoadButton lift={ex.rm_lift} rm={rms[ex.rm_lift]} percent={w.percent_rm} rounding={rounding}/>}
         {staff && <Button size="icon" variant="ghost" title="Eliminar ejercicio" aria-label="Eliminar ejercicio" onClick={async () => { try { await deleteWod(w.id); refresh(); } catch(e) { errorToast(e); } }}><Trash2 className="h-4 w-4"/></Button>}
       </div>
-      <LevelRow item={w} levels={levels} values={itemLevels.filter(l => l.wod_item_id === w.id)} preferred={prof?.preferred_level_name} staff={staff} tenantId={tenantId} rm={ex?.rm_lift ? rms[ex.rm_lift] : undefined} rounding={rounding} onDone={refresh}/>
+      <LevelRow item={w} levels={levels} values={itemLevels.filter(l => l.wod_item_id === w.id)} preferred={(w.exercise_id && exLevels[w.exercise_id]) || prof?.preferred_level_name} staff={staff} tenantId={tenantId} rm={ex?.rm_lift ? rms[ex.rm_lift] : undefined} rounding={rounding} onDone={refresh}/>
       {staff && !w.alternative_to && tenantId && <WodEditor phases={allPhases} initialBlock={w.block} groupKey={w.group_key ?? null} alternativeTo={w.id} levels={levels} classId={cls.id} tenantId={tenantId} exercises={exercises} nextPos={wod.length} onDone={refresh}/>}
     </div>;
   };
   return <AppShell title={cls.title} action={<Button asChild size="icon" variant="ghost" title="Calendario"><Link to="/calendar"><ArrowLeft className="h-4 w-4"/></Link></Button>}>
-    {canManage && <div className="mb-4 flex justify-end"><Button variant="outline" size="sm" onClick={() => setPreview(!preview)}><Eye className="mr-2 h-4 w-4"/>{preview ? "Volver a gestión" : "Ver como alumno"}</Button></div>}
+    {canManage && <div className="mb-4 flex flex-wrap justify-end gap-2">{staff && <><Button variant="outline" size="sm" onClick={async()=>{ try { await copyClassSetup(cls.id,cls.title,phases,wod); toast.success("Configuración copiada"); refresh(); } catch(e){ errorToast(e); } }}><Copy className="mr-2 h-4 w-4"/>Copiar WOD</Button>{hasClassClipboard() && <Button variant="outline" size="sm" onClick={async()=>{ if(!confirm(`¿Pegar "${clipboardTitle() ?? "clase copiada"}"? Se reemplazará el WOD actual.`)) return; try { await pasteClassSetup(cls.tenant_id,cls.id); toast.success("Configuración pegada"); refresh(); } catch(e){ errorToast(e); } }}><ClipboardPaste className="mr-2 h-4 w-4"/>Pegar WOD</Button>}</>}<Button variant="outline" size="sm" onClick={() => setPreview(!preview)}><Eye className="mr-2 h-4 w-4"/>{preview ? "Volver a gestión" : "Ver como alumno"}</Button></div>}
     <section className="border-y border-border py-5">
       <div className="flex items-center gap-2"><h2 className="font-display text-xl font-bold">{cls.title}</h2>{staff && <ClassNameEditor id={cls.id} title={cls.title} onDone={refresh}/>}</div>
       <p className="mt-2 text-sm capitalize">{new Date(cls.starts_at).toLocaleString("es-ES", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</p>
