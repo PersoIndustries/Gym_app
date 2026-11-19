@@ -4,7 +4,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { MAIN_LIFTS, PLANS } from "@/lib/data/mock";
@@ -18,11 +17,10 @@ function Profile() {
   const { user, planId, setPlanId, tenantName } = useSession();
   const qc = useQueryClient();
   const { data: rms = {} } = useQuery(myRmsQuery());
-  const { data: prof } = useQuery({ queryKey: ["profile", user?.id], enabled: !!user, queryFn: async () => (await supabase.from("profiles").select("full_name, hide_attendance").eq("id", user!.id).maybeSingle()).data });
+  const { data: prof } = useQuery({ queryKey: ["profile", user?.id], enabled: !!user, queryFn: async () => (await supabase.from("profiles").select("full_name").eq("id", user!.id).maybeSingle()).data });
   const [draft, setDraft] = useState<Record<string, string>>({});
   useEffect(() => { setDraft(Object.fromEntries(Object.entries(rms).map(([k, v]) => [k, String(v).replace(".", ",")]))); }, [rms]);
   const save = useMutation({ mutationFn: (v: { lift: string; kg: number | null }) => saveRm(v.lift, v.kg), onSuccess: () => { toast.success("RM guardado"); qc.invalidateQueries({ queryKey: ["rms"] }); }, onError: () => toast.error("No se pudo guardar") });
-  const privacy = useMutation({ mutationFn: async (hide: boolean) => { const r = await supabase.from("profiles").update({ hide_attendance: hide }).eq("id", user!.id); if (r.error) throw r.error; }, onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }) });
   const commit = (lift: string) => {
     const raw = (draft[lift] ?? "").replace(",", ".");
     const kg = raw === "" ? null : Number(raw);
@@ -39,8 +37,6 @@ function Profile() {
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent><SelectItem value="none">Sin cuota</SelectItem>{PLANS.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
           </Select></div>
-        <label className="mt-4 flex items-center justify-between gap-3 text-sm"><span>Ocultar mi asistencia a otros socios<span className="block text-xs text-muted-foreground">Los coaches y admins siempre la ven.</span></span>
-          <Switch checked={!!prof?.hide_attendance} onCheckedChange={(v) => privacy.mutate(v)} /></label>
       </section>
       <h2 className="mt-6 mb-1 font-semibold">Mis RMs (1RM, kg)</h2>
       <p className="mb-3 text-xs text-muted-foreground">Se usan para calcular tus kilos en cada WOD. Se guardan al salir del campo.</p>

@@ -36,7 +36,7 @@ export const classDetailQuery = (classId: string) => queryOptions({
   queryFn: async () => {
     const cls = must<BoxClass>(await supabase.from("classes").select("*").eq("id", classId).single());
     const wod = must<WodItem[]>(await supabase.from("wod_items").select("*").eq("class_id", classId).order("block").order("position"));
-    const attendees = must<{ user_id: string; full_name: string; intent: Intent; status: string; attended: boolean | null }[]>(await supabase.rpc("class_attendees", { _class: classId }));
+    const attendees = must<{ user_id: string; full_name: string; avatar_url: string | null; intent: Intent; status: string; attended: boolean | null }[]>(await supabase.rpc("class_attendees", { _class: classId }));
     return { cls, wod, attendees };
   },
 });

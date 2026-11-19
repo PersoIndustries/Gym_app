@@ -38,3 +38,4 @@ use the editor.
 - Athlete/box-staff pages use `AppShell` (mobile-first); super admin/dev pages use `ConsoleShell` (web-first); why: different audiences and devices.
 - Membership access rules live in the pure `src/lib/access/membership.ts`; why: reusable and testable.
 - Architecture notes and Supabase migration steps: `docs/ARCHITECTURE.md`.
+- Tenant isolation is verified by `supabase/tests/tenant_isolation.sql` (must end with TENANT_ISOLATION_OK); extend it when adding tenant tables; why: catches cross-box leaks RLS unit tests cannot.

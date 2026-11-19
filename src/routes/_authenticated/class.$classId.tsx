@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { BLOCKS, classDetailQuery, exercisesQuery, myRmsQuery, settingsQuery, type WodItem } from "@/lib/data/box";
 import { useClassActions } from "@/lib/data/use-class-actions";
+import { PersonAvatar } from "@/components/PersonAvatar";
 import { INTENT_LABEL, confirmed, type Intent } from "@/lib/access/attendance";
 import { describeLoad, recommendedKg } from "@/lib/training/weights";
 import { isBoxStaff, useSession } from "@/lib/auth/session";
@@ -86,7 +87,7 @@ function ClassPage() {
       <h2 className="mt-6 mb-3 font-semibold">Asistentes ({booked.length})</h2>
       <div className="space-y-1.5">{attendees.map((a) => (
         <div key={a.user_id} className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-2.5 text-sm">
-          <span>{a.full_name}{a.user_id === user?.id && " (tú)"}</span>
+          <span className="flex items-center gap-3"><PersonAvatar name={a.full_name} url={a.avatar_url} />{a.full_name}{a.user_id === user?.id && " (tú)"}</span>
           <span className="flex items-center gap-2">
             <Badge variant={a.status === "waitlist" || a.status === "declined" ? "outline" : a.intent === "maybe" ? "secondary" : "default"}>{a.status === "waitlist" ? "En espera" : INTENT_LABEL[a.intent]}</Badge>
             {staff && <><button title="Vino" onClick={() => mark.mutate({ uid: a.user_id, attended: true })} className={cn("rounded p-1", a.attended === true ? "bg-primary text-primary-foreground" : "text-muted-foreground")}><Check className="h-4 w-4" /></button>
@@ -94,7 +95,6 @@ function ClassPage() {
           </span>
         </div>))}
         {attendees.length === 0 && <p className="text-sm text-muted-foreground">Nadie apuntado todavía.</p>}
-        {!staff && <p className="pt-1 text-xs text-muted-foreground">Algunos socios pueden ocultar su asistencia.</p>}
       </div>
     </AppShell>
   );

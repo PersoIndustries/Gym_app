@@ -28,3 +28,6 @@
 - Google: `signInWithOAuth` vuelve a `/auth`. En el panel de Supabase: activar el proveedor Google y añadir `{origen}/auth` (preview y publicado) en Redirect URLs.
 - Coach/admin/super admin eligen vista al entrar (`ViewPickerDialog`); la vista "usuario del gym" solo baja permisos en la UI, nunca los sube.
 - Asistencia: `going` (Voy), `maybe` (Dudas), `not_going` (No voy, estado `declined`, no ocupa plaza). Mínimo = solo "Voy".
+
+## Prueba de aislamiento entre boxes
+`supabase/tests/tenant_isolation.sql` crea dos boxes temporales y actúa como atleta y admin del box A contra el box B (lecturas, ediciones, borrados, inserciones y trucos de tenant cruzado). Ejecutarla en el editor SQL: debe terminar con `TENANT_ISOLATION_OK: N checks` (no deja datos). Repetir tras cada migración que toque RLS.
