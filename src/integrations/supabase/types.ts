@@ -244,6 +244,137 @@ export type Database = {
           },
         ]
       }
+      community_events: {
+        Row: {
+          activity_type_ids: string[]
+          capacity: number | null
+          categories: string[]
+          created_at: string
+          created_by: string | null
+          description: string | null
+          ends_at: string
+          featured: boolean
+          format: string
+          id: string
+          kind: string
+          location: string | null
+          price_cents: number | null
+          scope: string
+          starts_at: string
+          status: string
+          tenant_id: string | null
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          activity_type_ids?: string[]
+          capacity?: number | null
+          categories?: string[]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at: string
+          featured?: boolean
+          format?: string
+          id?: string
+          kind?: string
+          location?: string | null
+          price_cents?: number | null
+          scope?: string
+          starts_at: string
+          status?: string
+          tenant_id?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          activity_type_ids?: string[]
+          capacity?: number | null
+          categories?: string[]
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          ends_at?: string
+          featured?: boolean
+          format?: string
+          id?: string
+          kind?: string
+          location?: string | null
+          price_cents?: number | null
+          scope?: string
+          starts_at?: string
+          status?: string
+          tenant_id?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_participants: {
+        Row: {
+          category: string | null
+          created_at: string
+          event_id: string
+          id: string
+          intent: string
+          looking_for_partner: boolean
+          note: string | null
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          intent?: string
+          looking_for_partner?: boolean
+          note?: string | null
+          tenant_id: string
+          updated_at?: string
+          user_id?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          intent?: string
+          looking_for_partner?: boolean
+          note?: string | null
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "community_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_participants_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercises: {
         Row: {
           category: string
@@ -287,6 +418,7 @@ export type Database = {
       }
       facilities: {
         Row: {
+          active: boolean
           approval_required: boolean
           closes_at: string
           created_at: string
@@ -299,6 +431,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          active?: boolean
           approval_required?: boolean
           closes_at?: string
           created_at?: string
@@ -311,6 +444,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          active?: boolean
           approval_required?: boolean
           closes_at?: string
           created_at?: string
@@ -538,6 +672,7 @@ export type Database = {
           full_name: string | null
           hide_attendance: boolean
           id: string
+          preferred_level_name: string | null
           updated_at: string
         }
         Insert: {
@@ -546,6 +681,7 @@ export type Database = {
           full_name?: string | null
           hide_attendance?: boolean
           id: string
+          preferred_level_name?: string | null
           updated_at?: string
         }
         Update: {
@@ -554,6 +690,7 @@ export type Database = {
           full_name?: string | null
           hide_attendance?: boolean
           id?: string
+          preferred_level_name?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -676,6 +813,41 @@ export type Database = {
           },
         ]
       }
+      tenant_levels: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          position: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          position?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          position?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_levels_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_members: {
         Row: {
           created_at: string
@@ -716,6 +888,7 @@ export type Database = {
           created_at: string
           default_cancel_hours: number
           default_min_attendees: number
+          facilities_enabled: boolean
           rounding_kg: number
           tenant_id: string
           updated_at: string
@@ -724,6 +897,7 @@ export type Database = {
           created_at?: string
           default_cancel_hours?: number
           default_min_attendees?: number
+          facilities_enabled?: boolean
           rounding_kg?: number
           tenant_id: string
           updated_at?: string
@@ -732,6 +906,7 @@ export type Database = {
           created_at?: string
           default_cancel_hours?: number
           default_min_attendees?: number
+          facilities_enabled?: boolean
           rounding_kg?: number
           tenant_id?: string
           updated_at?: string
@@ -823,6 +998,67 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wod_item_levels: {
+        Row: {
+          created_at: string
+          id: string
+          level_id: string
+          load_kg: number | null
+          notes: string | null
+          percent_rm: number | null
+          reps: string | null
+          tenant_id: string
+          updated_at: string
+          wod_item_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level_id: string
+          load_kg?: number | null
+          notes?: string | null
+          percent_rm?: number | null
+          reps?: string | null
+          tenant_id: string
+          updated_at?: string
+          wod_item_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level_id?: string
+          load_kg?: number | null
+          notes?: string | null
+          percent_rm?: number | null
+          reps?: string | null
+          tenant_id?: string
+          updated_at?: string
+          wod_item_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wod_item_levels_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wod_item_levels_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wod_item_levels_wod_item_id_fkey"
+            columns: ["wod_item_id"]
+            isOneToOne: false
+            referencedRelation: "wod_items"
             referencedColumns: ["id"]
           },
         ]
@@ -971,6 +1207,18 @@ export type Database = {
       delete_class_phase: {
         Args: { _class: string; _key: string }
         Returns: undefined
+      }
+      event_attendees: {
+        Args: { _event: string; _tenant: string }
+        Returns: {
+          avatar_url: string
+          category: string
+          full_name: string
+          intent: string
+          looking_for_partner: boolean
+          note: string
+          user_id: string
+        }[]
       }
       facility_availability: {
         Args: { _facility: string; _from: string; _to: string }
