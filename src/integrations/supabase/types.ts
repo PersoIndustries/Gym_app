@@ -106,6 +106,7 @@ export type Database = {
           activity_type_id: string | null
           cancel_hours_before: number
           capacity: number
+          coach_id: string | null
           coach_name: string | null
           created_at: string
           duration_min: number
@@ -122,6 +123,7 @@ export type Database = {
           activity_type_id?: string | null
           cancel_hours_before?: number
           capacity?: number
+          coach_id?: string | null
           coach_name?: string | null
           created_at?: string
           duration_min?: number
@@ -138,6 +140,7 @@ export type Database = {
           activity_type_id?: string | null
           cancel_hours_before?: number
           capacity?: number
+          coach_id?: string | null
           coach_name?: string | null
           created_at?: string
           duration_min?: number
@@ -178,6 +181,7 @@ export type Database = {
           ends_at: string
           id: string
           min_attendees: number
+          phases: Json
           starts_at: string
           status: string
           template_id: string | null
@@ -196,6 +200,7 @@ export type Database = {
           ends_at: string
           id?: string
           min_attendees?: number
+          phases?: Json
           starts_at: string
           status?: string
           template_id?: string | null
@@ -214,6 +219,7 @@ export type Database = {
           ends_at?: string
           id?: string
           min_attendees?: number
+          phases?: Json
           starts_at?: string
           status?: string
           template_id?: string | null
@@ -368,11 +374,59 @@ export type Database = {
           },
         ]
       }
+      gym_events: {
+        Row: {
+          blocks_classes: boolean
+          created_at: string
+          description: string | null
+          ends_at: string
+          id: string
+          kind: string
+          starts_at: string
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          blocks_classes?: boolean
+          created_at?: string
+          description?: string | null
+          ends_at: string
+          id?: string
+          kind?: string
+          starts_at: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          blocks_classes?: boolean
+          created_at?: string
+          description?: string | null
+          ends_at?: string
+          id?: string
+          kind?: string
+          starts_at?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gym_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membership_plans: {
         Row: {
           allowed_activity_type_ids: string[]
           allowed_weekdays: number[]
           created_at: string
+          facility_windows: Json
           id: string
           name: string
           price_cents: number
@@ -384,6 +438,7 @@ export type Database = {
           allowed_activity_type_ids?: string[]
           allowed_weekdays?: number[]
           created_at?: string
+          facility_windows?: Json
           id?: string
           name: string
           price_cents?: number
@@ -395,6 +450,7 @@ export type Database = {
           allowed_activity_type_ids?: string[]
           allowed_weekdays?: number[]
           created_at?: string
+          facility_windows?: Json
           id?: string
           name?: string
           price_cents?: number
@@ -764,6 +820,7 @@ export type Database = {
       }
       wod_items: {
         Row: {
+          alternatives: string | null
           block: string
           class_id: string
           created_at: string
@@ -779,6 +836,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          alternatives?: string | null
           block?: string
           class_id: string
           created_at?: string
@@ -794,6 +852,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          alternatives?: string | null
           block?: string
           class_id?: string
           created_at?: string
@@ -842,6 +901,14 @@ export type Database = {
         Returns: number
       }
       book_class: { Args: { _class: string; _intent: string }; Returns: string }
+      box_coaches: {
+        Args: { _tenant: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          user_id: string
+        }[]
+      }
       cancel_underfilled_classes: { Args: never; Returns: number }
       class_attendance: {
         Args: { _from: string; _tenant: string; _to: string }
