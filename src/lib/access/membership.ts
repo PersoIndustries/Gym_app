@@ -1,6 +1,15 @@
 import type { GymClass, MembershipPlan } from "@/lib/domain/types";
 
 export type AccessResult = { allowed: true } | { allowed: false; reason: string };
+export interface FacilityWindow { weekday: number; from: string; to: string }
+
+export function canAccessFacility(windows: FacilityWindow[], startsAt: Date, endsAt: Date): boolean {
+  if (endsAt <= startsAt || startsAt.toDateString() !== endsAt.toDateString()) return false;
+  const from = startsAt.getHours() * 60 + startsAt.getMinutes();
+  const to = endsAt.getHours() * 60 + endsAt.getMinutes();
+  const minutes = (value: string) => { const [h,m] = value.split(":").map(Number); return (h ?? 0)*60+(m ?? 0); };
+  return windows.some(w => w.weekday === startsAt.getDay() && from >= minutes(w.from) && to <= minutes(w.to));
+}
 
 /** Decide si una cuota permite apuntarse a una clase. Pura: reutilizable en servidor/RLS más adelante. */
 export function canAccessClass(plan: MembershipPlan | null, gymClass: GymClass, bookedThisWeek = 0): AccessResult {

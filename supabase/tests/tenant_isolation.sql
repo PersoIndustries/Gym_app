@@ -10,6 +10,7 @@ declare
   b_ath uuid := gen_random_uuid(); b_adm uuid := gen_random_uuid();
   ca uuid := gen_random_uuid(); cb uuid := gen_random_uuid();
   n int; checks int := 0; u uuid; blocked boolean;
+  eb uuid := gen_random_uuid(); pb uuid := gen_random_uuid(); xb uuid := gen_random_uuid();
 begin
   insert into auth.users(id, email, raw_user_meta_data, aud, role) values
     (a_ath, 'a_ath@iso.test', '{"full_name":"A Ath"}', 'authenticated', 'authenticated'),
@@ -24,6 +25,9 @@ begin
   insert into public.class_enrollments(tenant_id, class_id, user_id, status, intent) values (tb, cb, b_ath, 'booked', 'going');
   insert into public.wod_items(tenant_id, class_id, block, position, label) values (tb, cb, 'strength', 1, 'Secreto B');
   insert into public.tenant_settings(tenant_id) values (tb) on conflict do nothing;
+  insert into public.gym_events(id,tenant_id,title,starts_at,ends_at,blocks_classes) values(eb,tb,'Vacaciones B',now()+interval '30 day',now()+interval '31 day',false);
+  insert into public.membership_plans(id,tenant_id,name,price_cents,allowed_weekdays,allowed_activity_type_ids) values(pb,tb,'Cuota B',1000,array[1,2,3,4,5],array[]::uuid[]);
+  insert into public.exercises(id,tenant_id,name) values(xb,tb,'Ejercicio B');
 
   foreach u in array array[a_ath, a_adm] loop
     perform set_config('request.jwt.claims', json_build_object('sub', u, 'role', 'authenticated')::text, true);
@@ -67,6 +71,21 @@ begin
     blocked := false; begin update public.classes set tenant_id = tb where id = ca; exception when others then blocked := true; end;
     if not blocked and exists (select 1 from public.classes where id = ca and tenant_id = tb) then raise exception 'FAIL % mueve clase a B', u; end if;
     checks := checks + 1;
+
+    select count(*) into n from public.gym_events where tenant_id=tb; if n<>0 then raise exception 'FAIL % lee cierres B',u; end if;
+    update public.gym_events set title='hack' where id=eb; get diagnostics n=row_count; if n<>0 then raise exception 'FAIL % edita cierres B',u; end if;
+    delete from public.gym_events where id=eb; get diagnostics n=row_count; if n<>0 then raise exception 'FAIL % borra cierres B',u; end if;
+    blocked:=false; begin insert into public.gym_events(tenant_id,title,starts_at,ends_at) values(tb,'hack',now()+interval '20 day',now()+interval '21 day'); exception when others then blocked:=true; end;
+    if not blocked then raise exception 'FAIL % crea cierre B',u; end if;
+    select count(*) into n from public.box_coaches(tb); if n<>0 then raise exception 'FAIL % lee coaches B',u; end if;
+    select count(*) into n from public.membership_plans where tenant_id=tb; if n<>0 then raise exception 'FAIL % lee cuotas B',u; end if;
+    blocked:=false; begin insert into public.user_memberships(tenant_id,user_id,plan_id,starts_on,status) values(ta,a_ath,pb,current_date,'active'); exception when others then blocked:=true; end;
+    if not blocked then raise exception 'FAIL % asigna cuota B en A',u; end if;
+    blocked:=false; begin insert into public.wod_items(tenant_id,class_id,exercise_id,block) values(ta,ca,xb,'strength'); exception when others then blocked:=true; end;
+    if not blocked then raise exception 'FAIL % usa ejercicio B en A',u; end if;
+    blocked:=false; begin update public.classes set coach_id=b_adm where id=ca; exception when others then blocked:=true; end;
+    if not blocked and exists(select 1 from public.classes where id=ca and coach_id=b_adm) then raise exception 'FAIL % asigna coach B en A',u; end if;
+    checks:=checks+9;
 
     execute 'reset role';
   end loop;

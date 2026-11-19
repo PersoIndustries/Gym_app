@@ -17,6 +17,8 @@ import { confirmed, occupied } from "@/lib/access/attendance";
 import { MAIN_LIFTS } from "@/lib/data/mock";
 import { useSession } from "@/lib/auth/session";
 import { pageHead } from "@/lib/seo";
+import { GymCalendar } from "@/components/GymCalendar";
+import { coachesQuery, activitiesQuery } from "@/lib/data/gym";
 
 export const Route = createFileRoute("/_authenticated/admin/classes")({ head: pageHead("Clases", "Horario, WODs, ejercicios y reglas del box."), component: AdminClasses });
 
@@ -63,12 +65,7 @@ function Week({ tenantId }: { tenantId: string }) {
         <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs text-muted-foreground">Ocupación</p><p className="font-display text-xl font-bold">{cap ? Math.round((total / cap) * 100) : 0}%</p></div>
       </div>
       {classes.length === 0 && <p className="rounded-lg border border-dashed border-border p-5 text-center text-sm text-muted-foreground">No hay clases esta semana. Pulsa "Crear semana desde el horario".</p>}
-      {classes.map((c) => { const n = data?.counts[c.id] ?? EMPTY_COUNTS; return (
-        <Link key={c.id} to="/class/$classId" params={{ classId: c.id }} className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-sm hover:border-primary">
-          <div><p className="font-medium">{c.title} {c.status === "cancelled" && <Badge variant="destructive">Cancelada</Badge>}</p>
-            <p className="text-xs capitalize text-muted-foreground">{new Date(c.starts_at).toLocaleString("es-ES", { weekday: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })} · {c.coach_name ?? "—"}</p></div>
-          <span className="text-right font-display">{occupied(n)}/{c.capacity}<span className="block text-xs text-muted-foreground">{confirmed(n)}/{c.min_attendees} mín.</span></span>
-        </Link>); })}
+      <GymCalendar staff />
     </div>
   );
 }
@@ -76,7 +73,9 @@ function Week({ tenantId }: { tenantId: string }) {
 function Schedule({ tenantId }: { tenantId: string }) {
   const qc = useQueryClient();
   const { data = [] } = useQuery(templatesQuery(tenantId));
-  const blank = { title: "WOD", weekday: 1, start_time: "18:00", duration_min: 60, coach_name: "", capacity: 16, min_attendees: 3, cancel_hours_before: 4 };
+  const { data: coaches = [] } = useQuery(coachesQuery(tenantId));
+  const { data: activities = [] } = useQuery(activitiesQuery(tenantId));
+  const blank = { title: "WOD", weekday: 1, start_time: "18:00", duration_min: 60, coach_name: "", coach_id: null as string | null, activity_type_id: null as string | null, capacity: 16, min_attendees: 3, cancel_hours_before: 4 };
   const [f, setF] = useState(blank);
   const inv = () => qc.invalidateQueries({ queryKey: ["templates"] });
   const add = useMutation({ mutationFn: async () => ok(await supabase.from("class_templates").insert({ ...f, tenant_id: tenantId, coach_name: f.coach_name || null })), onSuccess: () => { toast.success("Clase añadida al horario"); inv(); }, onError: err });
@@ -90,7 +89,8 @@ function Schedule({ tenantId }: { tenantId: string }) {
           <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="Nombre" />
           <Select value={String(f.weekday)} onValueChange={(v) => setF({ ...f, weekday: Number(v) })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{[1, 2, 3, 4, 5, 6, 0].map((d) => <SelectItem key={d} value={String(d)}>{WEEKDAYS[d]}</SelectItem>)}</SelectContent></Select>
           <Input type="time" value={f.start_time} onChange={(e) => setF({ ...f, start_time: e.target.value })} />
-          <Input value={f.coach_name} onChange={(e) => setF({ ...f, coach_name: e.target.value })} placeholder="Coach" />
+          <Select value={f.coach_id ?? "none"} onValueChange={id=>{const c=coaches.find(p=>p.user_id===id);setF({...f,coach_id:c?.user_id ?? null,coach_name:c?.full_name ?? ""});}}><SelectTrigger><SelectValue placeholder="Profesor" /></SelectTrigger><SelectContent><SelectItem value="none">Sin profesor</SelectItem>{coaches.map(c=><SelectItem key={c.user_id} value={c.user_id}>{c.full_name}</SelectItem>)}</SelectContent></Select>
+          <label className="text-xs text-muted-foreground">Actividad<Select value={f.activity_type_id ?? "none"} onValueChange={v=>setF({...f,activity_type_id:v==="none"?null:v})}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent><SelectItem value="none">Sin actividad</SelectItem>{activities.map(a=><SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}</SelectContent></Select></label>
           <label className="text-xs text-muted-foreground">Minutos<Input type="number" value={f.duration_min} onChange={(e) => setF({ ...f, duration_min: Number(e.target.value) })} /></label>
           <label className="text-xs text-muted-foreground">Aforo máx.<Input type="number" value={f.capacity} onChange={(e) => setF({ ...f, capacity: Number(e.target.value) })} /></label>
           <label className="text-xs text-muted-foreground">Mínimo<Input type="number" value={f.min_attendees} onChange={(e) => setF({ ...f, min_attendees: Number(e.target.value) })} /></label>
@@ -104,7 +104,7 @@ function Schedule({ tenantId }: { tenantId: string }) {
             <div key={t.id} className="flex items-center gap-3 rounded-lg border border-border bg-card px-3 py-2 text-sm">
               <span className="w-12 font-display font-bold">{t.start_time.slice(0, 5)}</span>
               <span className="min-w-0 flex-1 truncate">{t.title} · {t.coach_name ?? "—"} <span className="text-xs text-muted-foreground">({t.min_attendees}-{t.capacity}, {t.cancel_hours_before} h)</span></span>
-              <Switch checked={t.active} onCheckedChange={(v) => upd.mutate({ id: t.id, patch: { active: v } })} aria-label="Activa" />
+              <label className="flex items-center gap-2 text-xs"><Switch checked={t.active} onCheckedChange={(v) => upd.mutate({ id: t.id, patch: { active: v } })} aria-label={`Generar ${t.title} cada semana`} />{t.active ? "Se genera cada semana" : "Pausada"}</label>
               <button aria-label="Borrar" onClick={() => confirm("¿Quitar del horario?") && del.mutate(t.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
             </div>))}</div></section>); })}
     </div>
@@ -152,7 +152,7 @@ function Rules({ tenantId }: { tenantId: string }) {
       <div><Label>Redondeo de kilos (disco más pequeño)</Label><Input inputMode="decimal" value={v.rounding_kg} onChange={(e) => setF({ ...v, rounding_kg: Number(e.target.value.replace(",", ".")) || 0 })} /></div>
       <div><Label>Horas antes para cancelar si no se llega al mínimo</Label><Input type="number" value={v.default_cancel_hours} onChange={(e) => setF({ ...v, default_cancel_hours: Number(e.target.value) })} /></div>
       <div><Label>Mínimo de confirmados por defecto</Label><Input type="number" value={v.default_min_attendees} onChange={(e) => setF({ ...v, default_min_attendees: Number(e.target.value) })} /></div>
-      <p className="text-xs text-muted-foreground">Cuentan como confirmados "Voy" y "Voy seguro". "Dudas" ocupa plaza pero no cuenta para el mínimo.</p>
+      <p className="text-xs text-muted-foreground">Mínimo de asistentes confirmados: solo «Voy».</p>
       <Button size="sm" onClick={() => save.mutate()}>Guardar</Button>
     </section>
   );

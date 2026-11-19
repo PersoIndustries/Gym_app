@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canAccessClass } from "./membership";
+import { canAccessClass, canAccessFacility } from "./membership";
 import type { GymClass, MembershipPlan } from "@/lib/domain/types";
 
 const base: MembershipPlan = { id: "p", tenant_id: "t", name: "Entre semana", price_cents: 0, allowed_weekdays: [1, 2, 3, 4, 5], allowed_activity_type_ids: [], weekly_class_limit: null };
@@ -21,4 +21,11 @@ describe("canAccessClass", () => {
   it("no plan means no access", () => {
     expect(canAccessClass(null, cls("2026-11-23T09:00:00")).allowed).toBe(false);
   });
+});
+
+describe("Saturday facilities until midday", () => {
+ const windows = [{weekday:6,from:"08:00",to:"12:00"}];
+ it("allows a Saturday slot ending at 12:00",()=>expect(canAccessFacility(windows,new Date("2026-11-21T11:00:00"),new Date("2026-11-21T12:00:00"))).toBe(true));
+ it("rejects a Saturday slot extending past 12:00",()=>expect(canAccessFacility(windows,new Date("2026-11-21T11:30:00"),new Date("2026-11-21T12:30:00"))).toBe(false));
+ it("does not grant Saturday classes with facility access",()=>expect(canAccessClass(base,cls("2026-11-21T11:00:00")).allowed).toBe(false));
 });

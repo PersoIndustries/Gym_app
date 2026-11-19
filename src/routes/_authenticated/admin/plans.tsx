@@ -1,20 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pencil, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
-import { ACTIVITIES, PLANS } from "@/lib/data/mock";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { activitiesQuery, plansQuery, savePlan, deletePlan } from "@/lib/data/gym";
+import { useSession } from "@/lib/auth/session";
+import { WEEKDAYS } from "@/lib/data/box";
 import { pageHead } from "@/lib/seo";
+import { cn } from "@/lib/utils";
+import type { FacilityWindow } from "@/lib/access/membership";
 
-const DAYS = ["D", "L", "M", "X", "J", "V", "S"];
-export const Route = createFileRoute("/_authenticated/admin/plans")({ head: pageHead("Cuotas", "Cuotas y reglas de acceso."), component: Plans });
+export const Route = createFileRoute("/_authenticated/admin/plans")({ head: pageHead("Cuotas", "Cuotas de socios, actividades y franjas de acceso a instalaciones."), component: Plans });
+const blank = { name: "", price: "", weekdays: [1,2,3,4,5], activities: [] as string[], limit: "", windows: [] as FacilityWindow[] };
 function Plans() {
-  return (
-    <AppShell title="Cuotas">
-      <div className="grid gap-3 md:grid-cols-3">{PLANS.map((p) => (
-        <div key={p.id} className="rounded-xl border border-border bg-card p-5">
-          <p className="font-display text-xl font-bold">{p.name}</p><p className="text-sm text-muted-foreground">{(p.price_cents / 100).toFixed(0)} €/mes</p>
-          <div className="mt-4 flex gap-1">{[1, 2, 3, 4, 5, 6, 0].map((d) => <span key={d} className={`grid h-7 w-7 place-items-center rounded text-xs ${p.allowed_weekdays.includes(d) ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>{DAYS[d]}</span>)}</div>
-          <p className="mt-3 text-xs text-muted-foreground">Actividades: {p.allowed_activity_type_ids.length ? p.allowed_activity_type_ids.map((a) => ACTIVITIES.find((x) => x.id === a)?.name).join(", ") : "todas"}</p>
-          <p className="text-xs text-muted-foreground">Límite semanal: {p.weekly_class_limit ?? "sin límite"}</p>
-        </div>))}</div>
-    </AppShell>
-  );
+ const { tenantId,role }=useSession();const qc=useQueryClient();
+ const {data:plans=[],isLoading,isError}=useQuery(plansQuery(tenantId));const {data:activities=[]}=useQuery(activitiesQuery(tenantId));
+ const [open,setOpen]=useState(false);const [id,setId]=useState<string|null>(null);const [f,setF]=useState(blank);
+ const inv=()=>{qc.invalidateQueries({queryKey:["plans"]});qc.invalidateQueries({queryKey:["my-plan"]});};
+ const save=useMutation({mutationFn:async()=>{if(!tenantId)throw new Error("Selecciona un box");if(!f.name.trim() || !f.price || Number(f.price)<0 || !Number.isFinite(Number(f.price)))throw new Error("Nombre y precio válidos obligatorios");if(f.limit && (!Number.isInteger(Number(f.limit)) || Number(f.limit)<1))throw new Error("El límite debe ser un entero positivo");if(f.windows.some(w=>w.from>=w.to))throw new Error("La hora final debe ser posterior al inicio");await savePlan(tenantId,id,{name:f.name.trim(),price_cents:Math.round(Number(f.price)*100),allowed_weekdays:f.weekdays,allowed_activity_type_ids:f.activities,weekly_class_limit:f.limit?Number(f.limit):null,facility_windows:f.windows.map(w=>({weekday:w.weekday,from:w.from,to:w.to}))});},onSuccess:()=>{setOpen(false);inv();toast.success("Cuota guardada");},onError:e=>toast.error(e instanceof Error?e.message:"No se pudo guardar")});
+ const remove=useMutation({mutationFn:deletePlan,onSuccess:inv,onError:()=>toast.error("No se puede borrar una cuota asignada a socios")});
+ return <AppShell title="Cuotas" action={role==="admin"?<Button size="sm" onClick={()=>{setId(null);setF(blank);setOpen(true);}}><Plus/>Nueva cuota</Button>:undefined}>
+ {isLoading && <p className="text-muted-foreground">Cargando cuotas…</p>}{isError && <p role="alert" className="text-destructive">No se pudieron cargar las cuotas.</p>}{!isLoading && !plans.length && <p className="py-8 text-muted-foreground">Aún no hay cuotas configuradas.</p>}
+ <div className="grid gap-3 md:grid-cols-2">{plans.map(p=><div key={p.id} className="rounded-lg border border-border bg-card p-5"><div className="flex items-center justify-between"><h2 className="text-xl font-bold">{p.name}</h2>{role==="admin" && <div className="flex gap-1"><Button size="icon" variant="ghost" aria-label={`Editar ${p.name}`} onClick={()=>{setId(p.id);setF({name:p.name,price:String(p.price_cents/100),weekdays:p.allowed_weekdays,activities:p.allowed_activity_type_ids,limit:p.weekly_class_limit===null?"":String(p.weekly_class_limit),windows:Array.isArray(p.facility_windows)?p.facility_windows as unknown as FacilityWindow[]:[]});setOpen(true);}}><Pencil/></Button><Button size="icon" variant="ghost" aria-label={`Borrar ${p.name}`} onClick={()=>confirm("¿Borrar cuota? Si tiene socios asignados no se podrá borrar.")&&remove.mutate(p.id)}><Trash2/></Button></div>}</div><p className="mt-1 text-2xl text-primary">{(p.price_cents/100).toLocaleString("es-ES",{style:"currency",currency:"EUR"})}<span className="text-sm text-muted-foreground"> / mes</span></p><h3 className="mt-4 text-xs font-semibold text-muted-foreground">Clases</h3><div className="mt-2 flex flex-wrap gap-1">{[1,2,3,4,5,6,0].map(d=><span key={d} className={cn("rounded px-2 py-1 text-xs",p.allowed_weekdays.includes(d)?"bg-success/15 text-success":"bg-muted text-muted-foreground")}>{WEEKDAYS[d]?.slice(0,3)}</span>)}</div><p className="mt-3 text-sm">{p.weekly_class_limit===null?"Sin límite semanal":`${p.weekly_class_limit} clases / semana`}</p><p className="mt-1 text-xs text-muted-foreground">{p.allowed_activity_type_ids.length?p.allowed_activity_type_ids.map(id=>activities.find(a=>a.id===id)?.name??"Actividad").join(", "):"Todas las actividades"}</p><h3 className="mt-4 text-xs font-semibold text-muted-foreground">Instalaciones</h3>{Array.isArray(p.facility_windows)&&p.facility_windows.length?(p.facility_windows as unknown as FacilityWindow[]).map((w,i)=><p key={i} className="mt-1 text-sm">{WEEKDAYS[w.weekday]} · {w.from}–{w.to}</p>):<p className="mt-1 text-sm text-muted-foreground">Sin franjas de instalaciones</p>}</div>)}</div>
+ <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[85vh] overflow-y-auto"><DialogHeader><DialogTitle>{id?"Editar cuota":"Nueva cuota"}</DialogTitle></DialogHeader><div className="space-y-4"><label className="block text-sm">Nombre<Input value={f.name} onChange={e=>setF({...f,name:e.target.value})}/></label><div className="grid grid-cols-2 gap-3"><label className="text-sm">Precio mensual (€)<Input type="number" min="0" step="0.01" value={f.price} onChange={e=>setF({...f,price:e.target.value})}/></label><label className="text-sm">Clases por semana<Input type="number" min="1" placeholder="Sin límite" value={f.limit} onChange={e=>setF({...f,limit:e.target.value})}/></label></div><h3 className="text-sm font-semibold">Días de clases</h3><div className="flex flex-wrap gap-2">{[1,2,3,4,5,6,0].map(d=><label key={d} className="flex items-center gap-1 text-xs"><Checkbox checked={f.weekdays.includes(d)} onCheckedChange={on=>setF({...f,weekdays:on?[...f.weekdays,d]:f.weekdays.filter(x=>x!==d)})}/>{WEEKDAYS[d]}</label>)}</div><h3 className="text-sm font-semibold">Actividades incluidas</h3><div className="flex flex-wrap gap-3">{activities.map(a=><label key={a.id} className="flex items-center gap-2 text-sm"><Checkbox checked={f.activities.includes(a.id)} onCheckedChange={on=>setF({...f,activities:on?[...f.activities,a.id]:f.activities.filter(x=>x!==a.id)})}/>{a.name}</label>)}</div><p className="text-xs text-muted-foreground">Sin selección: todas las actividades.</p><div className="flex justify-between"><h3 className="text-sm font-semibold">Franjas de instalaciones</h3><Button size="sm" variant="outline" onClick={()=>setF({...f,windows:[...f.windows,{weekday:6,from:"08:00",to:"12:00"}]})}><Plus/>Franja</Button></div>{f.windows.map((w,i)=><div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] items-end gap-2"><label className="text-xs">Día<Select value={String(w.weekday)} onValueChange={v=>setF({...f,windows:f.windows.map((x,j)=>j===i?{...x,weekday:Number(v)}:x)})}><SelectTrigger><SelectValue/></SelectTrigger><SelectContent>{[1,2,3,4,5,6,0].map(d=><SelectItem key={d} value={String(d)}>{WEEKDAYS[d]}</SelectItem>)}</SelectContent></Select></label><label className="text-xs">Desde<Input type="time" value={w.from} onChange={e=>setF({...f,windows:f.windows.map((x,j)=>j===i?{...x,from:e.target.value}:x)})}/></label><label className="text-xs">Hasta<Input type="time" value={w.to} onChange={e=>setF({...f,windows:f.windows.map((x,j)=>j===i?{...x,to:e.target.value}:x)})}/></label><Button size="icon" variant="ghost" aria-label="Quitar franja" onClick={()=>setF({...f,windows:f.windows.filter((_,j)=>j!==i)})}><Trash2/></Button></div>)}</div><DialogFooter><Button disabled={save.isPending} onClick={()=>save.mutate()}>Guardar cuota</Button></DialogFooter></DialogContent></Dialog>
+ </AppShell>;
 }

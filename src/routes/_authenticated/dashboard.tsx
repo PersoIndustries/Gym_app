@@ -2,7 +2,8 @@ import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
-import { PLANS } from "@/lib/data/mock";
+import { myPlanQuery } from "@/lib/data/gym";
+import { isUpcomingEnrollment } from "@/lib/access/class-state";
 import { EMPTY_COUNTS, classesQuery } from "@/lib/data/box";
 import { atRisk, confirmed, occupied } from "@/lib/access/attendance";
 import { isBoxStaff, isPlatformRole, useSession } from "@/lib/auth/session";
@@ -17,6 +18,7 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 function Dashboard() {
   const { role, user, planId, tenantId, tenantName, loading, memberships, platformRole } = useSession();
   const { data } = useQuery(classesQuery(tenantId, 0));
+  const { data: plan } = useQuery(myPlanQuery(tenantId,user?.id));
   if (loading) return null;
   if (isPlatformRole(role)) return <Navigate to="/platform" />;
   if (!memberships.length && !platformRole) return <Navigate to="/join" />;
@@ -38,8 +40,7 @@ function Dashboard() {
       </AppShell>
     );
   }
-  const upcoming = classes.filter((c) => data?.mine[c.id] && new Date(c.starts_at) > new Date()).slice(0, 3);
-  const plan = PLANS.find((p) => p.id === planId);
+  const upcoming = classes.filter((c) => isUpcomingEnrollment(c,data?.mine[c.id])).slice(0, 3);
   return (
     <AppShell title={`Hola, ${name}`}>
       <div className="rounded-xl border border-border bg-card bg-hero p-5">

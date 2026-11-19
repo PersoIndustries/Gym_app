@@ -39,3 +39,6 @@ use the editor.
 - Membership access rules live in the pure `src/lib/access/membership.ts`; why: reusable and testable.
 - Architecture notes and Supabase migration steps: `docs/ARCHITECTURE.md`.
 - Tenant isolation is verified by `supabase/tests/tenant_isolation.sql` (must end with TENANT_ISOLATION_OK); extend it when adding tenant tables; why: catches cross-box leaks RLS unit tests cannot.
+- Calendar views share `GymCalendar`; gym events, coaches and real memberships use the gym data adapter; why: athlete and staff views must display identical records and state.
+- Class phases are ordered class-owned JSON and alternatives are phase/item text; why: custom programming does not require a fixed phase enum.
+- Class booking and facility access enforce real membership restrictions in SQL; why: browser controls are not an authorization boundary.
