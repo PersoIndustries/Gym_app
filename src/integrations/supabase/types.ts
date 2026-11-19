@@ -968,6 +968,10 @@ export type Database = {
         }
         Returns: string
       }
+      delete_class_phase: {
+        Args: { _class: string; _key: string }
+        Returns: undefined
+      }
       facility_availability: {
         Args: { _facility: string; _from: string; _to: string }
         Returns: {
