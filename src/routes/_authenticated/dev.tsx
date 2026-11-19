@@ -1,42 +1,114 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
+import { ArrowDown, ArrowUp, Copy, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ROADMAP_SEED } from "@/lib/data/mock";
 import { useLocalState } from "@/lib/data/local-store";
+import { PRIORITIES, duplicateTask, moveTask, sortTasks } from "@/lib/data/tasks";
 import { isPlatformRole, useSession } from "@/lib/auth/session";
-import type { RoadmapItem, RoadmapStatus } from "@/lib/domain/types";
+import type { RoadmapItem, RoadmapStatus, TaskPriority } from "@/lib/domain/types";
 import { pageHead } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
 const COLS: { s: RoadmapStatus; label: string }[] = [{ s: "pending", label: "Pendiente" }, { s: "in_progress", label: "En progreso" }, { s: "done", label: "Hecho" }];
+const PRIO_CLASS: Record<TaskPriority, string> = { urgent: "bg-destructive text-destructive-foreground", high: "bg-primary text-primary-foreground", medium: "bg-secondary text-secondary-foreground", low: "bg-muted text-muted-foreground" };
+const prioLabel = (p?: TaskPriority) => PRIORITIES.find((x) => x.p === (p ?? "medium"))!.label;
 
-export const Route = createFileRoute("/_authenticated/dev")({ head: pageHead("Dev / Roadmap", "Tareas pendientes de la plataforma."), component: Dev });
+export const Route = createFileRoute("/_authenticated/dev")({ head: pageHead("Dev / Roadmap", "Tareas de la plataforma con prioridades."), component: Dev });
+
 function Dev() {
   const { role } = useSession();
-  // TODO Supabase: tabla roadmap_items (ya sembrada con estas tareas)
   const [items, setItems] = useLocalState<RoadmapItem[]>("bf.roadmap", ROADMAP_SEED);
   const [title, setTitle] = useState("");
+  const [q, setQ] = useState("");
+  const [prio, setPrio] = useState<"all" | TaskPriority>("all");
+  const [sortMode, setSortMode] = useState<"priority" | "manual">("priority");
+  const [editing, setEditing] = useState<RoadmapItem | null>(null);
   if (!isPlatformRole(role)) return <Navigate to="/dashboard" />;
-  const setStatus = (id: string, status: RoadmapStatus) => setItems(items.map((i) => (i.id === id ? { ...i, status } : i)));
-  const add = (e: FormEvent) => { e.preventDefault(); if (!title.trim()) return; setItems([...items, { id: crypto.randomUUID(), title: title.trim(), description: "", status: "pending", sort_order: items.length + 1 }]); setTitle(""); };
+
+  const save = (it: RoadmapItem) => setItems(items.some((i) => i.id === it.id) ? items.map((i) => (i.id === it.id ? it : i)) : [...items, it]);
+  const add = (e: FormEvent) => { e.preventDefault(); if (!title.trim()) return; save({ id: crypto.randomUUID(), title: title.trim(), description: "", status: "pending", priority: "medium", tags: [], notes: "", sort_order: Math.max(0, ...items.map((i) => i.sort_order)) + 1 }); setTitle(""); };
+  const copy = (i: RoadmapItem) => { setItems([...items, duplicateTask(i, items, crypto.randomUUID())]); toast.success("Tarea duplicada"); };
+  const copyText = async (i: RoadmapItem) => { await navigator.clipboard.writeText(`[${prioLabel(i.priority)}] ${i.title}\n${i.description}${i.notes ? `\n\nNotas: ${i.notes}` : ""}`); toast.success("Copiada al portapapeles"); };
+  const remove = (id: string) => { if (confirm("¿Eliminar esta tarea?")) setItems(items.filter((i) => i.id !== id)); };
+
+  const visible = items.filter((i) => (prio === "all" || (i.priority ?? "medium") === prio) && (i.title + i.description + (i.tags ?? []).join(" ")).toLowerCase().includes(q.toLowerCase()));
+  const ordered = (s: RoadmapStatus) => { const col = visible.filter((i) => i.status === s); return sortMode === "priority" ? sortTasks(col) : col.sort((a, b) => a.sort_order - b.sort_order); };
   const done = items.filter((i) => i.status === "done").length;
+  const urgent = items.filter((i) => i.priority === "urgent" && i.status !== "done").length;
+
   return (
-    <ConsoleShell title="Dev / Roadmap" subtitle={`${done} de ${items.length} tareas hechas`}
-      action={<form onSubmit={add} className="flex gap-2"><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nueva tarea…" className="w-72" /><Button type="submit">Añadir</Button></form>}>
+    <ConsoleShell title="Dev / Roadmap" subtitle={`${done} de ${items.length} hechas · ${urgent} urgentes abiertas`}
+      action={<form onSubmit={add} className="flex gap-2"><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nueva tarea…" className="w-64" /><Button type="submit">Añadir</Button></form>}>
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por texto o etiqueta…" className="w-72" />
+        <Select value={prio} onValueChange={(v) => setPrio(v as typeof prio)}><SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">Todas las prioridades</SelectItem>{PRIORITIES.map((p) => <SelectItem key={p.p} value={p.p}>{p.label}</SelectItem>)}</SelectContent></Select>
+        <Select value={sortMode} onValueChange={(v) => setSortMode(v as typeof sortMode)}><SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="priority">Ordenar por prioridad</SelectItem><SelectItem value="manual">Orden manual</SelectItem></SelectContent></Select>
+      </div>
       <div className="grid gap-5 lg:grid-cols-3">
         {COLS.map(({ s, label }) => (
           <section key={s} className="rounded-xl border border-border bg-sidebar p-4">
-            <h2 className="mb-3 flex items-center justify-between text-sm font-semibold uppercase tracking-wider text-muted-foreground">{label}<span>{items.filter((i) => i.status === s).length}</span></h2>
-            <div className="space-y-2">{items.filter((i) => i.status === s).sort((a, b) => a.sort_order - b.sort_order).map((i) => (
-              <article key={i.id} className="rounded-lg border border-border bg-card p-4">
-                <p className="font-medium">{i.title}</p>{i.description && <p className="mt-1 text-sm text-muted-foreground">{i.description}</p>}
-                <div className="mt-3 flex gap-1">{COLS.map((c) => (
-                  <button key={c.s} onClick={() => setStatus(i.id, c.s)} className={cn("rounded px-2 py-1 text-xs", c.s === i.status ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground")}>{c.label}</button>))}</div>
+            <h2 className="mb-3 flex items-center justify-between text-sm font-semibold uppercase tracking-wider text-muted-foreground">{label}<span>{ordered(s).length}</span></h2>
+            <div className="space-y-2">{ordered(s).map((i) => (
+              <article key={i.id} className="group rounded-lg border border-border bg-card p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <button onClick={() => setEditing(i)} className="text-left font-medium hover:text-primary">{i.title}</button>
+                  <span className={cn("shrink-0 rounded px-2 py-0.5 text-xs font-semibold", PRIO_CLASS[i.priority ?? "medium"])}>{prioLabel(i.priority)}</span>
+                </div>
+                {i.description && <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">{i.description}</p>}
+                {(i.tags?.length || i.due) ? <div className="mt-2 flex flex-wrap gap-1">{i.tags?.map((t) => <Badge key={t} variant="outline">{t}</Badge>)}{i.due && <Badge variant="secondary">Vence {i.due}</Badge>}</div> : null}
+                <div className="mt-3 flex flex-wrap items-center gap-1">
+                  {COLS.map((c) => <button key={c.s} onClick={() => save({ ...i, status: c.s })} className={cn("rounded px-2 py-1 text-xs", c.s === i.status ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground")}>{c.label}</button>)}
+                  <span className="ml-auto flex gap-0.5">
+                    {sortMode === "manual" && <><IconBtn t="Subir" on={() => setItems(moveTask(items, i.id, -1))}><ArrowUp /></IconBtn><IconBtn t="Bajar" on={() => setItems(moveTask(items, i.id, 1))}><ArrowDown /></IconBtn></>}
+                    <IconBtn t="Editar" on={() => setEditing(i)}><Pencil /></IconBtn>
+                    <IconBtn t="Duplicar" on={() => copy(i)}><Copy /></IconBtn>
+                    <IconBtn t="Copiar texto" on={() => copyText(i)}><span className="text-[10px] font-bold">TXT</span></IconBtn>
+                    <IconBtn t="Eliminar" on={() => remove(i.id)}><Trash2 /></IconBtn>
+                  </span>
+                </div>
               </article>))}</div>
           </section>))}
       </div>
+      {editing && <EditDialog item={editing} onClose={() => setEditing(null)} onSave={(it) => { save(it); setEditing(null); toast.success("Tarea guardada"); }} />}
     </ConsoleShell>
+  );
+}
+
+function IconBtn({ t, on, children }: { t: string; on: () => void; children: React.ReactNode }) {
+  return <button title={t} aria-label={t} onClick={on} className="flex h-7 w-7 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground [&_svg]:h-3.5 [&_svg]:w-3.5">{children}</button>;
+}
+
+function EditDialog({ item, onClose, onSave }: { item: RoadmapItem; onClose: () => void; onSave: (i: RoadmapItem) => void }) {
+  const [d, setD] = useState({ ...item, priority: item.priority ?? "medium", tagsText: (item.tags ?? []).join(", ") });
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader><DialogTitle>Editar tarea</DialogTitle></DialogHeader>
+        <div className="grid gap-4">
+          <div><Label>Título</Label><Input value={d.title} onChange={(e) => setD({ ...d, title: e.target.value })} /></div>
+          <div className="grid grid-cols-3 gap-3">
+            <div><Label>Prioridad</Label><Select value={d.priority} onValueChange={(v) => setD({ ...d, priority: v as TaskPriority })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{PRIORITIES.map((p) => <SelectItem key={p.p} value={p.p}>{p.label}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Estado</Label><Select value={d.status} onValueChange={(v) => setD({ ...d, status: v as RoadmapStatus })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{COLS.map((c) => <SelectItem key={c.s} value={c.s}>{c.label}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Fecha límite</Label><Input type="date" value={d.due ?? ""} onChange={(e) => setD({ ...d, due: e.target.value || null })} /></div>
+          </div>
+          <div><Label>Descripción</Label><Textarea rows={4} value={d.description} onChange={(e) => setD({ ...d, description: e.target.value })} /></div>
+          <div><Label>Notas técnicas / criterios de aceptación</Label><Textarea rows={5} value={d.notes ?? ""} onChange={(e) => setD({ ...d, notes: e.target.value })} /></div>
+          <div><Label>Etiquetas (separadas por comas)</Label><Input value={d.tagsText} onChange={(e) => setD({ ...d, tagsText: e.target.value })} placeholder="Backend, UI, Pagos" /></div>
+        </div>
+        <DialogFooter><Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={() => { const { tagsText, ...rest } = d; onSave({ ...rest, title: rest.title.trim() || item.title, tags: tagsText.split(",").map((t) => t.trim()).filter(Boolean) }); }}>Guardar</Button></DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -17,4 +17,5 @@ export interface MembershipPlan {
 export interface GymClass { id: string; tenant_id: string; activity_type_id: string; title: string; coach: string; starts_at: string; ends_at: string; capacity: number; booked: number; }
 export interface Member { id: string; tenant_id: string; name: string; email: string; role: TenantRole; plan_id: string | null; }
 export interface PersonalRecord { lift: string; weight_kg: number; recorded_on: string; }
-export interface RoadmapItem { id: string; title: string; description: string; status: RoadmapStatus; sort_order: number; }
+export type TaskPriority = "low" | "medium" | "high" | "urgent";
+export interface RoadmapItem { id: string; title: string; description: string; status: RoadmapStatus; sort_order: number; priority?: TaskPriority; tags?: string[]; notes?: string; due?: string | null; }
