@@ -1,0 +1,1 @@
+alter function public.delete_class_phase(uuid,text) security invoker;

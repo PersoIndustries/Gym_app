@@ -27,7 +27,7 @@ export function atRisk(cls: ClassRules, c: Counts, now = new Date()): boolean {
 
 export const isFull = (cls: ClassRules, c: Counts) => occupied(c) >= cls.capacity;
 
-/** Staff siempre ve a todos; un socio ve a quien no se oculta, y a sí mismo. */
+/** La persona permanece visible; solo se anonimiza su identidad. */
 export function canSeeAttendee(viewer: { id: string; isStaff: boolean }, attendee: { id: string; hidden: boolean }) {
-  return viewer.isStaff || viewer.id === attendee.id || !attendee.hidden;
+  return true;
 }

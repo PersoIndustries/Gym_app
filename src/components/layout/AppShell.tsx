@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { CalendarDays, Eye, Home, ListChecks, LogOut, Settings2, User } from "lucide-react";
+import { CalendarDays, DoorOpen, Eye, Home, ListChecks, LogOut, Settings2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { isBoxStaff, useSession } from "@/lib/auth/session";
 import { Logo } from "./Logo";
@@ -16,6 +16,7 @@ export function AppShell({ title, children, action }: { title: string; children:
     { to: "/dashboard", label: "Inicio", icon: Home },
     { to: "/calendar", label: "Calendario", icon: CalendarDays },
     { to: "/my-classes", label: "Mis clases", icon: ListChecks },
+    { to: "/spaces", label: "Espacios", icon: DoorOpen },
     ...(isBoxStaff(role) ? [{ to: "/admin", label: "Gestión", icon: Settings2 }] : []),
     { to: "/profile", label: "Perfil", icon: User },
   ] as const;

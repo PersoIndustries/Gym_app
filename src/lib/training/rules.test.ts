@@ -22,8 +22,8 @@ describe("asistencia y cancelación", () => {
   it("aviso de riesgo antes de la ventana", () => expect(atRisk(cls, two, new Date("2026-11-20T08:00:00Z"))).toBe(true));
   it("llena cuenta también las dudas", () => expect(isFull(cls, { going: 1, maybe: 1, not_going: 0, waitlist: 0 })).toBe(true));
   it("No voy no ocupa plaza", () => expect(isFull(cls, { going: 1, maybe: 0, not_going: 5, waitlist: 0 })).toBe(false));
-  it("socio no ve a quien se oculta; staff sí", () => {
-    expect(canSeeAttendee({ id: "a", isStaff: false }, { id: "b", hidden: true })).toBe(false);
+  it("la persona con asistencia oculta permanece visible", () => {
+    expect(canSeeAttendee({ id: "a", isStaff: false }, { id: "b", hidden: true })).toBe(true);
     expect(canSeeAttendee({ id: "a", isStaff: true }, { id: "b", hidden: true })).toBe(true);
     expect(canSeeAttendee({ id: "b", isStaff: false }, { id: "b", hidden: true })).toBe(true);
   });

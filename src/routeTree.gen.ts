@@ -22,6 +22,7 @@ import { Route as AuthenticatedMetricsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMyClassesRouteImport } from './routes/_authenticated/my-classes'
 import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedSpacesRouteImport } from './routes/_authenticated/spaces'
 import { Route as BCodeRouteImport } from './routes/b.$code'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminClassesRouteImport } from './routes/_authenticated/admin/classes'
@@ -95,6 +96,11 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSpacesRoute = AuthenticatedSpacesRouteImport.update({
+  id: '/spaces',
+  path: '/spaces',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const BCodeRoute = BCodeRouteImport.update({
   id: '/b/$code',
   path: '/b/$code',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/my-classes': typeof AuthenticatedMyClassesRoute
   '/platform': typeof AuthenticatedPlatformRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/spaces': typeof AuthenticatedSpacesRoute
   '/b/$code': typeof BCodeRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/my-classes': typeof AuthenticatedMyClassesRoute
   '/platform': typeof AuthenticatedPlatformRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/spaces': typeof AuthenticatedSpacesRoute
   '/b/$code': typeof BCodeRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/_authenticated/my-classes': typeof AuthenticatedMyClassesRoute
   '/_authenticated/platform': typeof AuthenticatedPlatformRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/spaces': typeof AuthenticatedSpacesRoute
   '/b/$code': typeof BCodeRoute
   '/_authenticated/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/_authenticated/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
@@ -223,6 +232,7 @@ export interface FileRouteTypes {
     | '/my-classes'
     | '/platform'
     | '/profile'
+    | '/spaces'
     | '/b/$code'
     | '/admin/classes'
     | '/admin/gym-calendar'
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/my-classes'
     | '/platform'
     | '/profile'
+    | '/spaces'
     | '/b/$code'
     | '/admin/classes'
     | '/admin/gym-calendar'
@@ -267,6 +278,7 @@ export interface FileRouteTypes {
     | '/_authenticated/my-classes'
     | '/_authenticated/platform'
     | '/_authenticated/profile'
+    | '/_authenticated/spaces'
     | '/b/$code'
     | '/_authenticated/admin/classes'
     | '/_authenticated/admin/gym-calendar'
@@ -378,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/spaces': {
+      id: '/_authenticated/spaces'
+      path: '/spaces'
+      fullPath: '/spaces'
+      preLoaderRoute: typeof AuthenticatedSpacesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/b/$code': {
       id: '/b/$code'
       path: '/b/$code'
@@ -467,6 +486,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMyClassesRoute: typeof AuthenticatedMyClassesRoute
   AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedSpacesRoute: typeof AuthenticatedSpacesRoute
   AuthenticatedClassClassIdRoute: typeof AuthenticatedClassClassIdRoute
 }
 
@@ -481,6 +501,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMyClassesRoute: AuthenticatedMyClassesRoute,
   AuthenticatedPlatformRoute: AuthenticatedPlatformRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedSpacesRoute: AuthenticatedSpacesRoute,
   AuthenticatedClassClassIdRoute: AuthenticatedClassClassIdRoute,
 }
 

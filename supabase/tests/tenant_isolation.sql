@@ -10,7 +10,7 @@ declare
   b_ath uuid := gen_random_uuid(); b_adm uuid := gen_random_uuid();
   ca uuid := gen_random_uuid(); cb uuid := gen_random_uuid();
   n int; checks int := 0; u uuid; blocked boolean;
-  eb uuid := gen_random_uuid(); pb uuid := gen_random_uuid(); xb uuid := gen_random_uuid();
+  eb uuid := gen_random_uuid(); pb uuid := gen_random_uuid(); xb uuid := gen_random_uuid(); fb uuid := gen_random_uuid(); rb uuid := gen_random_uuid();
 begin
   insert into auth.users(id, email, raw_user_meta_data, aud, role) values
     (a_ath, 'a_ath@iso.test', '{"full_name":"A Ath"}', 'authenticated', 'authenticated'),
@@ -28,6 +28,8 @@ begin
   insert into public.gym_events(id,tenant_id,title,starts_at,ends_at,blocks_classes) values(eb,tb,'Vacaciones B',now()+interval '30 day',now()+interval '31 day',false);
   insert into public.membership_plans(id,tenant_id,name,price_cents,allowed_weekdays,allowed_activity_type_ids) values(pb,tb,'Cuota B',1000,array[1,2,3,4,5],array[]::uuid[]);
   insert into public.exercises(id,tenant_id,name) values(xb,tb,'Ejercicio B');
+  insert into public.facilities(id,tenant_id,name,kind) values(fb,tb,'Sauna B','sauna');
+  insert into public.facility_reservations(id,tenant_id,facility_id,user_id,starts_at,ends_at,status) values(rb,tb,fb,b_adm,now()+interval '1 day',now()+interval '1 day 1 hour','cancelled');
 
   foreach u in array array[a_ath, a_adm] loop
     perform set_config('request.jwt.claims', json_build_object('sub', u, 'role', 'authenticated')::text, true);
@@ -86,6 +88,15 @@ begin
     blocked:=false; begin update public.classes set coach_id=b_adm where id=ca; exception when others then blocked:=true; end;
     if not blocked and exists(select 1 from public.classes where id=ca and coach_id=b_adm) then raise exception 'FAIL % asigna coach B en A',u; end if;
     checks:=checks+9;
+    select count(*) into n from public.facilities where tenant_id=tb; if n<>0 then raise exception 'FAIL lee espacios B'; end if;
+    select count(*) into n from public.facility_reservations where tenant_id=tb; if n<>0 then raise exception 'FAIL lee reservas B'; end if;
+    select count(*) into n from public.facility_availability(fb,now(),now()+interval '3 day'); if n<>0 then raise exception 'FAIL disponibilidad B'; end if;
+    blocked:=false; begin perform public.request_facility(fb,now()+interval '1 day'); exception when others then blocked:=true; end; if not blocked then raise exception 'FAIL reserva espacio B'; end if;
+    blocked:=false; begin perform public.change_facility_reservation(rb,'booked'); exception when others then blocked:=true; end; if not blocked then raise exception 'FAIL modifica reserva B'; end if;
+    blocked:=false; begin perform public.add_class_attendee(cb,b_ath); exception when others then blocked:=true; end; if not blocked then raise exception 'FAIL añade asistente B'; end if;
+    blocked:=false; begin perform public.add_class_attendee(ca,b_ath); exception when others then blocked:=true; end; if not blocked then raise exception 'FAIL añade socio B en A'; end if;
+    blocked:=false; begin perform public.delete_class_phase(cb,'strength'); exception when others then blocked:=true; end; if not blocked then raise exception 'FAIL borra fase B'; end if;
+    checks:=checks+8;
 
     execute 'reset role';
   end loop;

@@ -10,6 +10,7 @@ function AdminHome() {
     { to: "/admin/members", t: "Socios", d: "Roles y cuotas", icon: Users },
     { to: "/admin/plans", t: "Cuotas", d: "Reglas de acceso", icon: CreditCard },
     { to: "/admin/gym-calendar", t: "Vacaciones y cierres", d: "Calendario del gimnasio", icon: CalendarCog },
+    { to: "/spaces", t: "Espacios y reservas", d: "Sauna, pistas y solicitudes", icon: CalendarCog },
   ] as const;
   return (
     <AppShell title="Gestión del box">
