@@ -287,28 +287,37 @@ export type Database = {
       }
       facilities: {
         Row: {
+          approval_required: boolean
+          closes_at: string
           created_at: string
           id: string
           kind: string
           name: string
+          opens_at: string
           slot_minutes: number
           tenant_id: string
           updated_at: string
         }
         Insert: {
+          approval_required?: boolean
+          closes_at?: string
           created_at?: string
           id?: string
           kind: string
           name: string
+          opens_at?: string
           slot_minutes?: number
           tenant_id: string
           updated_at?: string
         }
         Update: {
+          approval_required?: boolean
+          closes_at?: string
           created_at?: string
           id?: string
           kind?: string
           name?: string
+          opens_at?: string
           slot_minutes?: number
           tenant_id?: string
           updated_at?: string
@@ -820,6 +829,7 @@ export type Database = {
       }
       wod_items: {
         Row: {
+          alternative_to: string | null
           alternatives: string | null
           block: string
           class_id: string
@@ -836,6 +846,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          alternative_to?: string | null
           alternatives?: string | null
           block?: string
           class_id: string
@@ -852,6 +863,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          alternative_to?: string | null
           alternatives?: string | null
           block?: string
           class_id?: string
@@ -868,6 +880,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "wod_items_alternative_to_fkey"
+            columns: ["alternative_to"]
+            isOneToOne: false
+            referencedRelation: "wod_items"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "wod_items_class_id_fkey"
             columns: ["class_id"]
@@ -900,6 +919,10 @@ export type Database = {
         Args: { _tenant: string; _week_start: string }
         Returns: number
       }
+      add_class_attendee: {
+        Args: { _class: string; _user: string }
+        Returns: string
+      }
       book_class: { Args: { _class: string; _intent: string }; Returns: string }
       box_coaches: {
         Args: { _tenant: string }
@@ -910,6 +933,10 @@ export type Database = {
         }[]
       }
       cancel_underfilled_classes: { Args: never; Returns: number }
+      change_facility_reservation: {
+        Args: { _reservation: string; _status: string }
+        Returns: undefined
+      }
       class_attendance: {
         Args: { _from: string; _tenant: string; _to: string }
         Returns: {
@@ -941,6 +968,14 @@ export type Database = {
         }
         Returns: string
       }
+      facility_availability: {
+        Args: { _facility: string; _from: string; _to: string }
+        Returns: {
+          ends_at: string
+          starts_at: string
+          status: string
+        }[]
+      }
       generate_week_classes: {
         Args: { _tenant: string; _week_start: string }
         Returns: number
@@ -962,6 +997,10 @@ export type Database = {
       join_tenant_with_code: { Args: { _code: string }; Returns: string }
       leave_class: { Args: { _class: string }; Returns: undefined }
       promote_waitlist: { Args: { _class: string }; Returns: undefined }
+      request_facility: {
+        Args: { _facility: string; _start: string }
+        Returns: string
+      }
       review_join_request: {
         Args: { _approve: boolean; _id: string }
         Returns: undefined
