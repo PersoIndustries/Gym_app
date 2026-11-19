@@ -3,10 +3,14 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Counts, Intent } from "@/lib/access/attendance";
 
-export interface Phase { key: string; title: string; alternatives: string; alternativeTo?: string }
+export type GroupFormat = "amrap" | "emom" | "for_time" | "rounds" | "sets";
+export interface WodGroup { key: string; format: GroupFormat; minutes?: number | null; rounds?: number | null; title?: string }
+export const FORMAT_LABEL: Record<GroupFormat, string> = { amrap: "AMRAP", emom: "EMOM", for_time: "For Time", rounds: "Rondas", sets: "Series" };
+export function groupTitle(g: WodGroup) { const parts = [FORMAT_LABEL[g.format]]; if (g.rounds) parts.push(g.format === "for_time" ? `${g.rounds} rondas` : `x${g.rounds}`); if (g.minutes) parts.push(g.format === "for_time" ? `cap ${g.minutes}'` : `${g.minutes}'`); return (g.title ? g.title + " · " : "") + parts.join(" "); }
+export interface Phase { key: string; title: string; alternatives: string; alternativeTo?: string; groups?: WodGroup[] }
 export interface BoxClass { id: string; tenant_id: string; title: string; coach_name: string | null; coach_id: string | null; phases: Phase[]; starts_at: string; ends_at: string; capacity: number; min_attendees: number; cancel_hours_before: number; status: string; cancelled_reason: string | null; activity_type_id: string | null }
 export interface MyEnrollment { class_id: string; intent: Intent; status: string }
-export interface WodItem { id: string; class_id: string; block: string; position: number; exercise_id: string | null; label: string | null; sets: number | null; reps: string | null; percent_rm: number | null; notes: string | null; alternatives: string | null; alternative_to: string | null }
+export interface WodItem { id: string; class_id: string; block: string; position: number; exercise_id: string | null; label: string | null; sets: number | null; reps: string | null; percent_rm: number | null; notes: string | null; alternatives: string | null; alternative_to: string | null; group_key?: string | null }
 export interface Exercise { id: string; name: string; category: string; uses_load: boolean; rm_lift: string | null }
 
 export const EMPTY_COUNTS: Counts = { going: 0, maybe: 0, not_going: 0, waitlist: 0 };
@@ -88,14 +92,16 @@ export const WEEKDAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "
 export const BLOCKS: Record<string, string> = { warmup: "Calentamiento", strength: "Fuerza", metcon: "Metcon", accessory: "Accesorios" };
 
 export async function updateClass(id: string, values: { title?: string; status?: string; cancelled_reason?: string | null; coach_id?: string | null; coach_name?: string | null }) { must(await supabase.from("classes").update(values).eq("id", id)); }
-export async function updatePhases(id: string, phases: Phase[]) { must(await supabase.from("classes").update({ phases: phases.map(p => ({ ...p })) }).eq("id", id)); }
+export async function updatePhases(id: string, phases: Phase[]) { must(await supabase.from("classes").update({ phases: JSON.parse(JSON.stringify(phases)) }).eq("id", id)); }
 export async function deletePhase(id: string, key: string, phases: Phase[]) { must(await supabase.rpc("delete_class_phase", { _class: id, _key: key })); }
 export async function deleteWod(id: string) { must(await supabase.from("wod_items").delete().eq("id", id)); }
 export async function addWod(tenant: string, classId: string, f: Partial<WodItem>, position: number) {
   if (!f.exercise_id && !f.label?.trim()) throw new Error("Elige o escribe un ejercicio");
-  must(await supabase.from("wod_items").insert({ tenant_id: tenant, class_id: classId, block: f.block ?? "strength", position, exercise_id: f.exercise_id ?? null, label: f.label?.trim() ?? null, sets: f.sets ?? null, reps: f.reps ?? null, percent_rm: f.percent_rm ?? null, notes: f.notes ?? null, alternative_to: f.alternative_to ?? null }));
+  return must(await supabase.from("wod_items").insert({ tenant_id: tenant, class_id: classId, block: f.block ?? "strength", position, exercise_id: f.exercise_id ?? null, label: f.label?.trim() ?? null, sets: f.sets ?? null, reps: f.reps ?? null, percent_rm: f.percent_rm ?? null, notes: f.notes ?? null, alternative_to: f.alternative_to ?? null, group_key: f.group_key ?? null }).select("id").single()) as { id: string };
 }
 export async function addAttendee(classId: string, uid: string) { return must<string>(await supabase.rpc("add_class_attendee", { _class: classId, _user: uid })); }
 export async function markAttendee(classId: string, uid: string, attended: boolean) { must(await supabase.from("class_enrollments").update({ attended }).eq("class_id", classId).eq("user_id", uid)); }
 export const myProfileQuery = (uid: string | undefined) => queryOptions({ queryKey: ["profile", uid], enabled: !!uid, queryFn: async () => uid ? must<{ full_name: string | null; hide_attendance: boolean; preferred_level_name: string | null }>(await supabase.from("profiles").select("full_name,hide_attendance,preferred_level_name").eq("id", uid).single()) : null });
 export async function setAttendancePrivacy(uid: string, hidden: boolean) { must(await supabase.from("profiles").update({ hide_attendance: hidden }).eq("id", uid)); }
+
+export async function deleteGroupItems(classId: string, groupKey: string) { must(await supabase.from("wod_items").delete().eq("class_id", classId).eq("group_key", groupKey)); }

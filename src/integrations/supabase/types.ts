@@ -1071,6 +1071,7 @@ export type Database = {
           class_id: string
           created_at: string
           exercise_id: string | null
+          group_key: string | null
           id: string
           label: string | null
           notes: string | null
@@ -1088,6 +1089,7 @@ export type Database = {
           class_id: string
           created_at?: string
           exercise_id?: string | null
+          group_key?: string | null
           id?: string
           label?: string | null
           notes?: string | null
@@ -1105,6 +1107,7 @@ export type Database = {
           class_id?: string
           created_at?: string
           exercise_id?: string | null
+          group_key?: string | null
           id?: string
           label?: string | null
           notes?: string | null

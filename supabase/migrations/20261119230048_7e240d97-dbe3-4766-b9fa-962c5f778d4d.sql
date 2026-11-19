@@ -1,0 +1,1 @@
+alter table public.wod_items add column if not exists group_key text;
