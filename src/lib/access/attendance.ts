@@ -1,13 +1,14 @@
-export type Intent = "going" | "maybe" | "sure";
-export const INTENT_LABEL: Record<Intent, string> = { going: "Voy", maybe: "Dudas", sure: "Voy seguro" };
+export type Intent = "going" | "maybe" | "not_going";
+export const INTENTS: Intent[] = ["going", "maybe", "not_going"];
+export const INTENT_LABEL: Record<Intent, string> = { going: "Voy", maybe: "Dudas", not_going: "No voy" };
 
 export interface ClassRules { starts_at: string; capacity: number; min_attendees: number; cancel_hours_before: number; status: string }
-export interface Counts { sure: number; going: number; maybe: number; waitlist: number }
+export interface Counts { going: number; maybe: number; not_going: number; waitlist: number }
 
-/** Confirmados = "voy" + "voy seguro" (las dudas no cuentan para el mínimo). */
-export const confirmed = (c: Counts) => c.sure + c.going;
-/** Plazas ocupadas = todos los reservados, incluidas dudas. */
-export const occupied = (c: Counts) => c.sure + c.going + c.maybe;
+/** Confirmados = "Voy" (las dudas no cuentan para el mínimo). */
+export const confirmed = (c: Counts) => c.going;
+/** Plazas ocupadas = "Voy" + "Dudas"; "No voy" no ocupa plaza. */
+export const occupied = (c: Counts) => c.going + c.maybe;
 
 /** Se cancela si estamos dentro de la ventana de X horas y no hay mínimo de confirmados. */
 export function shouldAutoCancel(cls: ClassRules, c: Counts, now = new Date()): boolean {

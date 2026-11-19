@@ -22,3 +22,9 @@
 ## UI
 - Atleta/staff: `AppShell` mobile-first (barra inferior + sidebar en escritorio).
 - Super Admin / Dev: `ConsoleShell` web-first (sidebar fijo, tablas densas).
+
+## Acceso y vistas
+- Una cuenta por persona para todos los boxes. `/auth` es el acceso general; `/b/{codigo}` guarda el código y tras entrar se une automáticamente vía `/join`.
+- Google: `signInWithOAuth` vuelve a `/auth`. En el panel de Supabase: activar el proveedor Google y añadir `{origen}/auth` (preview y publicado) en Redirect URLs.
+- Coach/admin/super admin eligen vista al entrar (`ViewPickerDialog`); la vista "usuario del gym" solo baja permisos en la UI, nunca los sube.
+- Asistencia: `going` (Voy), `maybe` (Dudas), `not_going` (No voy, estado `declined`, no ocupa plaza). Mínimo = solo "Voy".

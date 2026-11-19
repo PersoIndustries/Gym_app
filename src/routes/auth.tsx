@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,17 @@ function AuthPage() {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState(""); const [name, setName] = useState("");
   const [loading, setLoading] = useState(false); const [sent, setSent] = useState(false);
   const navigate = useNavigate();
+  const [pendingCode, setPendingCode] = useState<string | null>(null);
+  const next = () => (sessionStorage.getItem("bf.pendingCode") ? "/join" : "/dashboard") as "/join" | "/dashboard";
+  // Vuelta de Google/OAuth o sesión ya abierta: continuar al destino guardado.
+  useEffect(() => {
+    setPendingCode(sessionStorage.getItem("bf.pendingCode"));
+    supabase.auth.getUser().then(({ data }) => { if (data.user) navigate({ to: next(), replace: true }); });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  async function google() {
+    const { error } = await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/auth` } });
+    if (error) toast.error("No se pudo iniciar con Google", { description: error.message });
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault(); setLoading(true);
@@ -28,7 +39,7 @@ function AuthPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       setLoading(false);
       if (error) { toast.error("No hemos podido entrar", { description: error.message }); return; }
-      navigate({ to: "/dashboard" });
+      navigate({ to: next() });
     } else {
       const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/join", data: { full_name: name } } });
       setLoading(false);
@@ -41,6 +52,7 @@ function AuthPage() {
     <div className="grid min-h-screen place-items-center bg-hero px-5">
       <div className="w-full max-w-sm">
         <Logo />
+        {pendingCode && <p className="mt-4 rounded-md border border-primary/40 bg-card px-3 py-2 text-sm">Entrando al box con código <span className="font-mono text-primary">{pendingCode}</span></p>}
         {sent ? (
           <div className="mt-8 rounded-xl border border-border bg-card p-6"><h1 className="text-xl font-bold">Revisa tu email</h1><p className="mt-2 text-sm text-muted-foreground">Te hemos enviado un enlace para confirmar tu cuenta en {email}.</p></div>
         ) : (
@@ -50,6 +62,8 @@ function AuthPage() {
             <div className="space-y-1.5"><Label htmlFor="email">Email</Label><Input id="email" type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></div>
             <div className="space-y-1.5"><Label htmlFor="password">Contraseña</Label><Input id="password" type="password" minLength={6} autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} required /></div>
             <Button type="submit" className="w-full" disabled={loading}>{loading ? "…" : mode === "login" ? "Entrar" : "Crear cuenta"}</Button>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" />o<span className="h-px flex-1 bg-border" /></div>
+            <Button type="button" variant="outline" className="w-full" onClick={google}>Continuar con Google</Button>
           </form>
         )}
       </div>

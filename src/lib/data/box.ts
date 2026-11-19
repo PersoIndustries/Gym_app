@@ -8,7 +8,7 @@ export interface MyEnrollment { class_id: string; intent: Intent; status: string
 export interface WodItem { id: string; class_id: string; block: string; position: number; exercise_id: string | null; label: string | null; sets: number | null; reps: string | null; percent_rm: number | null; notes: string | null }
 export interface Exercise { id: string; name: string; category: string; uses_load: boolean; rm_lift: string | null }
 
-export const EMPTY_COUNTS: Counts = { sure: 0, going: 0, maybe: 0, waitlist: 0 };
+export const EMPTY_COUNTS: Counts = { going: 0, maybe: 0, not_going: 0, waitlist: 0 };
 const must = <T,>(r: { data: unknown; error: unknown }) => { if (r.error) throw r.error; return r.data as T; };
 
 export function weekRange(offset = 0) {
@@ -23,7 +23,7 @@ export const classesQuery = (tenantId: string | null, offset = 0) => queryOption
   queryFn: async () => {
     const { from, to } = weekRange(offset);
     const classes = must<BoxClass[]>(await supabase.from("classes").select("*").eq("tenant_id", tenantId!).gte("starts_at", from.toISOString()).lt("starts_at", to.toISOString()).order("starts_at"));
-    const att = must<{ class_id: string; sure: number; going: number; maybe: number; waitlist: number }[]>(await supabase.rpc("class_attendance", { _tenant: tenantId!, _from: from.toISOString(), _to: to.toISOString() }));
+    const att = must<{ class_id: string; going: number; maybe: number; not_going: number; waitlist: number }[]>(await supabase.rpc("class_attendance", { _tenant: tenantId!, _from: from.toISOString(), _to: to.toISOString() }));
     const { data: u } = await supabase.auth.getUser();
     const mine = must<MyEnrollment[]>(await supabase.from("class_enrollments").select("class_id, intent, status").eq("user_id", u.user!.id).in("class_id", classes.map((c) => c.id).concat("00000000-0000-0000-0000-000000000000")));
     const counts: Record<string, Counts> = {}; att.forEach((a) => (counts[a.class_id] = a));

@@ -42,7 +42,7 @@ function ClassPage() {
   const { cls, wod, attendees } = data;
   const me = attendees.find((a) => a.user_id === user?.id);
   const booked = attendees.filter((a) => a.status === "booked");
-  const counts = { sure: booked.filter((a) => a.intent === "sure").length, going: booked.filter((a) => a.intent === "going").length, maybe: booked.filter((a) => a.intent === "maybe").length, waitlist: attendees.length - booked.length };
+  const counts = { going: booked.filter((a) => a.intent === "going").length, maybe: booked.filter((a) => a.intent === "maybe").length, not_going: attendees.filter((a) => a.status === "declined").length, waitlist: attendees.filter((a) => a.status === "waitlist").length };
   const exById = Object.fromEntries(exercises.map((e) => [e.id, e]));
   const blocks = Object.keys(BLOCKS).filter((b) => wod.some((w) => w.block === b));
   const rounding = Number(settings?.rounding_kg ?? 2.5);
@@ -55,8 +55,7 @@ function ClassPage() {
         {cls.status === "cancelled" && <p className="mt-2 font-medium text-destructive">Clase cancelada. {cls.cancelled_reason}</p>}
         {cls.status !== "cancelled" && new Date(cls.starts_at) > new Date() && (
           <div className="mt-4 flex flex-wrap gap-1.5">
-            {(["sure", "going", "maybe"] as Intent[]).map((i) => <Button key={i} size="sm" disabled={busy} variant={me?.intent === i ? "default" : "secondary"} onClick={() => book.mutate({ id: cls.id, intent: i })}>{INTENT_LABEL[i]}</Button>)}
-            {me && <Button size="sm" variant="ghost" disabled={busy} onClick={() => leave.mutate(cls.id)}>No voy</Button>}
+            {(["going", "maybe", "not_going"] as Intent[]).map((i) => <Button key={i} size="sm" disabled={busy} variant={me?.intent === i ? "default" : "secondary"} onClick={() => book.mutate({ id: cls.id, intent: i })}>{INTENT_LABEL[i]}</Button>)}
           </div>)}
         {staff && <div className="mt-4 border-t border-border pt-4">{cls.status === "cancelled"
           ? <Button size="sm" variant="outline" onClick={() => cancel.mutate("scheduled")}>Reactivar clase</Button>
@@ -89,7 +88,7 @@ function ClassPage() {
         <div key={a.user_id} className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-2.5 text-sm">
           <span>{a.full_name}{a.user_id === user?.id && " (tú)"}</span>
           <span className="flex items-center gap-2">
-            <Badge variant={a.status === "waitlist" ? "outline" : a.intent === "maybe" ? "secondary" : "default"}>{a.status === "waitlist" ? "En espera" : INTENT_LABEL[a.intent]}</Badge>
+            <Badge variant={a.status === "waitlist" || a.status === "declined" ? "outline" : a.intent === "maybe" ? "secondary" : "default"}>{a.status === "waitlist" ? "En espera" : INTENT_LABEL[a.intent]}</Badge>
             {staff && <><button title="Vino" onClick={() => mark.mutate({ uid: a.user_id, attended: true })} className={cn("rounded p-1", a.attended === true ? "bg-primary text-primary-foreground" : "text-muted-foreground")}><Check className="h-4 w-4" /></button>
               <button title="No vino" onClick={() => mark.mutate({ uid: a.user_id, attended: false })} className={cn("rounded p-1", a.attended === false ? "bg-destructive text-destructive-foreground" : "text-muted-foreground")}><X className="h-4 w-4" /></button></>}
           </span>

@@ -21,6 +21,7 @@ import { Route as AuthenticatedMetricsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMyClassesRouteImport } from './routes/_authenticated/my-classes'
 import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as BCodeRouteImport } from './routes/b.$code'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminClassesRouteImport } from './routes/_authenticated/admin/classes'
 import { Route as AuthenticatedAdminMembersRouteImport } from './routes/_authenticated/admin/members'
@@ -87,6 +88,11 @@ const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const BCodeRoute = BCodeRouteImport.update({
+  id: '/b/$code',
+  path: '/b/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/my-classes': typeof AuthenticatedMyClassesRoute
   '/platform': typeof AuthenticatedPlatformRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/b/$code': typeof BCodeRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/admin/members': typeof AuthenticatedAdminMembersRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByTo {
   '/my-classes': typeof AuthenticatedMyClassesRoute
   '/platform': typeof AuthenticatedPlatformRoute
   '/profile': typeof AuthenticatedProfileRoute
+  '/b/$code': typeof BCodeRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/admin/members': typeof AuthenticatedAdminMembersRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
@@ -173,6 +181,7 @@ export interface FileRoutesById {
   '/_authenticated/my-classes': typeof AuthenticatedMyClassesRoute
   '/_authenticated/platform': typeof AuthenticatedPlatformRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/b/$code': typeof BCodeRoute
   '/_authenticated/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/_authenticated/admin/members': typeof AuthenticatedAdminMembersRoute
   '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/my-classes'
     | '/platform'
     | '/profile'
+    | '/b/$code'
     | '/admin/classes'
     | '/admin/members'
     | '/admin/plans'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/my-classes'
     | '/platform'
     | '/profile'
+    | '/b/$code'
     | '/admin/classes'
     | '/admin/members'
     | '/admin/plans'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/_authenticated/my-classes'
     | '/_authenticated/platform'
     | '/_authenticated/profile'
+    | '/b/$code'
     | '/_authenticated/admin/classes'
     | '/_authenticated/admin/members'
     | '/_authenticated/admin/plans'
@@ -244,6 +256,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BCodeRoute: typeof BCodeRoute
   ApiPublicCronCancelClassesRoute: typeof ApiPublicCronCancelClassesRoute
 }
 
@@ -332,6 +345,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile'
       preLoaderRoute: typeof AuthenticatedProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/b/$code': {
+      id: '/b/$code'
+      path: '/b/$code'
+      fullPath: '/b/$code'
+      preLoaderRoute: typeof BCodeRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
@@ -428,6 +448,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  BCodeRoute: BCodeRoute,
   ApiPublicCronCancelClassesRoute: ApiPublicCronCancelClassesRoute,
 }
 export const routeTree = rootRouteImport

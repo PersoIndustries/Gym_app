@@ -1,0 +1,1 @@
+revoke execute on function public.class_attendance(uuid, timestamptz, timestamptz) from public, anon;

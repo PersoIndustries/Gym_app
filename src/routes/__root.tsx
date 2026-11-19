@@ -11,6 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { SessionProvider } from "@/lib/auth/session";
+import { ViewPickerDialog } from "@/components/layout/ViewPickerDialog";
 import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
@@ -141,6 +142,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <SessionProvider>
         <Outlet />
+        <ViewPickerDialog />
         <Toaster />
       </SessionProvider>
     </QueryClientProvider>

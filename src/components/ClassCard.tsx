@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, Lock } from "lucide-react";
 import type { BoxClass, MyEnrollment } from "@/lib/data/box";
-import { INTENT_LABEL, atRisk, confirmed, isFull, occupied, type Counts, type Intent } from "@/lib/access/attendance";
+import { INTENTS, INTENT_LABEL, atRisk, confirmed, isFull, occupied, type Counts, type Intent } from "@/lib/access/attendance";
 import { cn } from "@/lib/utils";
 
 const fmt = (iso: string) => new Date(iso).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
@@ -31,12 +31,11 @@ export function ClassCard({ c, counts, mine, blockedReason, onIntent, onLeave, b
       </div>
       {!cancelled && !past && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {(["sure", "going", "maybe"] as Intent[]).map((i) => (
+          {INTENTS.map((i) => (
             <button key={i} disabled={disabled} onClick={() => onIntent(i)}
               className={cn("min-h-9 rounded-md px-3 text-sm font-medium transition-colors disabled:opacity-50", mine?.intent === i ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:text-foreground")}>
-              {INTENT_LABEL[i]}{!mine && full && i !== "maybe" ? " (espera)" : ""}
+              {INTENT_LABEL[i]}{!mine && full && i === "going" ? " (espera)" : ""}
             </button>))}
-          {mine && <button disabled={busy} onClick={onLeave} className="min-h-9 rounded-md px-3 text-sm text-muted-foreground hover:text-destructive">No voy</button>}
         </div>)}
     </div>
   );

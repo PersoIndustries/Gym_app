@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,8 +17,14 @@ function Join() {
   const [code, setCode] = useState(""); const [busy, setBusy] = useState(false); const [pending, setPending] = useState(false);
   const { setTenantId, setView } = useSession();
   const qc = useQueryClient(); const navigate = useNavigate();
-  async function submit(e: FormEvent) {
-    e.preventDefault(); setBusy(true);
+  const auto = useRef(false);
+  useEffect(() => {
+    const c = sessionStorage.getItem("bf.pendingCode");
+    if (c && !auto.current) { auto.current = true; sessionStorage.removeItem("bf.pendingCode"); setCode(c); void run(c); }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  async function submit(e: FormEvent) { e.preventDefault(); await run(code); }
+  async function run(code: string) {
+    setBusy(true);
     const { data: tid, error } = await supabase.rpc("join_tenant_with_code", { _code: code });
     setBusy(false);
     if (error) { toast.error(MSG[error.message] ?? error.message); return; }

@@ -1,15 +1,16 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { CalendarDays, Home, ListChecks, LogOut, Settings2, User } from "lucide-react";
+import { CalendarDays, Eye, Home, ListChecks, LogOut, Settings2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { isBoxStaff, useSession } from "@/lib/auth/session";
-import { CURRENT_TENANT } from "@/lib/data/mock";
 import { Logo } from "./Logo";
 import { RoleSwitcher } from "./RoleSwitcher";
 
 /** Shell mobile-first para atletas y staff del box: barra inferior en móvil, sidebar en escritorio. */
 export function AppShell({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
-  const { role } = useSession();
+  const { role, realRole, boxMode, setBoxMode, tenantName } = useSession();
+  const canToggle = realRole === "coach" || realRole === "admin";
+  const toggle = () => { const m = boxMode === "athlete" ? "staff" : "athlete"; setBoxMode(m); navigate({ to: m === "staff" ? "/admin" : "/dashboard" }); };
   const navigate = useNavigate();
   const items = [
     { to: "/dashboard", label: "Inicio", icon: Home },
@@ -24,7 +25,7 @@ export function AppShell({ title, children, action }: { title: string; children:
     <div className="min-h-screen md:flex">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-4 md:flex">
         <Logo />
-        <p className="mt-1 text-xs text-muted-foreground">{CURRENT_TENANT.name}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{tenantName ?? "BoxFlow"}</p>
         <nav className="mt-8 flex flex-1 flex-col gap-1">
           {items.map(({ to, label, icon: Icon }) => (
             <Link key={to} to={to} className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent" activeProps={{ className: "bg-sidebar-accent text-primary" }}>
@@ -32,16 +33,17 @@ export function AppShell({ title, children, action }: { title: string; children:
             </Link>
           ))}
         </nav>
+        {canToggle && <button onClick={toggle} className="mb-2 flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-sidebar-accent"><Eye className="h-4 w-4" />{boxMode === "athlete" ? "Volver a vista staff" : "Ver como usuario del gym"}</button>}
         <RoleSwitcher className="mb-2" />
         <button onClick={signOut} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-sidebar-accent"><LogOut className="h-4 w-4" />Salir</button>
       </aside>
       <div className="flex-1 pb-safe md:pb-8">
         <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-background/90 px-4 py-3 backdrop-blur md:px-8 md:py-5">
           <div>
-            <p className="text-xs text-muted-foreground md:hidden">{CURRENT_TENANT.name}</p>
+            <p className="text-xs text-muted-foreground md:hidden">{tenantName ?? "BoxFlow"}</p>
             <h1 className="text-xl font-bold md:text-2xl">{title}</h1>
           </div>
-          <div className="flex items-center gap-2">{action}<RoleSwitcher className="w-36 md:hidden" /></div>
+          <div className="flex items-center gap-2">{action}{canToggle && <button onClick={toggle} aria-label="Cambiar vista" className="rounded-md p-2 text-muted-foreground md:hidden"><Eye className="h-5 w-5" /></button>}<RoleSwitcher className="w-36 md:hidden" /></div>
         </header>
         <main className="mx-auto max-w-5xl px-4 py-5 md:px-8">{children}</main>
       </div>

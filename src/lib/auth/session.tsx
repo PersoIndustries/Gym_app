@@ -14,6 +14,10 @@ interface SessionCtx {
   /** Rol efectivo: el del box activo, o el de plataforma si estás en la consola. */
   role: AppRole;
   view: "box" | "console"; setView: (v: "box" | "console") => void;
+  /** Rol real en el box activo (base de datos). */
+  realRole: TenantRole | null;
+  /** Coach/admin pueden ver la app como usuario del gym; nunca eleva permisos. */
+  boxMode: "athlete" | "staff"; setBoxMode: (m: "athlete" | "staff") => void;
   tenantId: string | null; setTenantId: (id: string | null) => void;
   tenantName: string | null;
   /** Cuota de demostración hasta conectar user_memberships. */
@@ -26,10 +30,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [view, setView] = useLocalState<"box" | "console">("bf.view", "box");
   const [storedTenant, setTenantId] = useLocalState<string | null>("bf.tenant.v2", null);
+  const [boxMode, setBoxMode] = useLocalState<"athlete" | "staff">("bf.boxMode", "staff");
   const [planId, setPlanId] = useLocalState<string | null>("bf.plan", "p-full");
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setUser(s?.user ?? null));
+    const { data } = supabase.auth.onAuthStateChange((e, s) => { setUser(s?.user ?? null); if (e === "SIGNED_OUT") sessionStorage.removeItem("bf.viewPicked"); });
     return () => data.subscription.unsubscribe();
   }, []);
   const q = useQuery({
@@ -51,9 +56,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const platformRole = q.data?.platformRole ?? null;
     const active = memberships.find((m) => m.tenant_id === storedTenant) ?? memberships[0] ?? null;
     const effView = platformRole && (view === "console" || !active) ? "console" : "box";
-    const role: AppRole = effView === "console" && platformRole ? platformRole : active?.role ?? "athlete";
-    return { user, loading: !user || q.isLoading, memberships, platformRole, role, view: effView, setView, tenantId: active?.tenant_id ?? null, tenantName: active?.tenant_name ?? null, setTenantId, planId, setPlanId, refresh: () => void q.refetch() };
-  }, [user, q.data, q.isLoading, storedTenant, view, planId]); // eslint-disable-line react-hooks/exhaustive-deps
+    const realRole = active?.role ?? null;
+    const boxRole: TenantRole = realRole && realRole !== "athlete" && boxMode === "athlete" ? "athlete" : realRole ?? "athlete";
+    const role: AppRole = effView === "console" && platformRole ? platformRole : boxRole;
+    return { user, loading: !user || q.isLoading, memberships, platformRole, role, view: effView, setView, realRole, boxMode, setBoxMode, tenantId: active?.tenant_id ?? null, tenantName: active?.tenant_name ?? null, setTenantId, planId, setPlanId, refresh: () => void q.refetch() };
+  }, [user, q.data, q.isLoading, storedTenant, view, planId, boxMode]); // eslint-disable-line react-hooks/exhaustive-deps
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 export function useSession() { const c = useContext(Ctx); if (!c) throw new Error("SessionProvider missing"); return c; }
