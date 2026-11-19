@@ -849,7 +849,7 @@ export type Database = {
           class_id: string
           going: number
           maybe: number
-          sure: number
+          not_going: number
           waitlist: number
         }[]
       }
@@ -893,6 +893,7 @@ export type Database = {
       }
       join_tenant_with_code: { Args: { _code: string }; Returns: string }
       leave_class: { Args: { _class: string }; Returns: undefined }
+      promote_waitlist: { Args: { _class: string }; Returns: undefined }
       review_join_request: {
         Args: { _approve: boolean; _id: string }
         Returns: undefined
