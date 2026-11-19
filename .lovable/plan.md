@@ -17,14 +17,15 @@ App mobile-first con datos de ejemplo detrás de una capa de "repositorios". Hoy
 - `/my-classes` — clases apuntadas
 - `/profile` — ficha y RMs (back squat, front squat, deadlift, clean, snatch, jerk, bench, press…)
 - `/admin`, `/admin/classes`, `/admin/members`, `/admin/plans` — solo admin/coach
-- `/platform` — tenants (super admin)
-- `/dev` — Roadmap con las 8 tareas iniciales, estado pendiente / en progreso / hecha (persistido en el navegador hasta conectar Supabase)
-- Navegación inferior en móvil, sidebar en escritorio. Selector de "rol demo" para probar cada vista.
+- `/platform` — tenants (super admin). **Web-first**: layout de escritorio con sidebar fijo, tablas densas, filtros y paneles laterales; en móvil solo se adapta (sin barra inferior).
+- `/dev` — Roadmap (también web-first, vista tablero/tabla) con las 8 tareas iniciales, estado pendiente / en progreso / hecha (persistido en el navegador hasta conectar Supabase)
+- Atleta y admin del box: navegación inferior en móvil, sidebar en escritorio. Super Admin: consola web propia. Selector de "rol demo" para probar cada vista.
 
 ## Diseño
 Deportivo-profesional: fondo grafito oscuro, acento verde lima eléctrico, tipografía Space Grotesk (titulares) + IBM Plex Sans (texto). Tarjetas compactas, objetivos táctiles grandes.
 
 ## Detalles técnicos
+- Tu proyecto Supabase externo ya está conectado: el cliente generado se usa para Auth real; las tablas se crean con la migración y los repos mock quedan como alternativa hasta tener datos.
 - `src/lib/domain/types.ts`: tipos que espejan el esquema SQL.
 - `src/lib/data/` : interfaces de repositorio + implementación mock; `src/lib/auth/` AuthProvider con interfaz tipo Supabase.
 - `src/lib/access/membership.ts`: función pura `canAccessClass(plan, class)` + tests vitest.
