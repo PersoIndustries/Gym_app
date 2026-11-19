@@ -43,3 +43,4 @@ use the editor.
 - Class phases are ordered class-owned JSON; alternative phases reference their parent key and alternative exercises reference their parent item; why: adaptations share the full programming editor without replacing the original.
 - Facility reservations use authenticated SQL RPCs and serialized facility validation; why: approval and availability must be enforced atomically, not by browser controls.
 - Class booking and facility access enforce real membership restrictions in SQL; why: browser controls are not an authorization boundary.
+- Events/races live in `community_events` (scope box|community) with `event_participants` read via `event_attendees`; per-level WOD loads in `wod_item_levels`; facility booking is gated by `tenant_settings.facilities_enabled` in RLS and the booking trigger; why: visibility and toggles enforced in SQL, not only hidden in UI.
