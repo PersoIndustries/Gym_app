@@ -857,6 +857,7 @@ export type Database = {
         Args: { _class: string }
         Returns: {
           attended: boolean
+          avatar_url: string
           full_name: string
           intent: string
           status: string
