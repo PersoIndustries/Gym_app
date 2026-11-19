@@ -1,0 +1,16 @@
+create or replace function public.validate_facility_access() returns trigger language plpgsql security definer set search_path=public as $$ declare p public.membership_plans; s timestamp; e timestamp; begin
+if not exists(select 1 from public.facilities f where f.id=new.facility_id and f.tenant_id=new.tenant_id) then raise exception 'Instalación de otro box'; end if;
+if new.status in ('cancelled','inactive','rejected') then return new; end if;
+if new.ends_at<=new.starts_at then raise exception 'Horario inválido'; end if;
+if exists(select 1 from public.gym_events g where g.tenant_id=new.tenant_id and g.blocks_classes and g.starts_at<new.ends_at and g.ends_at>new.starts_at) then raise exception 'Gimnasio cerrado'; end if;
+if public.has_tenant_role(new.user_id,new.tenant_id,'{coach,admin}') then return new; end if;
+s:=new.starts_at at time zone 'Europe/Madrid'; e:=new.ends_at at time zone 'Europe/Madrid';
+select mp.* into p from public.user_memberships um join public.membership_plans mp on mp.id=um.plan_id and mp.tenant_id=um.tenant_id where um.user_id=new.user_id and um.tenant_id=new.tenant_id and um.status='active' and um.starts_on<=s::date and (um.ends_on is null or um.ends_on>=e::date) order by um.starts_on desc,um.created_at desc limit 1;
+if not found then raise exception 'Sin cuota activa'; end if;
+if s::date<>e::date or not exists(select 1 from jsonb_array_elements(p.facility_windows) w where (w->>'weekday')::int=extract(dow from s)::int and s::time>=(w->>'from')::time and e::time<=(w->>'to')::time) then raise exception 'Fuera de la franja de instalaciones de tu cuota'; end if; return new; end; $$;
+create or replace function public.close_event_spaces() returns trigger language plpgsql security definer set search_path=public as $$ begin if new.blocks_classes then update public.facility_reservations set status='cancelled' where tenant_id=new.tenant_id and status in ('pending','booked') and starts_at<new.ends_at and ends_at>new.starts_at; end if; return new; end; $$;
+revoke execute on function public.close_event_spaces() from public,anon,authenticated;
+create trigger close_event_spaces after insert or update on public.gym_events for each row execute function public.close_event_spaces();
+create or replace function public.request_facility(_facility uuid,_start timestamptz) returns uuid language plpgsql security definer set search_path=public as $$ declare f public.facilities; rid uuid; begin select * into f from public.facilities where id=_facility for update; if not found or not public.is_tenant_member(auth.uid(),f.tenant_id) then raise exception 'No autorizado'; end if;
+if exists(select 1 from public.facility_reservations r where r.facility_id=f.id and r.status in ('pending','booked') and r.starts_at<_start+make_interval(mins=>f.slot_minutes) and r.ends_at>_start) then raise exception 'Espacio ocupado'; end if;
+insert into public.facility_reservations(tenant_id,facility_id,user_id,starts_at,ends_at,status) values(f.tenant_id,f.id,auth.uid(),_start,_start+make_interval(mins=>f.slot_minutes),case when f.approval_required then 'pending' else 'booked' end) returning id into rid; return rid; end; $$;
