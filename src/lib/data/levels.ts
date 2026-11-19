@@ -19,3 +19,6 @@ export async function setExerciseLevel(tenant: string, user: string, exercise: s
   if (!level) { assertOk(await supabase.from("user_exercise_levels").delete().eq("user_id", user).eq("exercise_id", exercise)); return; }
   assertOk(await supabase.from("user_exercise_levels").upsert({ tenant_id: tenant, user_id: user, exercise_id: exercise, level_name: level }, { onConflict: "user_id,exercise_id" }));
 }
+export type LevelMode = "class" | "gender" | "combo";
+export const LEVEL_MODE_LABEL: Record<LevelMode, string> = { class: "Por clase (RX/Scaled/Open)", gender: "Por género (Hombre/Mujer)", combo: "Clase + género" };
+export function levelMode(name: string): LevelMode { if (/^(hombre|mujer)$/i.test(name.trim())) return "gender"; if (/[♂♀]/.test(name)) return "combo"; return "class"; }

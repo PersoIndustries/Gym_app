@@ -129,3 +129,5 @@ export async function pasteClassSetup(tenant: string, classId: string) {
     if (it.levels.length) must(await supabase.from("wod_item_levels").insert(it.levels.map(l => ({ ...l, tenant_id: tenant, wod_item_id: row.id }))));
   }
 }
+
+export async function reorderWod(ids: string[]) { for (const [i, id] of ids.entries()) must(await supabase.from("wod_items").update({ position: i }).eq("id", id)); }
