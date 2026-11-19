@@ -10,33 +10,202 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDevRouteImport } from './routes/_authenticated/dev'
+import { Route as AuthenticatedJoinRouteImport } from './routes/_authenticated/join'
+import { Route as AuthenticatedMyClassesRouteImport } from './routes/_authenticated/my-classes'
+import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticated/platform'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminClassesRouteImport } from './routes/_authenticated/admin/classes'
+import { Route as AuthenticatedAdminMembersRouteImport } from './routes/_authenticated/admin/members'
+import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin/plans'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDevRoute = AuthenticatedDevRouteImport.update({
+  id: '/dev',
+  path: '/dev',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedJoinRoute = AuthenticatedJoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMyClassesRoute = AuthenticatedMyClassesRouteImport.update({
+  id: '/my-classes',
+  path: '/my-classes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlatformRoute = AuthenticatedPlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminClassesRoute =
+  AuthenticatedAdminClassesRouteImport.update({
+    id: '/classes',
+    path: '/classes',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMembersRoute =
+  AuthenticatedAdminMembersRouteImport.update({
+    id: '/members',
+    path: '/members',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminPlansRoute = AuthenticatedAdminPlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/calendar': typeof AuthenticatedCalendarRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dev': typeof AuthenticatedDevRoute
+  '/join': typeof AuthenticatedJoinRoute
+  '/my-classes': typeof AuthenticatedMyClassesRoute
+  '/platform': typeof AuthenticatedPlatformRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/admin/classes': typeof AuthenticatedAdminClassesRoute
+  '/admin/members': typeof AuthenticatedAdminMembersRoute
+  '/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/calendar': typeof AuthenticatedCalendarRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/dev': typeof AuthenticatedDevRoute
+  '/join': typeof AuthenticatedJoinRoute
+  '/my-classes': typeof AuthenticatedMyClassesRoute
+  '/platform': typeof AuthenticatedPlatformRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/admin/classes': typeof AuthenticatedAdminClassesRoute
+  '/admin/members': typeof AuthenticatedAdminMembersRoute
+  '/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/dev': typeof AuthenticatedDevRoute
+  '/_authenticated/join': typeof AuthenticatedJoinRoute
+  '/_authenticated/my-classes': typeof AuthenticatedMyClassesRoute
+  '/_authenticated/platform': typeof AuthenticatedPlatformRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/admin/classes': typeof AuthenticatedAdminClassesRoute
+  '/_authenticated/admin/members': typeof AuthenticatedAdminMembersRoute
+  '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/admin'
+    | '/calendar'
+    | '/dashboard'
+    | '/dev'
+    | '/join'
+    | '/my-classes'
+    | '/platform'
+    | '/profile'
+    | '/admin/classes'
+    | '/admin/members'
+    | '/admin/plans'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/calendar'
+    | '/dashboard'
+    | '/dev'
+    | '/join'
+    | '/my-classes'
+    | '/platform'
+    | '/profile'
+    | '/admin/classes'
+    | '/admin/members'
+    | '/admin/plans'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/admin'
+    | '/_authenticated/calendar'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/dev'
+    | '/_authenticated/join'
+    | '/_authenticated/my-classes'
+    | '/_authenticated/platform'
+    | '/_authenticated/profile'
+    | '/_authenticated/admin/classes'
+    | '/_authenticated/admin/members'
+    | '/_authenticated/admin/plans'
+    | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +217,153 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calendar': {
+      id: '/_authenticated/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof AuthenticatedCalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dev': {
+      id: '/_authenticated/dev'
+      path: '/dev'
+      fullPath: '/dev'
+      preLoaderRoute: typeof AuthenticatedDevRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/join': {
+      id: '/_authenticated/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof AuthenticatedJoinRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/my-classes': {
+      id: '/_authenticated/my-classes'
+      path: '/my-classes'
+      fullPath: '/my-classes'
+      preLoaderRoute: typeof AuthenticatedMyClassesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/platform': {
+      id: '/_authenticated/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof AuthenticatedPlatformRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/classes': {
+      id: '/_authenticated/admin/classes'
+      path: '/classes'
+      fullPath: '/admin/classes'
+      preLoaderRoute: typeof AuthenticatedAdminClassesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/members': {
+      id: '/_authenticated/admin/members'
+      path: '/members'
+      fullPath: '/admin/members'
+      preLoaderRoute: typeof AuthenticatedAdminMembersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/plans': {
+      id: '/_authenticated/admin/plans'
+      path: '/plans'
+      fullPath: '/admin/plans'
+      preLoaderRoute: typeof AuthenticatedAdminPlansRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminClassesRoute: typeof AuthenticatedAdminClassesRoute
+  AuthenticatedAdminMembersRoute: typeof AuthenticatedAdminMembersRoute
+  AuthenticatedAdminPlansRoute: typeof AuthenticatedAdminPlansRoute
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminClassesRoute: AuthenticatedAdminClassesRoute,
+  AuthenticatedAdminMembersRoute: AuthenticatedAdminMembersRoute,
+  AuthenticatedAdminPlansRoute: AuthenticatedAdminPlansRoute,
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDevRoute: typeof AuthenticatedDevRoute
+  AuthenticatedJoinRoute: typeof AuthenticatedJoinRoute
+  AuthenticatedMyClassesRoute: typeof AuthenticatedMyClassesRoute
+  AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDevRoute: AuthenticatedDevRoute,
+  AuthenticatedJoinRoute: AuthenticatedJoinRoute,
+  AuthenticatedMyClassesRoute: AuthenticatedMyClassesRoute,
+  AuthenticatedPlatformRoute: AuthenticatedPlatformRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

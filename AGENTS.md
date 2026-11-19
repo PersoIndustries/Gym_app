@@ -28,3 +28,11 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+- Every tenant-owned table carries `tenant_id` and is protected by RLS via `is_tenant_member`/`has_tenant_role`; why: real multi-tenancy from day one.
+- Tenant roles live in `tenant_members`, platform roles in `platform_roles`, never on profiles; why: prevents privilege escalation.
+- Screens read data only through `src/lib/data/*` (currently mock/localStorage); why: swapping to Supabase must not touch UI.
+- Athlete/box-staff pages use `AppShell` (mobile-first); super admin/dev pages use `ConsoleShell` (web-first); why: different audiences and devices.
+- Membership access rules live in the pure `src/lib/access/membership.ts`; why: reusable and testable.
+- Architecture notes and Supabase migration steps: `docs/ARCHITECTURE.md`.
