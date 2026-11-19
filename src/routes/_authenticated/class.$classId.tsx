@@ -17,6 +17,8 @@ import { PersonAvatar } from "@/components/PersonAvatar";
 import { INTENT_LABEL, confirmed, type Intent } from "@/lib/access/attendance";
 import { recommendedKg } from "@/lib/training/weights";
 import { isBoxStaff, useSession } from "@/lib/auth/session";
+import { classLevelsQuery, levelsQuery, saveItemLevel, deleteItemLevel, type Level, type ItemLevel } from "@/lib/data/levels";
+import { myProfileQuery } from "@/lib/data/box";
 import { pageHead } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
@@ -38,8 +40,11 @@ function ClassPage() {
   const { data: rms = {} } = useQuery(myRmsQuery());
   const { data: settings } = useQuery(settingsQuery(tenantId));
   const { data: coaches = [] } = useQuery(coachesQuery(tenantId));
+  const { data: levels = [] } = useQuery(levelsQuery(tenantId));
+  const { data: itemLevels = [] } = useQuery(classLevelsQuery((data?.wod ?? []).map(w => w.id)));
+  const { data: prof } = useQuery(myProfileQuery(user?.id));
   const { book, busy } = useClassActions();
-  const refresh = () => { qc.invalidateQueries({ queryKey: ["class", classId] }); qc.invalidateQueries({ queryKey: ["classes"] }); };
+  const refresh = () => { qc.invalidateQueries({ queryKey: ["item-levels"] }); qc.invalidateQueries({ queryKey: ["class", classId] }); qc.invalidateQueries({ queryKey: ["classes"] }); };
   const cancel = useMutation({ mutationFn: (s: string) => updateClass(classId, { status: s, cancelled_reason: s === "cancelled" ? "Cancelada por el box" : null }), onSuccess: refresh, onError: errorToast });
   const mark = useMutation({ mutationFn: (v: { uid: string; attended: boolean }) => markAttendee(classId, v.uid, v.attended), onSuccess: refresh, onError: errorToast });
   if (isLoading || !data) return <AppShell title="Clase"><p className="text-sm text-muted-foreground">Cargando…</p></AppShell>;
@@ -59,6 +64,7 @@ function ClassPage() {
         {w.percent_rm && ex?.rm_lift && <LoadButton lift={ex.rm_lift} rm={rms[ex.rm_lift]} percent={w.percent_rm} rounding={rounding}/>}
         {staff && <Button size="icon" variant="ghost" title="Eliminar ejercicio" aria-label="Eliminar ejercicio" onClick={async () => { try { await deleteWod(w.id); refresh(); } catch(e) { errorToast(e); } }}><Trash2 className="h-4 w-4"/></Button>}
       </div>
+      <LevelRow item={w} levels={levels} values={itemLevels.filter(l => l.wod_item_id === w.id)} preferred={prof?.preferred_level_name} staff={staff} tenantId={tenantId} rm={ex?.rm_lift ? rms[ex.rm_lift] : undefined} rounding={rounding} onDone={refresh}/>
       {staff && !w.alternative_to && tenantId && <WodEditor phases={allPhases} initialBlock={w.block} alternativeTo={w.id} classId={cls.id} tenantId={tenantId} exercises={exercises} nextPos={wod.length} onDone={refresh}/>}
     </div>;
   };
@@ -118,4 +124,21 @@ function AddParticipant({tenantId,classId,onDone}:{tenantId:string;classId:strin
   const {data}=useQuery({...membersQuery(tenantId),enabled:open});
   const add=useMutation({mutationFn:()=>addAttendee(classId,uid),onSuccess:status=>{onDone();setOpen(false);toast.success(status==="waitlist" ? "Añadido a lista de espera" : "Asistente añadido");},onError:errorToast});
   return <><Button variant="outline" size="sm" onClick={()=>setOpen(true)}><Plus className="mr-1 h-4 w-4"/>Asistente</Button><Dialog open={open} onOpenChange={setOpen}><DialogContent><DialogHeader><DialogTitle>Añadir asistente</DialogTitle></DialogHeader><Input placeholder="Buscar socio" aria-label="Buscar socio" value={search} onChange={e=>setSearch(e.target.value)}/><div className="max-h-64 overflow-y-auto space-y-1">{data?.members.filter(m=>(data.profiles.find(p=>p.id===m.user_id)?.full_name ?? "Sin nombre").toLowerCase().includes(search.toLowerCase())).map(m=>{const p=data.profiles.find(p=>p.id===m.user_id);return <Button key={m.user_id} variant={uid===m.user_id ? "secondary" : "ghost"} className="h-auto w-full justify-start gap-3 py-2" onClick={()=>setUid(m.user_id)}><PersonAvatar name={p?.full_name ?? "Sin nombre"} url={p?.avatar_url}/>{p?.full_name ?? "Sin nombre"}</Button>;})}</div><Button disabled={!uid||add.isPending} onClick={()=>add.mutate()}>Añadir a la clase</Button></DialogContent></Dialog></>;
+}
+
+function LevelRow({item,levels,values,preferred,staff,tenantId,rm,rounding,onDone}:{item:WodItem;levels:Level[];values:ItemLevel[];preferred:string|null|undefined;staff:boolean;tenantId:string|null;rm:number|undefined;rounding:number;onDone:()=>void}) {
+  const [open,setOpen]=useState(false);
+  const [draft,setDraft]=useState<Record<string,{load:string;pct:string;reps:string;notes:string}>>({});
+  const name=(id:string)=>levels.find(l=>l.id===id)?.name ?? "Nivel";
+  const save=useMutation({mutationFn:async()=>{ if(!tenantId) return; for(const l of levels){ const d=draft[l.id]; const cur=values.find(v=>v.level_id===l.id); if(!d) continue; const empty=!d.load&&!d.pct&&!d.reps&&!d.notes; if(empty){ if(cur) await deleteItemLevel(cur.id); continue; } const num=(x:string)=>x?Number(x.replace(",",".")):null; await saveItemLevel(tenantId,item.id,l.id,{load_kg:num(d.load),percent_rm:num(d.pct),reps:d.reps||null,notes:d.notes||null}); } },onSuccess:()=>{onDone();setOpen(false);toast.success("Niveles guardados");},onError:errorToast});
+  const start=()=>{setDraft(Object.fromEntries(levels.map(l=>{const v=values.find(x=>x.level_id===l.id);return [l.id,{load:v?.load_kg!=null?String(v.load_kg):"",pct:v?.percent_rm!=null?String(v.percent_rm):"",reps:v?.reps??"",notes:v?.notes??""}];})));setOpen(true);};
+  const sorted=[...values].sort((a,b)=>(levels.find(l=>l.id===a.level_id)?.position??0)-(levels.find(l=>l.id===b.level_id)?.position??0));
+  if(!values.length && !staff) return null;
+  return <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+    {sorted.map(v=>{const n=name(v.level_id);const mine=preferred===n;const kg=v.percent_rm?recommendedKg(rm,Number(v.percent_rm),rounding):null;return <span key={v.id} className={cn("rounded border px-2 py-0.5 text-xs",mine?"border-primary bg-primary/15 text-primary":"border-border text-muted-foreground")}><b className="font-semibold">{n}</b>{v.load_kg!=null?` · ${Number(v.load_kg).toLocaleString("es-ES")} kg`:""}{v.percent_rm!=null?` · ${v.percent_rm}% RM${mine&&kg!==null?` (${kg} kg)`:""}`:""}{v.reps?` · ${v.reps} reps`:""}{v.notes?` · ${v.notes}`:""}</span>;})}
+    {staff && levels.length>0 && <Button size="sm" variant="ghost" className="h-6 px-2 text-xs" onClick={start}>{values.length?"Editar niveles":"+ Niveles"}</Button>}
+    <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Niveles del ejercicio</DialogTitle></DialogHeader><p className="text-sm text-muted-foreground">Deja vacío un nivel para no mostrarlo. Puedes poner peso fijo, % RM, repeticiones o una nota.</p>
+      {levels.map(l=>{const d=draft[l.id] ?? {load:"",pct:"",reps:"",notes:""};const set=(k:keyof typeof d,v:string)=>setDraft({...draft,[l.id]:{...d,[k]:v}});return <fieldset key={l.id} className="rounded-md border border-border p-3"><legend className="px-1 text-sm font-semibold">{l.name}</legend><div className="grid grid-cols-3 gap-2"><label className="text-xs">Peso (kg)<Input inputMode="decimal" value={d.load} onChange={e=>set("load",e.target.value)}/></label><label className="text-xs">% RM<Input inputMode="decimal" value={d.pct} onChange={e=>set("pct",e.target.value)}/></label><label className="text-xs">Reps<Input value={d.reps} onChange={e=>set("reps",e.target.value)}/></label></div><label className="mt-2 block text-xs">Nota<Input placeholder="Banda, step-up…" value={d.notes} onChange={e=>set("notes",e.target.value)}/></label></fieldset>;})}
+      <Button disabled={save.isPending} onClick={()=>save.mutate()}>Guardar niveles</Button></DialogContent></Dialog>
+  </div>;
 }

@@ -1,25 +1,31 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { CalendarDays, DoorOpen, Eye, Home, ListChecks, LogOut, Settings2, User } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { CalendarDays, DoorOpen, Trophy, Eye, Home, ListChecks, LogOut, Settings2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { isBoxStaff, useSession } from "@/lib/auth/session";
+import { settingsQuery } from "@/lib/data/box";
+import { facilitiesVisible } from "@/lib/access/events";
 import { Logo } from "./Logo";
 import { RoleSwitcher } from "./RoleSwitcher";
 
 /** Shell mobile-first para atletas y staff del box: barra inferior en móvil, sidebar en escritorio. */
 export function AppShell({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
-  const { role, realRole, boxMode, setBoxMode, tenantName } = useSession();
+  const { role, realRole, boxMode, setBoxMode, tenantName, tenantId } = useSession();
+  const { data: settings } = useQuery(settingsQuery(tenantId));
+  const showSpaces = facilitiesVisible(!!settings?.facilities_enabled, isBoxStaff(role));
   const canToggle = realRole === "coach" || realRole === "admin";
   const toggle = () => { const m = boxMode === "athlete" ? "staff" : "athlete"; setBoxMode(m); navigate({ to: m === "staff" ? "/admin" : "/dashboard" }); };
   const navigate = useNavigate();
   const items = [
-    { to: "/dashboard", label: "Inicio", icon: Home },
-    { to: "/calendar", label: "Calendario", icon: CalendarDays },
-    { to: "/my-classes", label: "Mis clases", icon: ListChecks },
-    { to: "/spaces", label: "Espacios", icon: DoorOpen },
-    ...(isBoxStaff(role) ? [{ to: "/admin", label: "Gestión", icon: Settings2 }] : []),
-    { to: "/profile", label: "Perfil", icon: User },
-  ] as const;
+    { to: "/dashboard" as const, label: "Inicio", icon: Home },
+    { to: "/calendar" as const, label: "Calendario", icon: CalendarDays },
+    { to: "/my-classes" as const, label: "Mis clases", icon: ListChecks },
+    { to: "/events" as const, label: "Eventos", icon: Trophy },
+    ...(showSpaces ? [{ to: "/spaces" as const, label: "Espacios", icon: DoorOpen }] : []),
+    ...(isBoxStaff(role) ? [{ to: "/admin" as const, label: "Gestión", icon: Settings2 }] : []),
+    { to: "/profile" as const, label: "Perfil", icon: User },
+  ];
   const signOut = async () => { await supabase.auth.signOut(); navigate({ to: "/auth", replace: true }); };
 
   return (

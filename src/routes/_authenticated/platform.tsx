@@ -2,6 +2,7 @@ import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Ban, Download, RefreshCw, Trash2, UserCheck } from "lucide-react";
 import { toast } from "sonner";
+import { CommunityModeration } from "@/components/events/CommunityModeration";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,7 @@ function Platform() {
       {audit.length > 0 && <section className="mt-8"><h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Registro de acciones</h2>
         <ul className="space-y-1 rounded-xl border border-border bg-card p-4 text-sm">{audit.slice(0, 10).map((a) => <li key={a.id} className="flex gap-3"><span className="w-40 shrink-0 text-muted-foreground">{new Date(a.at).toLocaleString("es-ES")}</span><span>{a.action} — <b>{a.target}</b></span></li>)}</ul></section>}
 
+      {platformRole === "super_admin" && <CommunityModeration />}
       {open && <TenantSheet t={open} onClose={() => setOpenId(null)}
         invoices={invoices.filter((i) => i.tenant_id === open.id)} users={users.filter((u) => u.tenant_id === open.id)}
         update={(patch, action) => { setTenants(tenants.map((x) => (x.id === open.id ? { ...x, ...patch } : x))); log(action, open.name); toast.success(action); }}

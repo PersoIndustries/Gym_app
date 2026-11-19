@@ -24,12 +24,16 @@ import { Route as AuthenticatedPlatformRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSpacesRouteImport } from './routes/_authenticated/spaces'
 import { Route as BCodeRouteImport } from './routes/b.$code'
+import { Route as EventosIndexRouteImport } from './routes/eventos.index'
+import { Route as EventosIdRouteImport } from './routes/eventos.$id'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminClassesRouteImport } from './routes/_authenticated/admin/classes'
 import { Route as AuthenticatedAdminGymCalendarRouteImport } from './routes/_authenticated/admin/gym-calendar'
 import { Route as AuthenticatedAdminMembersRouteImport } from './routes/_authenticated/admin/members'
 import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin/plans'
 import { Route as AuthenticatedClassClassIdRouteImport } from './routes/_authenticated/class.$classId'
+import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
+import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events.$eventId'
 import { Route as ApiPublicCronCancelClassesRouteImport } from './routes/api/public/cron/cancel-classes'
 
 const IndexRoute = IndexRouteImport.update({
@@ -106,6 +110,16 @@ const BCodeRoute = BCodeRouteImport.update({
   path: '/b/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventosIndexRoute = EventosIndexRouteImport.update({
+  id: '/eventos/',
+  path: '/eventos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventosIdRoute = EventosIdRouteImport.update({
+  id: '/eventos/$id',
+  path: '/eventos/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -140,6 +154,18 @@ const AuthenticatedClassClassIdRoute =
     path: '/class/$classId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEventsIndexRoute =
+  AuthenticatedEventsIndexRouteImport.update({
+    id: '/events/',
+    path: '/events/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEventsEventIdRoute =
+  AuthenticatedEventsEventIdRouteImport.update({
+    id: '/events/$eventId',
+    path: '/events/$eventId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPublicCronCancelClassesRoute =
   ApiPublicCronCancelClassesRouteImport.update({
     id: '/api/public/cron/cancel-classes',
@@ -162,12 +188,16 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/spaces': typeof AuthenticatedSpacesRoute
   '/b/$code': typeof BCodeRoute
+  '/eventos/$id': typeof EventosIdRoute
+  '/eventos/': typeof EventosIndexRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
   '/admin/members': typeof AuthenticatedAdminMembersRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/class/$classId': typeof AuthenticatedClassClassIdRoute
+  '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/events/': typeof AuthenticatedEventsIndexRoute
   '/api/public/cron/cancel-classes': typeof ApiPublicCronCancelClassesRoute
 }
 export interface FileRoutesByTo {
@@ -184,12 +214,16 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/spaces': typeof AuthenticatedSpacesRoute
   '/b/$code': typeof BCodeRoute
+  '/eventos/$id': typeof EventosIdRoute
+  '/eventos': typeof EventosIndexRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
   '/admin/members': typeof AuthenticatedAdminMembersRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/class/$classId': typeof AuthenticatedClassClassIdRoute
+  '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/events': typeof AuthenticatedEventsIndexRoute
   '/api/public/cron/cancel-classes': typeof ApiPublicCronCancelClassesRoute
 }
 export interface FileRoutesById {
@@ -209,12 +243,16 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/spaces': typeof AuthenticatedSpacesRoute
   '/b/$code': typeof BCodeRoute
+  '/eventos/$id': typeof EventosIdRoute
+  '/eventos/': typeof EventosIndexRoute
   '/_authenticated/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/_authenticated/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
   '/_authenticated/admin/members': typeof AuthenticatedAdminMembersRoute
   '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
   '/_authenticated/class/$classId': typeof AuthenticatedClassClassIdRoute
+  '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/api/public/cron/cancel-classes': typeof ApiPublicCronCancelClassesRoute
 }
 export interface FileRouteTypes {
@@ -234,12 +272,16 @@ export interface FileRouteTypes {
     | '/profile'
     | '/spaces'
     | '/b/$code'
+    | '/eventos/$id'
+    | '/eventos/'
     | '/admin/classes'
     | '/admin/gym-calendar'
     | '/admin/members'
     | '/admin/plans'
     | '/class/$classId'
+    | '/events/$eventId'
     | '/admin/'
+    | '/events/'
     | '/api/public/cron/cancel-classes'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -256,12 +298,16 @@ export interface FileRouteTypes {
     | '/profile'
     | '/spaces'
     | '/b/$code'
+    | '/eventos/$id'
+    | '/eventos'
     | '/admin/classes'
     | '/admin/gym-calendar'
     | '/admin/members'
     | '/admin/plans'
     | '/class/$classId'
+    | '/events/$eventId'
     | '/admin'
+    | '/events'
     | '/api/public/cron/cancel-classes'
   id:
     | '__root__'
@@ -280,12 +326,16 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/spaces'
     | '/b/$code'
+    | '/eventos/$id'
+    | '/eventos/'
     | '/_authenticated/admin/classes'
     | '/_authenticated/admin/gym-calendar'
     | '/_authenticated/admin/members'
     | '/_authenticated/admin/plans'
     | '/_authenticated/class/$classId'
+    | '/_authenticated/events/$eventId'
     | '/_authenticated/admin/'
+    | '/_authenticated/events/'
     | '/api/public/cron/cancel-classes'
   fileRoutesById: FileRoutesById
 }
@@ -294,6 +344,8 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   BCodeRoute: typeof BCodeRoute
+  EventosIdRoute: typeof EventosIdRoute
+  EventosIndexRoute: typeof EventosIndexRoute
   ApiPublicCronCancelClassesRoute: typeof ApiPublicCronCancelClassesRoute
 }
 
@@ -404,6 +456,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/eventos/': {
+      id: '/eventos/'
+      path: '/eventos'
+      fullPath: '/eventos/'
+      preLoaderRoute: typeof EventosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/eventos/$id': {
+      id: '/eventos/$id'
+      path: '/eventos/$id'
+      fullPath: '/eventos/$id'
+      preLoaderRoute: typeof EventosIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
       path: '/'
@@ -444,6 +510,20 @@ declare module '@tanstack/react-router' {
       path: '/class/$classId'
       fullPath: '/class/$classId'
       preLoaderRoute: typeof AuthenticatedClassClassIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/events/': {
+      id: '/_authenticated/events/'
+      path: '/events'
+      fullPath: '/events/'
+      preLoaderRoute: typeof AuthenticatedEventsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/events/$eventId': {
+      id: '/_authenticated/events/$eventId'
+      path: '/events/$eventId'
+      fullPath: '/events/$eventId'
+      preLoaderRoute: typeof AuthenticatedEventsEventIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/public/cron/cancel-classes': {
@@ -488,6 +568,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSpacesRoute: typeof AuthenticatedSpacesRoute
   AuthenticatedClassClassIdRoute: typeof AuthenticatedClassClassIdRoute
+  AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
+  AuthenticatedEventsIndexRoute: typeof AuthenticatedEventsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -503,6 +585,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSpacesRoute: AuthenticatedSpacesRoute,
   AuthenticatedClassClassIdRoute: AuthenticatedClassClassIdRoute,
+  AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,
+  AuthenticatedEventsIndexRoute: AuthenticatedEventsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -513,6 +597,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   BCodeRoute: BCodeRoute,
+  EventosIdRoute: EventosIdRoute,
+  EventosIndexRoute: EventosIndexRoute,
   ApiPublicCronCancelClassesRoute: ApiPublicCronCancelClassesRoute,
 }
 export const routeTree = rootRouteImport
