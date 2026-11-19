@@ -1,0 +1,5 @@
+create index wod_items_alternative_to_idx on public.wod_items(alternative_to);
+comment on function public.add_class_attendee(uuid,uuid) is 'Authenticated RPC intentionally SECURITY DEFINER: checks caller coach/admin in class tenant, target tenant membership, membership plan and locks capacity.';
+comment on function public.request_facility(uuid,timestamptz) is 'Authenticated RPC intentionally SECURITY DEFINER: checks tenant membership; triggers enforce membership windows, closures, serialized availability and duration.';
+comment on function public.change_facility_reservation(uuid,text) is 'Authenticated RPC intentionally SECURITY DEFINER: checks tenant membership; owner may cancel, only same-tenant coach/admin may approve/reject pending reservations.';
+comment on function public.facility_availability(uuid,timestamptz,timestamptz) is 'Authenticated RPC intentionally SECURITY DEFINER: checks tenant membership and returns only busy intervals, never user identity.';

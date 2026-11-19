@@ -10,15 +10,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/auth/session";
 import type { TenantRole } from "@/lib/domain/types";
 import { pageHead } from "@/lib/seo";
-import { membersQuery, plansQuery, assignPlan } from "@/lib/data/gym";
+import { membersQuery, plansQuery, assignPlan, changeMemberRole } from "@/lib/data/gym";
 import { PersonAvatar } from "@/components/PersonAvatar";
 
 export const Route = createFileRoute("/_authenticated/admin/members")({ head: pageHead("Socios", "Socios, solicitudes y códigos del box."), component: Members });
-const ROLE: Record<TenantRole, string> = { athlete: "Atleta", coach: "Coach", admin: "Admin" };
+const ROLE: Record<TenantRole, string> = { athlete: "Alumno", coach: "Profesor", admin: "Admin" };
 const ok = <T,>(r: { error: unknown; data: T | null }) => { if (r.error) throw r.error; return r.data as T; };
 
 function Members() {
-  const { tenantId, role, user } = useSession();
+  const { tenantId, role, user, refresh } = useSession();
   const qc = useQueryClient();
   const isAdmin = role === "admin";
   const { data, isError } = useQuery(membersQuery(tenantId));
@@ -27,7 +27,7 @@ function Members() {
   const inv = () => qc.invalidateQueries({ queryKey: ["members"] });
   const quota = useMutation({mutationFn:async(v:{uid:string;plan:string;existing?:string | undefined})=>{if(!tenantId)throw new Error("Selecciona un box");await assignPlan(tenantId,v.uid,v.plan,v.existing);},onSuccess:()=>{inv();qc.invalidateQueries({queryKey:["my-plan"]});toast.success("Cuota asignada");},onError:e=>toast.error(String(e))});
   const review = useMutation({ mutationFn: async (v: { id: string; approve: boolean }) => ok(await supabase.rpc("review_join_request", { _id: v.id, _approve: v.approve })), onSuccess: (_d, v) => { toast.success(v.approve ? "Socio aceptado" : "Solicitud rechazada"); inv(); } });
-  const setRole = useMutation({ mutationFn: async (v: { id: string; role: TenantRole }) => ok(await supabase.from("tenant_members").update({ role: v.role }).eq("id", v.id)), onSuccess: inv, onError: (e) => toast.error(String(e)) });
+  const setRole = useMutation({ mutationFn: async (v: { id: string; role: TenantRole }) => { if (!tenantId) throw new Error("Selecciona un box"); await changeMemberRole(tenantId, v.id, v.role); }, onSuccess: () => { inv(); refresh(); qc.invalidateQueries({ queryKey: ["coaches"] }); toast.success("Rol actualizado"); }, onError: (e) => toast.error(String(e)) });
   const remove = useMutation({ mutationFn: async (id: string) => ok(await supabase.from("tenant_members").delete().eq("id", id)), onSuccess: () => { toast.success("Socio dado de baja del box"); inv(); } });
   const approval = useMutation({ mutationFn: async (v: { id: string; on: boolean }) => ok(await supabase.from("tenant_invites").update({ requires_approval: v.on }).eq("id", v.id)), onSuccess: inv });
 

@@ -49,3 +49,4 @@ export async function assignPlan(tenant: string, user: string, plan: string, exi
   if (existing) assertOk(await supabase.from("user_memberships").update(value).eq("id", existing));
   else assertOk(await supabase.from("user_memberships").insert(value));
 }
+export async function changeMemberRole(tenant: string, id: string, role: "athlete" | "coach" | "admin") { assertOk(await supabase.from("tenant_members").update({ role }).eq("tenant_id", tenant).eq("id", id)); }

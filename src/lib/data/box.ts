@@ -3,10 +3,10 @@ import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Counts, Intent } from "@/lib/access/attendance";
 
-export interface Phase { key: string; title: string; alternatives: string }
+export interface Phase { key: string; title: string; alternatives: string; alternativeTo?: string }
 export interface BoxClass { id: string; tenant_id: string; title: string; coach_name: string | null; coach_id: string | null; phases: Phase[]; starts_at: string; ends_at: string; capacity: number; min_attendees: number; cancel_hours_before: number; status: string; cancelled_reason: string | null; activity_type_id: string | null }
 export interface MyEnrollment { class_id: string; intent: Intent; status: string }
-export interface WodItem { id: string; class_id: string; block: string; position: number; exercise_id: string | null; label: string | null; sets: number | null; reps: string | null; percent_rm: number | null; notes: string | null; alternatives: string | null }
+export interface WodItem { id: string; class_id: string; block: string; position: number; exercise_id: string | null; label: string | null; sets: number | null; reps: string | null; percent_rm: number | null; notes: string | null; alternatives: string | null; alternative_to: string | null }
 export interface Exercise { id: string; name: string; category: string; uses_load: boolean; rm_lift: string | null }
 
 export const EMPTY_COUNTS: Counts = { going: 0, maybe: 0, not_going: 0, waitlist: 0 };
@@ -39,7 +39,7 @@ export const classDetailQuery = (classId: string) => queryOptions({
   queryFn: async () => {
     const cls = must<BoxClass>(await supabase.from("classes").select("*").eq("id", classId).single());
     const wod = must<WodItem[]>(await supabase.from("wod_items").select("*").eq("class_id", classId).order("block").order("position"));
-    const attendees = must<{ user_id: string; full_name: string; avatar_url: string | null; intent: Intent; status: string; attended: boolean | null }[]>(await supabase.rpc("class_attendees", { _class: classId }));
+    const attendees = must<{ user_id: string | null; full_name: string; avatar_url: string | null; intent: Intent; status: string; attended: boolean | null }[]>(await supabase.rpc("class_attendees", { _class: classId }));
     return { cls, wod, attendees };
   },
 });
@@ -56,7 +56,7 @@ export const settingsQuery = (tenantId: string | null) => queryOptions({
 
 export const myRmsQuery = () => queryOptions({
   queryKey: ["rms"],
-  queryFn: async () => { const rows = must<{ lift: string; weight_kg: number }[]>(await supabase.from("personal_records").select("lift, weight_kg")); return Object.fromEntries(rows.map((r) => [r.lift, Number(r.weight_kg)])) as Record<string, number>; },
+  queryFn: async () => { const { data } = await supabase.auth.getUser(); if (!data.user) throw new Error("Inicia sesión"); const rows = must<{ lift: string; weight_kg: number }[]>(await supabase.from("personal_records").select("lift, weight_kg").eq("user_id", data.user.id)); return Object.fromEntries(rows.map((r) => [r.lift, Number(r.weight_kg)])) as Record<string, number>; },
 });
 
 export const templatesQuery = (tenantId: string | null) => queryOptions({
@@ -68,6 +68,7 @@ export const templatesQuery = (tenantId: string | null) => queryOptions({
 export async function bookClass(classId: string, intent: Intent) { return must<string>(await supabase.rpc("book_class", { _class: classId, _intent: intent })); }
 export async function leaveClass(classId: string) { must(await supabase.rpc("leave_class", { _class: classId })); }
 export async function saveRm(lift: string, kg: number | null) {
+  if (kg !== null && (!Number.isFinite(kg) || kg <= 0)) throw new Error("El RM debe ser mayor que cero");
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("Inicia sesión");
   if (kg === null) { must(await supabase.from("personal_records").delete().eq("user_id", u.user.id).eq("lift", lift)); return; }
@@ -85,3 +86,16 @@ export const monthClassesQuery = (tenant: string | null, year: number, month: nu
 } });
 export const WEEKDAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 export const BLOCKS: Record<string, string> = { warmup: "Calentamiento", strength: "Fuerza", metcon: "Metcon", accessory: "Accesorios" };
+
+export async function updateClass(id: string, values: { title?: string; status?: string; cancelled_reason?: string | null; coach_id?: string | null; coach_name?: string | null }) { must(await supabase.from("classes").update(values).eq("id", id)); }
+export async function updatePhases(id: string, phases: Phase[]) { must(await supabase.from("classes").update({ phases: phases.map(p => ({ ...p })) }).eq("id", id)); }
+export async function deletePhase(id: string, key: string, phases: Phase[]) { must(await supabase.rpc("delete_class_phase", { _class: id, _key: key })); }
+export async function deleteWod(id: string) { must(await supabase.from("wod_items").delete().eq("id", id)); }
+export async function addWod(tenant: string, classId: string, f: Partial<WodItem>, position: number) {
+  if (!f.exercise_id && !f.label?.trim()) throw new Error("Elige o escribe un ejercicio");
+  must(await supabase.from("wod_items").insert({ tenant_id: tenant, class_id: classId, block: f.block ?? "strength", position, exercise_id: f.exercise_id ?? null, label: f.label?.trim() ?? null, sets: f.sets ?? null, reps: f.reps ?? null, percent_rm: f.percent_rm ?? null, notes: f.notes ?? null, alternative_to: f.alternative_to ?? null }));
+}
+export async function addAttendee(classId: string, uid: string) { return must<string>(await supabase.rpc("add_class_attendee", { _class: classId, _user: uid })); }
+export async function markAttendee(classId: string, uid: string, attended: boolean) { must(await supabase.from("class_enrollments").update({ attended }).eq("class_id", classId).eq("user_id", uid)); }
+export const myProfileQuery = (uid: string | undefined) => queryOptions({ queryKey: ["profile", uid], enabled: !!uid, queryFn: async () => uid ? must(await supabase.from("profiles").select("full_name,hide_attendance").eq("id", uid).single()) : null });
+export async function setAttendancePrivacy(uid: string, hidden: boolean) { must(await supabase.from("profiles").update({ hide_attendance: hidden }).eq("id", uid)); }
