@@ -40,5 +40,6 @@ use the editor.
 - Architecture notes and Supabase migration steps: `docs/ARCHITECTURE.md`.
 - Tenant isolation is verified by `supabase/tests/tenant_isolation.sql` (must end with TENANT_ISOLATION_OK); extend it when adding tenant tables; why: catches cross-box leaks RLS unit tests cannot.
 - Calendar views share `GymCalendar`; gym events, coaches and real memberships use the gym data adapter; why: athlete and staff views must display identical records and state.
-- Class phases are ordered class-owned JSON and alternatives are phase/item text; why: custom programming does not require a fixed phase enum.
+- Class phases are ordered class-owned JSON; alternative phases reference their parent key and alternative exercises reference their parent item; why: adaptations share the full programming editor without replacing the original.
+- Facility reservations use authenticated SQL RPCs and serialized facility validation; why: approval and availability must be enforced atomically, not by browser controls.
 - Class booking and facility access enforce real membership restrictions in SQL; why: browser controls are not an authorization boundary.

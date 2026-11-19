@@ -1,4 +1,11 @@
 # Mejoras durante desarrollo
+- [ ] Privacidad con asistente anónimo y avatar de interrogación.
+- [ ] Peso pulsable con RM, porcentaje y edición del RM.
+- [ ] Profesor añade asistentes y cambia nombre/vista de la clase.
+- [ ] Alternativas como fases/ejercicios añadidos; edición y borrado con lápiz.
+- [ ] Gestión de profesores desde socios.
+- [ ] Reserva de espacios: disponibilidad, aprobación, cancelación y gestión.
+- [ ] Pruebas de privacidad, permisos y reservas.
 - [x] Inicio temporal con accesos a boxes y creación de gimnasio.
 - [x] Foto del coach, estados temporales y colores de asistencia; ocultar «No voy» en Mis clases.
 - [x] Calendario mensual y semanal más informativo para usuarios y staff.
