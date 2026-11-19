@@ -25,6 +25,8 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminClassesRouteImport } from './routes/_authenticated/admin/classes'
 import { Route as AuthenticatedAdminMembersRouteImport } from './routes/_authenticated/admin/members'
 import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin/plans'
+import { Route as AuthenticatedClassClassIdRouteImport } from './routes/_authenticated/class.$classId'
+import { Route as ApiPublicCronCancelClassesRouteImport } from './routes/api/public/cron/cancel-classes'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -107,6 +109,18 @@ const AuthenticatedAdminPlansRoute = AuthenticatedAdminPlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedClassClassIdRoute =
+  AuthenticatedClassClassIdRouteImport.update({
+    id: '/class/$classId',
+    path: '/class/$classId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiPublicCronCancelClassesRoute =
+  ApiPublicCronCancelClassesRouteImport.update({
+    id: '/api/public/cron/cancel-classes',
+    path: '/api/public/cron/cancel-classes',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -123,7 +137,9 @@ export interface FileRoutesByFullPath {
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/admin/members': typeof AuthenticatedAdminMembersRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/class/$classId': typeof AuthenticatedClassClassIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/cron/cancel-classes': typeof ApiPublicCronCancelClassesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -139,7 +155,9 @@ export interface FileRoutesByTo {
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/admin/members': typeof AuthenticatedAdminMembersRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/class/$classId': typeof AuthenticatedClassClassIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/api/public/cron/cancel-classes': typeof ApiPublicCronCancelClassesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -158,7 +176,9 @@ export interface FileRoutesById {
   '/_authenticated/admin/classes': typeof AuthenticatedAdminClassesRoute
   '/_authenticated/admin/members': typeof AuthenticatedAdminMembersRoute
   '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/_authenticated/class/$classId': typeof AuthenticatedClassClassIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/cron/cancel-classes': typeof ApiPublicCronCancelClassesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -177,7 +197,9 @@ export interface FileRouteTypes {
     | '/admin/classes'
     | '/admin/members'
     | '/admin/plans'
+    | '/class/$classId'
     | '/admin/'
+    | '/api/public/cron/cancel-classes'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -193,7 +215,9 @@ export interface FileRouteTypes {
     | '/admin/classes'
     | '/admin/members'
     | '/admin/plans'
+    | '/class/$classId'
     | '/admin'
+    | '/api/public/cron/cancel-classes'
   id:
     | '__root__'
     | '/'
@@ -211,13 +235,16 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/classes'
     | '/_authenticated/admin/members'
     | '/_authenticated/admin/plans'
+    | '/_authenticated/class/$classId'
     | '/_authenticated/admin/'
+    | '/api/public/cron/cancel-classes'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicCronCancelClassesRoute: typeof ApiPublicCronCancelClassesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -334,6 +361,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPlansRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/class/$classId': {
+      id: '/_authenticated/class/$classId'
+      path: '/class/$classId'
+      fullPath: '/class/$classId'
+      preLoaderRoute: typeof AuthenticatedClassClassIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/cron/cancel-classes': {
+      id: '/api/public/cron/cancel-classes'
+      path: '/api/public/cron/cancel-classes'
+      fullPath: '/api/public/cron/cancel-classes'
+      preLoaderRoute: typeof ApiPublicCronCancelClassesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -364,6 +405,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMyClassesRoute: typeof AuthenticatedMyClassesRoute
   AuthenticatedPlatformRoute: typeof AuthenticatedPlatformRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedClassClassIdRoute: typeof AuthenticatedClassClassIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -376,6 +418,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMyClassesRoute: AuthenticatedMyClassesRoute,
   AuthenticatedPlatformRoute: AuthenticatedPlatformRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedClassClassIdRoute: AuthenticatedClassClassIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -385,6 +428,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicCronCancelClassesRoute: ApiPublicCronCancelClassesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

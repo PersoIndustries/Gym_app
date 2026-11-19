@@ -15,9 +15,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLocalState } from "@/lib/data/local-store";
 import { INVOICES, PLATFORM_USERS, SAAS_PLANS, TENANTS_OPS, computeMrr, fmtEUR, invoiceTotals, type AuditEntry, type Invoice, type InvoiceStatus, type PlatformUser, type SaasPlan, type TenantOps, type TenantStatus } from "@/lib/data/platform";
-import { isPlatformRole, useSession } from "@/lib/auth/session";
+import { useSession } from "@/lib/auth/session";
 import type { TenantRole } from "@/lib/domain/types";
 import { pageHead } from "@/lib/seo";
+import { RealTenants } from "@/components/platform/RealTenants";
 
 const STATUS: Record<TenantStatus, string> = { active: "Activo", trial: "En prueba", paused: "Suspendido", cancelled: "Baja" };
 const INV: Record<InvoiceStatus, string> = { paid: "Pagada", pending: "Pendiente", failed: "Fallida", refunded: "Reembolsada" };
@@ -27,14 +28,14 @@ const invVariant = (s: InvoiceStatus) => (s === "paid" ? "default" : s === "fail
 export const Route = createFileRoute("/_authenticated/platform")({ head: pageHead("Gimnasios", "Consola de plataforma: gestión operativa de gimnasios."), component: Platform });
 
 function Platform() {
-  const { role } = useSession();
+  const { platformRole } = useSession();
   const [tenants, setTenants] = useLocalState<TenantOps[]>("bf.ops.tenants", TENANTS_OPS);
   const [invoices, setInvoices] = useLocalState<Invoice[]>("bf.ops.invoices", INVOICES);
   const [users, setUsers] = useLocalState<PlatformUser[]>("bf.ops.users", PLATFORM_USERS);
   const [audit, setAudit] = useLocalState<AuditEntry[]>("bf.ops.audit", []);
   const [q, setQ] = useState(""); const [st, setSt] = useState<"all" | TenantStatus>("all");
   const [openId, setOpenId] = useState<string | null>(null);
-  if (!isPlatformRole(role)) return <Navigate to="/dashboard" />;
+  if (!platformRole) return <Navigate to="/dashboard" />;
 
   const log = (action: string, target: string) => setAudit((a) => [{ id: crypto.randomUUID(), at: new Date().toISOString(), action, target }, ...a].slice(0, 200));
   const rows = tenants.filter((t) => (st === "all" || t.status === st) && (t.name + t.city + t.owner_email).toLowerCase().includes(q.toLowerCase()));
@@ -45,6 +46,7 @@ function Platform() {
     <ConsoleShell title="Gimnasios" subtitle="Gestión operativa de todos los clientes"
       action={<><Select value={st} onValueChange={(v) => setSt(v as typeof st)}><SelectTrigger className="w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">Todos</SelectItem>{Object.entries(STATUS).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent></Select>
         <Input placeholder="Buscar gimnasio, ciudad, email…" value={q} onChange={(e) => setQ(e.target.value)} className="w-72" /></>}>
+      <RealTenants />
       <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-5">
         {[["Gimnasios", tenants.length], ["Activos", tenants.filter((t) => t.status === "active").length], ["En prueba", tenants.filter((t) => t.status === "trial").length], ["MRR", fmtEUR(computeMrr(tenants))], ["Cobros fallidos", fmtEUR(invoiceTotals(invoices).failed)]].map(([l, v]) => (
           <div key={l} className="rounded-xl border border-border bg-card p-5"><p className="text-sm text-muted-foreground">{l}</p><p className="mt-1 font-display text-2xl font-bold">{v}</p></div>))}

@@ -51,27 +51,33 @@ export type Database = {
       }
       class_enrollments: {
         Row: {
+          attended: boolean | null
           class_id: string
           created_at: string
           id: string
+          intent: string
           status: string
           tenant_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          attended?: boolean | null
           class_id: string
           created_at?: string
           id?: string
+          intent?: string
           status?: string
           tenant_id: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          attended?: boolean | null
           class_id?: string
           created_at?: string
           id?: string
+          intent?: string
           status?: string
           tenant_id?: string
           updated_at?: string
@@ -94,39 +100,123 @@ export type Database = {
           },
         ]
       }
+      class_templates: {
+        Row: {
+          active: boolean
+          activity_type_id: string | null
+          cancel_hours_before: number
+          capacity: number
+          coach_name: string | null
+          created_at: string
+          duration_min: number
+          id: string
+          min_attendees: number
+          start_time: string
+          tenant_id: string
+          title: string
+          updated_at: string
+          weekday: number
+        }
+        Insert: {
+          active?: boolean
+          activity_type_id?: string | null
+          cancel_hours_before?: number
+          capacity?: number
+          coach_name?: string | null
+          created_at?: string
+          duration_min?: number
+          id?: string
+          min_attendees?: number
+          start_time: string
+          tenant_id: string
+          title: string
+          updated_at?: string
+          weekday: number
+        }
+        Update: {
+          active?: boolean
+          activity_type_id?: string | null
+          cancel_hours_before?: number
+          capacity?: number
+          coach_name?: string | null
+          created_at?: string
+          duration_min?: number
+          id?: string
+          min_attendees?: number
+          start_time?: string
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_templates_activity_type_id_fkey"
+            columns: ["activity_type_id"]
+            isOneToOne: false
+            referencedRelation: "activity_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           activity_type_id: string | null
+          cancel_hours_before: number
+          cancelled_reason: string | null
           capacity: number
           coach_id: string | null
+          coach_name: string | null
           created_at: string
           ends_at: string
           id: string
+          min_attendees: number
           starts_at: string
+          status: string
+          template_id: string | null
           tenant_id: string
           title: string
           updated_at: string
         }
         Insert: {
           activity_type_id?: string | null
+          cancel_hours_before?: number
+          cancelled_reason?: string | null
           capacity?: number
           coach_id?: string | null
+          coach_name?: string | null
           created_at?: string
           ends_at: string
           id?: string
+          min_attendees?: number
           starts_at: string
+          status?: string
+          template_id?: string | null
           tenant_id: string
           title: string
           updated_at?: string
         }
         Update: {
           activity_type_id?: string | null
+          cancel_hours_before?: number
+          cancelled_reason?: string | null
           capacity?: number
           coach_id?: string | null
+          coach_name?: string | null
           created_at?: string
           ends_at?: string
           id?: string
+          min_attendees?: number
           starts_at?: string
+          status?: string
+          template_id?: string | null
           tenant_id?: string
           title?: string
           updated_at?: string
@@ -141,6 +231,47 @@ export type Database = {
           },
           {
             foreignKeyName: "classes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exercises: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          name: string
+          rm_lift: string | null
+          tenant_id: string
+          updated_at: string
+          uses_load: boolean
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          name: string
+          rm_lift?: string | null
+          tenant_id: string
+          updated_at?: string
+          uses_load?: boolean
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+          rm_lift?: string | null
+          tenant_id?: string
+          updated_at?: string
+          uses_load?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercises_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -287,6 +418,7 @@ export type Database = {
           id: string
           lift: string
           recorded_on: string
+          tenant_id: string | null
           updated_at: string
           user_id: string
           weight_kg: number
@@ -296,6 +428,7 @@ export type Database = {
           id?: string
           lift: string
           recorded_on?: string
+          tenant_id?: string | null
           updated_at?: string
           user_id: string
           weight_kg: number
@@ -305,6 +438,7 @@ export type Database = {
           id?: string
           lift?: string
           recorded_on?: string
+          tenant_id?: string | null
           updated_at?: string
           user_id?: string
           weight_kg?: number
@@ -337,6 +471,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           full_name: string | null
+          hide_attendance: boolean
           id: string
           updated_at: string
         }
@@ -344,6 +479,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
+          hide_attendance?: boolean
           id: string
           updated_at?: string
         }
@@ -351,6 +487,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
+          hide_attendance?: boolean
           id?: string
           updated_at?: string
         }
@@ -396,6 +533,7 @@ export type Database = {
           expires_at: string | null
           id: string
           max_uses: number | null
+          requires_approval: boolean
           role: Database["public"]["Enums"]["tenant_role"]
           tenant_id: string
           updated_at: string
@@ -407,6 +545,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           max_uses?: number | null
+          requires_approval?: boolean
           role?: Database["public"]["Enums"]["tenant_role"]
           tenant_id: string
           updated_at?: string
@@ -418,6 +557,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           max_uses?: number | null
+          requires_approval?: boolean
           role?: Database["public"]["Enums"]["tenant_role"]
           tenant_id?: string
           updated_at?: string
@@ -426,6 +566,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tenant_invites_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_join_requests: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["tenant_role"]
+          status: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["tenant_role"]
+          status?: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["tenant_role"]
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_join_requests_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -463,6 +641,41 @@ export type Database = {
             foreignKeyName: "tenant_members_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_settings: {
+        Row: {
+          created_at: string
+          default_cancel_hours: number
+          default_min_attendees: number
+          rounding_kg: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_cancel_hours?: number
+          default_min_attendees?: number
+          rounding_kg?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_cancel_hours?: number
+          default_min_attendees?: number
+          rounding_kg?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
             referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
@@ -549,11 +762,117 @@ export type Database = {
           },
         ]
       }
+      wod_items: {
+        Row: {
+          block: string
+          class_id: string
+          created_at: string
+          exercise_id: string | null
+          id: string
+          label: string | null
+          notes: string | null
+          percent_rm: number | null
+          position: number
+          reps: string | null
+          sets: number | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          block?: string
+          class_id: string
+          created_at?: string
+          exercise_id?: string | null
+          id?: string
+          label?: string | null
+          notes?: string | null
+          percent_rm?: number | null
+          position?: number
+          reps?: string | null
+          sets?: number | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          block?: string
+          class_id?: string
+          created_at?: string
+          exercise_id?: string | null
+          id?: string
+          label?: string | null
+          notes?: string | null
+          percent_rm?: number | null
+          position?: number
+          reps?: string | null
+          sets?: number | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wod_items_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wod_items_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wod_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      book_class: { Args: { _class: string; _intent: string }; Returns: string }
+      cancel_underfilled_classes: { Args: never; Returns: number }
+      class_attendance: {
+        Args: { _from: string; _tenant: string; _to: string }
+        Returns: {
+          class_id: string
+          going: number
+          maybe: number
+          sure: number
+          waitlist: number
+        }[]
+      }
+      class_attendees: {
+        Args: { _class: string }
+        Returns: {
+          attended: boolean
+          full_name: string
+          intent: string
+          status: string
+          user_id: string
+        }[]
+      }
+      create_tenant: {
+        Args: {
+          _city: string
+          _code: string
+          _name: string
+          _requires_approval?: boolean
+          _slug: string
+        }
+        Returns: string
+      }
+      generate_week_classes: {
+        Args: { _tenant: string; _week_start: string }
+        Returns: number
+      }
       has_tenant_role: {
         Args: {
           _roles: Database["public"]["Enums"]["tenant_role"][]
@@ -569,6 +888,11 @@ export type Database = {
         Returns: boolean
       }
       join_tenant_with_code: { Args: { _code: string }; Returns: string }
+      leave_class: { Args: { _class: string }; Returns: undefined }
+      review_join_request: {
+        Args: { _approve: boolean; _id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       platform_role: "super_admin" | "developer"

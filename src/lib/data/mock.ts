@@ -56,13 +56,33 @@ export const CLASSES = buildWeek();
 
 export const MAIN_LIFTS = ["Back Squat", "Front Squat", "Deadlift", "Clean", "Snatch", "Clean & Jerk", "Bench Press", "Strict Press"];
 
+// Roadmap según el documento de producto (fases 0-7). Formato: título|descripción|estado|prioridad|etiquetas
 export const ROADMAP_SEED: RoadmapItem[] = [
-  "Conectar Supabase real y migrar esquema|Sustituir repositorios mock por consultas reales.",
-  "Implementar RLS multi-tenant|Revisar y probar políticas por tenant_id.",
-  "Reservas de instalaciones|Pádel, tenis, sauna: franjas y reservas.",
-  "Correlación de calendarios|Cierres del gym bloquean instalaciones.",
-  "Control de acceso por tipo de cuota|Aplicar reglas del plan al reservar.",
-  "Notificaciones (email + push)|Recordatorios y avisos de cambios.",
-  "Biblioteca de ejercicios y WODs|Catálogo de movimientos y entrenos.",
-  "Eventos públicos y carreras|Competiciones abiertas y rankings.",
-].map((r, i) => { const [title = "", description = ""] = r.split("|"); return { id: `r${i + 1}`, title, description, status: (i === 0 ? "in_progress" : "pending") as RoadmapItem["status"], sort_order: i + 1 }; });
+  "F0 · Arquitectura multi-tenant y modelo de datos|Tablas con tenant_id, RLS y roles separados.|done|urgent|Fase 0,DB",
+  "F0 · Auth email/contraseña y sesiones|Alta, login y rutas privadas.|done|urgent|Fase 0,Auth",
+  "F0 · Login con Google|Activar proveedor Google en Supabase y botón en /auth.|pending|high|Fase 0,Auth",
+  "F0 · Tests de aislamiento entre boxes|Comprobar que un socio nunca ve datos de otro box.|pending|urgent|Fase 0,Seguridad",
+  "F0 · RGPD y privacy by design|Registro de tratamientos, DPA por box, minimización.|pending|high|Fase 0,Legal",
+  "F0 · CI/CD, entornos y monitorización|Entornos separados, logs y alertas.|pending|medium|Fase 0,Infra",
+  "F1 · Roles reales y box activo|Roles desde tenant_members/platform_roles, selector de box.|done|urgent|Fase 1,Multi-tenant",
+  "F1 · Adhesión con código (directa o con aprobación)|Solicitudes pendientes para el admin.|done|high|Fase 1,Onboarding",
+  "F1 · Biblioteca de ejercicios del box|Ejercicios propios ligados a un RM.|done|urgent|Fase 1,Clases",
+  "F1 · WOD con kilos según RM|% del RM redondeado al disco del box.|done|urgent|Fase 1,Clases",
+  "F1 · RMs del atleta en base de datos|personal_records por usuario.|done|high|Fase 1,Atleta",
+  "F1 · Tutorial guiado de bienvenida|Primeros pasos tras unirse a un box.|pending|medium|Fase 1,Onboarding",
+  "F1 · Tres calendarios|Público, socio (filtrado por cuota) y staff.|in_progress|high|Fase 1,Calendario",
+  "F1 · Cuotas reales (user_memberships)|Sustituir la cuota demo y aplicar reglas por actividad.|pending|urgent|Fase 1,Cuotas",
+  "F1 · Pagos: suscripciones, facturas y devoluciones (Stripe)|Conectar la consola de facturas a cobros reales.|pending|high|Fase 1,Pagos",
+  "F1 · Recuperar y cambiar contraseña (usuario y admin)|Flujo de reset por email.|pending|high|Fase 1,Auth",
+  "F1 · Notificaciones email + centro en la app|Recordatorios, riesgo de cancelación, avisos admin.|pending|high|Fase 1,Notificaciones",
+  "F2 · Asistencia voy/dudas/voy seguro|Con aforo, mínimo y lista de espera.|done|urgent|Fase 2,Clases",
+  "F2 · Cancelación automática por mínimo|Tarea programada cada 15 min. Falta programar la llamada.|in_progress|urgent|Fase 2,Jobs",
+  "F2 · Reservas de instalaciones|Pistas, sauna; aceptación manual o automática.|pending|medium|Fase 2,Instalaciones",
+  "F2 · Cierres del gym bloquean calendario|Correlación de cierres con clases e instalaciones.|pending|medium|Fase 2,Calendario",
+  "F3 · Eventos y carreras|Calendario público, apuntarse, busco pareja.|pending|low|Fase 3,Comunidad",
+  "F4 · Hardening, caché, WAF y rate limiting|Revisión ISO 27001.|pending|low|Fase 4,Seguridad",
+  "F5 · SEO, branding y media kits||pending|low|Fase 5,Growth",
+  "F6 · Chat light por evento||pending|low|Fase 6,Comunidad",
+  "F7 · Apps nativas e integraciones||pending|low|Fase 7,Escalado",
+  "Abierto · Pricing, KPIs y unit economics|Definir precios, métricas de éxito y costes (sección 9 del documento).|pending|high|Negocio",
+].map((r, i) => { const [title = "", description = "", status = "pending", priority = "medium", tags = ""] = r.split("|"); return { id: `r${i + 1}`, title, description, status: status as RoadmapItem["status"], priority: priority as NonNullable<RoadmapItem["priority"]>, tags: tags.split(",").filter(Boolean), notes: "", due: null, sort_order: i + 1 }; });

@@ -5,17 +5,17 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useLocalState } from "@/lib/data/local-store";
 import { ACTIVITY_SERIES, INVOICES, PLATFORM_USERS, SAAS_PLANS, TENANTS_OPS, computeMrr, fmtEUR, invoiceTotals, type Invoice, type PlatformUser, type TenantOps } from "@/lib/data/platform";
-import { isPlatformRole, useSession } from "@/lib/auth/session";
+import { useSession } from "@/lib/auth/session";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_authenticated/metrics")({ head: pageHead("Métricas", "Métricas avanzadas de negocio y uso de la plataforma."), component: Metrics });
 
 function Metrics() {
-  const { role } = useSession();
+  const { platformRole } = useSession();
   const [tenants] = useLocalState<TenantOps[]>("bf.ops.tenants", TENANTS_OPS);
   const [invoices] = useLocalState<Invoice[]>("bf.ops.invoices", INVOICES);
   const [users] = useLocalState<PlatformUser[]>("bf.ops.users", PLATFORM_USERS);
-  if (!isPlatformRole(role)) return <Navigate to="/dashboard" />;
+  if (!platformRole) return <Navigate to="/dashboard" />;
   const mrr = computeMrr(tenants); const active = tenants.filter((t) => t.status === "active");
   const tot = invoiceTotals(invoices); const billed = tot.paid + tot.failed + tot.pending;
   const members = tenants.reduce((a, t) => a + t.members, 0);

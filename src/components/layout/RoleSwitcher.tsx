@@ -1,18 +1,25 @@
-import { useSession } from "@/lib/auth/session";
-import type { AppRole } from "@/lib/domain/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNavigate } from "@tanstack/react-router";
+import { useSession } from "@/lib/auth/session";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const LABELS: Record<AppRole, string> = { athlete: "Atleta", coach: "Coach", admin: "Admin del box", super_admin: "Super Admin", developer: "Developer" };
+const ROLE: Record<string, string> = { athlete: "Atleta", coach: "Coach", admin: "Admin" };
 
-/** Selector de rol de demostración. Eliminar cuando los roles vengan de tenant_members / platform_roles. */
+/** Selector de contexto: box activo (si perteneces a varios) o consola de plataforma. Roles reales de la base de datos. */
 export function RoleSwitcher({ className }: { className?: string }) {
-  const { role, setRole } = useSession();
+  const { memberships, platformRole, tenantId, view, setTenantId, setView } = useSession();
   const navigate = useNavigate();
+  if (memberships.length + (platformRole ? 1 : 0) < 2) return null;
+  const value = view === "console" ? "console" : tenantId ?? "";
   return (
-    <Select value={role} onValueChange={(v) => { const r = v as AppRole; setRole(r); navigate({ to: r === "super_admin" || r === "developer" ? "/platform" : "/dashboard" }); }}>
-      <SelectTrigger className={className} aria-label="Rol de demostración"><SelectValue /></SelectTrigger>
-      <SelectContent>{(Object.keys(LABELS) as AppRole[]).map((r) => <SelectItem key={r} value={r}>Demo: {LABELS[r]}</SelectItem>)}</SelectContent>
+    <Select value={value} onValueChange={(v) => {
+      if (v === "console") { setView("console"); navigate({ to: "/platform" }); }
+      else { setTenantId(v); setView("box"); navigate({ to: "/dashboard" }); }
+    }}>
+      <SelectTrigger className={className} aria-label="Cambiar de box"><SelectValue /></SelectTrigger>
+      <SelectContent>
+        {memberships.map((m) => <SelectItem key={m.tenant_id} value={m.tenant_id}>{m.tenant_name} · {ROLE[m.role]}</SelectItem>)}
+        {platformRole && <SelectItem value="console">Consola plataforma</SelectItem>}
+      </SelectContent>
     </Select>
   );
 }

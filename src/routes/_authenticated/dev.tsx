@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ROADMAP_SEED } from "@/lib/data/mock";
 import { useLocalState } from "@/lib/data/local-store";
 import { PRIORITIES, duplicateTask, moveTask, sortTasks } from "@/lib/data/tasks";
-import { isPlatformRole, useSession } from "@/lib/auth/session";
+import { useSession } from "@/lib/auth/session";
 import type { RoadmapItem, RoadmapStatus, TaskPriority } from "@/lib/domain/types";
 import { pageHead } from "@/lib/seo";
 import { cn } from "@/lib/utils";
@@ -25,14 +25,14 @@ const prioLabel = (p?: TaskPriority) => PRIORITIES.find((x) => x.p === (p ?? "me
 export const Route = createFileRoute("/_authenticated/dev")({ head: pageHead("Dev / Roadmap", "Tareas de la plataforma con prioridades."), component: Dev });
 
 function Dev() {
-  const { role } = useSession();
-  const [items, setItems] = useLocalState<RoadmapItem[]>("bf.roadmap", ROADMAP_SEED);
+  const { platformRole } = useSession();
+  const [items, setItems] = useLocalState<RoadmapItem[]>("bf.roadmap.v2", ROADMAP_SEED);
   const [title, setTitle] = useState("");
   const [q, setQ] = useState("");
   const [prio, setPrio] = useState<"all" | TaskPriority>("all");
   const [sortMode, setSortMode] = useState<"priority" | "manual">("priority");
   const [editing, setEditing] = useState<RoadmapItem | null>(null);
-  if (!isPlatformRole(role)) return <Navigate to="/dashboard" />;
+  if (!platformRole) return <Navigate to="/dashboard" />;
 
   const save = (it: RoadmapItem) => setItems(items.some((i) => i.id === it.id) ? items.map((i) => (i.id === it.id ? it : i)) : [...items, it]);
   const add = (e: FormEvent) => { e.preventDefault(); if (!title.trim()) return; save({ id: crypto.randomUUID(), title: title.trim(), description: "", status: "pending", priority: "medium", tags: [], notes: "", sort_order: Math.max(0, ...items.map((i) => i.sort_order)) + 1 }); setTitle(""); };

@@ -1,17 +1,71 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Badge } from "@/components/ui/badge";
-import { MEMBERS, PLANS } from "@/lib/data/mock";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { useSession } from "@/lib/auth/session";
+import type { TenantRole } from "@/lib/domain/types";
 import { pageHead } from "@/lib/seo";
 
-export const Route = createFileRoute("/_authenticated/admin/members")({ head: pageHead("Socios", "Socios del box."), component: Members });
+export const Route = createFileRoute("/_authenticated/admin/members")({ head: pageHead("Socios", "Socios, solicitudes y códigos del box."), component: Members });
+const ROLE: Record<TenantRole, string> = { athlete: "Atleta", coach: "Coach", admin: "Admin" };
+const ok = <T,>(r: { error: unknown; data: T | null }) => { if (r.error) throw r.error; return r.data as T; };
+
 function Members() {
+  const { tenantId, role, user } = useSession();
+  const qc = useQueryClient();
+  const isAdmin = role === "admin";
+  const { data } = useQuery({
+    queryKey: ["members", tenantId], enabled: !!tenantId,
+    queryFn: async () => {
+      const members = ok(await supabase.from("tenant_members").select("id, user_id, role").eq("tenant_id", tenantId!));
+      const requests = ok(await supabase.from("tenant_join_requests").select("id, user_id, role, created_at").eq("tenant_id", tenantId!).eq("status", "pending"));
+      const invites = ok(await supabase.from("tenant_invites").select("id, code, requires_approval, uses").eq("tenant_id", tenantId!));
+      const ids = [...members.map((m) => m.user_id), ...requests.map((r) => r.user_id)];
+      const profiles = ids.length ? ok(await supabase.from("profiles").select("id, full_name").in("id", ids)) : [];
+      const name = Object.fromEntries(profiles.map((p) => [p.id, p.full_name ?? "Sin nombre"]));
+      return { members, requests, invites, name };
+    },
+  });
+  const inv = () => qc.invalidateQueries({ queryKey: ["members"] });
+  const review = useMutation({ mutationFn: async (v: { id: string; approve: boolean }) => ok(await supabase.rpc("review_join_request", { _id: v.id, _approve: v.approve })), onSuccess: (_d, v) => { toast.success(v.approve ? "Socio aceptado" : "Solicitud rechazada"); inv(); } });
+  const setRole = useMutation({ mutationFn: async (v: { id: string; role: TenantRole }) => ok(await supabase.from("tenant_members").update({ role: v.role }).eq("id", v.id)), onSuccess: inv, onError: (e) => toast.error(String(e)) });
+  const remove = useMutation({ mutationFn: async (id: string) => ok(await supabase.from("tenant_members").delete().eq("id", id)), onSuccess: () => { toast.success("Socio dado de baja del box"); inv(); } });
+  const approval = useMutation({ mutationFn: async (v: { id: string; on: boolean }) => ok(await supabase.from("tenant_invites").update({ requires_approval: v.on }).eq("id", v.id)), onSuccess: inv });
+
   return (
     <AppShell title="Socios">
-      <div className="space-y-2">{MEMBERS.map((m) => (
+      {!!data?.requests.length && <section className="mb-6">
+        <h2 className="mb-2 font-semibold">Solicitudes pendientes ({data.requests.length})</h2>
+        <div className="space-y-2">{data.requests.map((r) => (
+          <div key={r.id} className="flex items-center justify-between rounded-lg border border-primary/50 bg-card px-4 py-3">
+            <span className="font-medium">{data.name[r.user_id] ?? "Nuevo usuario"}</span>
+            {isAdmin && <span className="flex gap-2"><Button size="sm" onClick={() => review.mutate({ id: r.id, approve: true })}>Aceptar</Button><Button size="sm" variant="ghost" onClick={() => review.mutate({ id: r.id, approve: false })}>Rechazar</Button></span>}
+          </div>))}</div></section>}
+
+      {isAdmin && <section className="mb-6 rounded-xl border border-border bg-card p-4">
+        <h2 className="mb-2 font-semibold">Códigos de acceso</h2>
+        {data?.invites.map((i) => (
+          <div key={i.id} className="flex items-center justify-between py-1.5 text-sm">
+            <span><span className="font-mono text-lg text-primary">{i.code}</span> <span className="text-muted-foreground">· {i.uses} usos</span></span>
+            <label className="flex items-center gap-2">Requiere aprobación<Switch checked={i.requires_approval} onCheckedChange={(on) => approval.mutate({ id: i.id, on })} /></label>
+          </div>))}
+      </section>}
+
+      <h2 className="mb-2 font-semibold">Socios ({data?.members.length ?? 0})</h2>
+      <div className="space-y-2">{data?.members.map((m) => (
         <div key={m.id} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
-          <div className="min-w-0"><p className="truncate font-medium">{m.name}</p><p className="truncate text-xs text-muted-foreground">{m.email}</p></div>
-          <div className="flex shrink-0 gap-1.5"><Badge variant="secondary">{m.role}</Badge><Badge variant={m.plan_id ? "outline" : "destructive"}>{PLANS.find((p) => p.id === m.plan_id)?.name ?? "Sin cuota"}</Badge></div>
+          <p className="min-w-0 truncate font-medium">{data.name[m.user_id] ?? "Sin nombre"}{m.user_id === user?.id && " (tú)"}</p>
+          <div className="flex shrink-0 items-center gap-2">
+            {isAdmin && m.user_id !== user?.id ? <>
+              <Select value={m.role} onValueChange={(v) => setRole.mutate({ id: m.id, role: v as TenantRole })}><SelectTrigger className="h-8 w-28"><SelectValue /></SelectTrigger><SelectContent>{Object.entries(ROLE).map(([k, l]) => <SelectItem key={k} value={k}>{l}</SelectItem>)}</SelectContent></Select>
+              <Button size="sm" variant="ghost" onClick={() => confirm("¿Dar de baja del box?") && remove.mutate(m.id)}>Baja</Button></>
+              : <Badge variant="secondary">{ROLE[m.role]}</Badge>}
+          </div>
         </div>))}</div>
     </AppShell>
   );
