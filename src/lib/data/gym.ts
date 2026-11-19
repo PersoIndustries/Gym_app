@@ -19,8 +19,8 @@ export const myPlanQuery = (tenant: string | null, user: string | undefined) => 
     const plan = rows[0]?.membership_plans;
     if (!plan) return null;
     const windows = Array.isArray(plan.facility_windows) ? plan.facility_windows.flatMap(w => {
-      if (!w || typeof w !== "object" || Array.isArray(w) || typeof w.weekday !== "number" || typeof w.from !== "string" || typeof w.to !== "string") return [];
-      return [{weekday:w.weekday,from:w.from,to:w.to}];
+      if (!w || typeof w !== "object" || Array.isArray(w) || typeof w["weekday"] !== "number" || typeof w["from"] !== "string" || typeof w["to"] !== "string") return [];
+      return [{weekday:w["weekday"],from:w["from"],to:w["to"]}];
     }) : [];
     return { ...plan, facility_windows: windows } satisfies MembershipPlan;
   },
