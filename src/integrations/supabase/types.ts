@@ -837,6 +837,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _gen_week: {
+        Args: { _tenant: string; _week_start: string }
+        Returns: number
+      }
       book_class: { Args: { _class: string; _intent: string }; Returns: string }
       cancel_underfilled_classes: { Args: never; Returns: number }
       class_attendance: {

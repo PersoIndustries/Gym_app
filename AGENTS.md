@@ -32,7 +32,9 @@ use the editor.
 ## Project rules
 - Every tenant-owned table carries `tenant_id` and is protected by RLS via `is_tenant_member`/`has_tenant_role`; why: real multi-tenancy from day one.
 - Tenant roles live in `tenant_members`, platform roles in `platform_roles`, never on profiles; why: prevents privilege escalation.
-- Screens read data only through `src/lib/data/*` (currently mock/localStorage); why: swapping to Supabase must not touch UI.
+- Screens read data only through `src/lib/data/*`; box data (classes, WODs, exercises, RMs, members) is real Supabase via `box.ts`, platform ops/billing still mock; why: swapping must not touch UI.
+- Roles and active box come from `SessionProvider` reading `tenant_members`/`platform_roles`; never a client-chosen role; why: real multi-tenancy.
+- Capacity/waitlist, booking and auto-cancel run in security-definer SQL functions; pure mirrors in `src/lib/access/attendance.ts` and `src/lib/training/weights.ts` are tested; why: one source of truth, testable UI.
 - Athlete/box-staff pages use `AppShell` (mobile-first); super admin/dev pages use `ConsoleShell` (web-first); why: different audiences and devices.
 - Membership access rules live in the pure `src/lib/access/membership.ts`; why: reusable and testable.
 - Architecture notes and Supabase migration steps: `docs/ARCHITECTURE.md`.

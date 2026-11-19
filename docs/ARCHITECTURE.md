@@ -6,9 +6,11 @@
 - Alta en un box: `rpc('join_tenant_with_code', { _code })` valida `tenant_invites` (caducidad, usos).
 
 ## Estado actual
-- Auth: Supabase Auth real (email + contraseña). Páginas privadas bajo `src/routes/_authenticated/`.
-- Datos: mock en `src/lib/data/mock.ts`; reservas, RMs y roadmap en localStorage (`useLocalState`).
-- Rol: selector "Demo" (`RoleSwitcher`) hasta leer `tenant_members`/`platform_roles`.
+- Auth: Supabase Auth real. Roles reales (`tenant_members`, `platform_roles`); `RoleSwitcher` solo cambia de box / consola.
+- Reales: clases, plantillas, WOD (`wod_items`), ejercicios, RMs, asistencia, socios, solicitudes, códigos, ajustes.
+- RPCs: `book_class`, `leave_class`, `class_attendance`, `class_attendees`, `generate_week_classes`, `review_join_request`, `create_tenant`, `cancel_underfilled_classes` (solo service role).
+- Cancelación automática: `POST /api/public/cron/cancel-classes` con `Authorization: Bearer $CRON_SECRET` cada 15 min.
+- Siguen mock: cuota del socio (demo), facturas/operaciones de plataforma, métricas, roadmap (localStorage).
 - Reglas de cuota: `src/lib/access/membership.ts` (`canAccessClass`, con tests).
 
 ## Pasos para pasar a datos reales
