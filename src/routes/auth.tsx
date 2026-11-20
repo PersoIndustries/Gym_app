@@ -26,7 +26,7 @@ function AuthPage() {
   const [pendingCode, setPendingCode] = useState<string | null>(null);
   const { data: brand } = useQuery(brandingByCodeQuery(pendingCode));
   useApplyTheme(brand?.theme_preset);
-  const next = () => (sessionStorage.getItem("bf.pendingCode") ? "/join" : "/dashboard") as "/join" | "/dashboard";
+  const next = () => (sessionStorage.getItem("bf.next") === "/empezar" ? "/empezar" : sessionStorage.getItem("bf.pendingCode") ? "/join" : "/dashboard") as "/join" | "/dashboard" | "/empezar";
   // Vuelta de Google/OAuth o sesión ya abierta: continuar al destino guardado.
   useEffect(() => {
     setPendingCode(sessionStorage.getItem("bf.pendingCode"));
@@ -48,7 +48,7 @@ function AuthPage() {
       const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin + "/join", data: { full_name: name } } });
       setLoading(false);
       if (error) { toast.error("No hemos podido crear la cuenta", { description: error.message }); return; }
-      if (data.session) navigate({ to: "/join" }); else setSent(true);
+      if (data.session) navigate({ to: next() === "/dashboard" ? "/join" : next() }); else setSent(true);
     }
   }
 

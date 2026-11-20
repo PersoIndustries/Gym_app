@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DevHomeRouteImport } from './routes/dev-home'
+import { Route as EmpezarRouteImport } from './routes/empezar'
+import { Route as PreciosRouteImport } from './routes/precios'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedCreateGymRouteImport } from './routes/_authenticated/create-gym'
@@ -48,6 +51,21 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevHomeRoute = DevHomeRouteImport.update({
+  id: '/dev-home',
+  path: '/dev-home',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmpezarRoute = EmpezarRouteImport.update({
+  id: '/empezar',
+  path: '/empezar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreciosRoute = PreciosRouteImport.update({
+  id: '/precios',
+  path: '/precios',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -176,6 +194,9 @@ const ApiPublicCronCancelClassesRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/dev-home': typeof DevHomeRoute
+  '/empezar': typeof EmpezarRoute
+  '/precios': typeof PreciosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/calendar': typeof AuthenticatedCalendarRoute
   '/create-gym': typeof AuthenticatedCreateGymRoute
@@ -203,6 +224,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/dev-home': typeof DevHomeRoute
+  '/empezar': typeof EmpezarRoute
+  '/precios': typeof PreciosRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/create-gym': typeof AuthenticatedCreateGymRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -231,6 +255,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/dev-home': typeof DevHomeRoute
+  '/empezar': typeof EmpezarRoute
+  '/precios': typeof PreciosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/create-gym': typeof AuthenticatedCreateGymRoute
@@ -260,6 +287,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/dev-home'
+    | '/empezar'
+    | '/precios'
     | '/admin'
     | '/calendar'
     | '/create-gym'
@@ -287,6 +317,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/dev-home'
+    | '/empezar'
+    | '/precios'
     | '/calendar'
     | '/create-gym'
     | '/dashboard'
@@ -314,6 +347,9 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/dev-home'
+    | '/empezar'
+    | '/precios'
     | '/_authenticated/admin'
     | '/_authenticated/calendar'
     | '/_authenticated/create-gym'
@@ -343,6 +379,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DevHomeRoute: typeof DevHomeRoute
+  EmpezarRoute: typeof EmpezarRoute
+  PreciosRoute: typeof PreciosRoute
   BCodeRoute: typeof BCodeRoute
   EventosIdRoute: typeof EventosIdRoute
   EventosIndexRoute: typeof EventosIndexRoute
@@ -370,6 +409,27 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dev-home': {
+      id: '/dev-home'
+      path: '/dev-home'
+      fullPath: '/dev-home'
+      preLoaderRoute: typeof DevHomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/empezar': {
+      id: '/empezar'
+      path: '/empezar'
+      fullPath: '/empezar'
+      preLoaderRoute: typeof EmpezarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/precios': {
+      id: '/precios'
+      path: '/precios'
+      fullPath: '/precios'
+      preLoaderRoute: typeof PreciosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -596,6 +656,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DevHomeRoute: DevHomeRoute,
+  EmpezarRoute: EmpezarRoute,
+  PreciosRoute: PreciosRoute,
   BCodeRoute: BCodeRoute,
   EventosIdRoute: EventosIdRoute,
   EventosIndexRoute: EventosIndexRoute,

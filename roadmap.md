@@ -18,10 +18,12 @@
 # Entrada, alta de gimnasio y marca
 - [x] Temas cerrados por box (lima actual, amarillo, rojo, azul) + logo.
 - [x] Acceso del socio tematizado en /b/código y /auth.
-- [ ] Landing SaaS B2B en la raíz (para dueños de box).
-- [ ] Precios y planes SaaS (Starter/Pro/Elite, prueba 14 días).
-- [ ] Asistente de alta de gimnasio autoservicio (cuenta → box → plan → marca).
+- [x] Landing SaaS B2B en la raíz (para dueños de box).
+- [x] Precios y planes SaaS (Starter/Pro/Elite, prueba 14 días).
+- [x] Asistente de alta de gimnasio autoservicio (cuenta → box → plan → marca).
 - [ ] Suscripción SaaS real del box (pasarela de pago).
 - [ ] Checklist inicial del admin, QR del enlace y subida de logo.
 - [ ] Foto post-clase con el WOD superpuesto: recorte vertical, filtro, logos del gym y de la clase, descarga para redes.
 - [ ] Logo por tipo de clase (admin) visible en clase, listado y calendario; simplificar el calendario.
+# Tareas
+- [x] Copiar tareas al portapapeles (todas, filtradas, seleccionadas) y repaso de hechas.

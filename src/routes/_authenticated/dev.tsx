@@ -34,12 +34,17 @@ function Dev() {
   const [prio, setPrio] = useState<"all" | TaskPriority>("all");
   const [sortMode, setSortMode] = useState<"priority" | "manual">("priority");
   const [editing, setEditing] = useState<RoadmapItem | null>(null);
+  const [selected, setSelected] = useState<string[]>([]);
+  // Las tareas del plan marcadas como hechas se actualizan si en este navegador siguen con el título original.
+  useEffect(() => { setItems((cur) => { let changed = false; const next = cur.map((c) => { const seed = ROADMAP_SEED.find((r) => r.id === c.id && r.title === c.title); if (seed?.status === "done" && c.status !== "done") { changed = true; return { ...c, status: "done" as const }; } return c; }); return changed ? next : cur; }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (!platformRole) return <Navigate to="/dashboard" />;
 
   const save = (it: RoadmapItem) => setItems(items.some((i) => i.id === it.id) ? items.map((i) => (i.id === it.id ? it : i)) : [...items, it]);
   const add = (e: FormEvent) => { e.preventDefault(); if (!title.trim()) return; save({ id: crypto.randomUUID(), title: title.trim(), description: "", status: "pending", priority: "medium", tags: [], notes: "", sort_order: Math.max(0, ...items.map((i) => i.sort_order)) + 1 }); setTitle(""); };
   const copy = (i: RoadmapItem) => { setItems([...items, duplicateTask(i, items, crypto.randomUUID())]); toast.success("Tarea duplicada"); };
   const copyText = async (i: RoadmapItem) => { await navigator.clipboard.writeText(`[${prioLabel(i.priority)}] ${i.title}\n${i.description}${i.notes ? `\n\nNotas: ${i.notes}` : ""}`); toast.success("Copiada al portapapeles"); };
+  const copyMany = async (list: RoadmapItem[], label: string) => { if (!list.length) { toast.error("No hay tareas para copiar"); return; } await navigator.clipboard.writeText(tasksToText(list)); toast.success(`${list.length} tareas copiadas (${label})`); };
+  const toggleSel = (id: string) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   const remove = (id: string) => { if (confirm("¿Eliminar esta tarea?")) setItems(items.filter((i) => i.id !== id)); };
 
   const visible = items.filter((i) => (prio === "all" || (i.priority ?? "medium") === prio) && (i.title + i.description + (i.tags ?? []).join(" ")).toLowerCase().includes(q.toLowerCase()));
@@ -56,6 +61,11 @@ function Dev() {
           <SelectContent><SelectItem value="all">Todas las prioridades</SelectItem>{PRIORITIES.map((p) => <SelectItem key={p.p} value={p.p}>{p.label}</SelectItem>)}</SelectContent></Select>
         <Select value={sortMode} onValueChange={(v) => setSortMode(v as typeof sortMode)}><SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
           <SelectContent><SelectItem value="priority">Ordenar por prioridad</SelectItem><SelectItem value="manual">Orden manual</SelectItem></SelectContent></Select>
+        <span className="ml-auto flex gap-2">
+          <Button variant="secondary" size="sm" onClick={() => copyMany(sortTasks(items), "todas")}><Copy />Copiar todas</Button>
+          <Button variant="secondary" size="sm" onClick={() => copyMany(sortTasks(visible), "filtradas")}><Copy />Copiar filtradas</Button>
+          <Button size="sm" disabled={!selected.length} onClick={() => copyMany(items.filter((i) => selected.includes(i.id)), "seleccionadas")}><Copy />Copiar seleccionadas ({selected.length})</Button>
+        </span>
       </div>
       <div className="grid gap-5 lg:grid-cols-3">
         {COLS.map(({ s, label }) => (
@@ -64,6 +74,7 @@ function Dev() {
             <div className="space-y-2">{ordered(s).map((i) => (
               <article key={i.id} className="group rounded-lg border border-border bg-card p-4">
                 <div className="flex items-start justify-between gap-2">
+                  <input type="checkbox" aria-label="Seleccionar tarea" className="mt-1 accent-primary" checked={selected.includes(i.id)} onChange={() => toggleSel(i.id)} />
                   <button onClick={() => setEditing(i)} className="text-left font-medium hover:text-primary">{i.title}</button>
                   <span className={cn("shrink-0 rounded px-2 py-0.5 text-xs font-semibold", PRIO_CLASS[i.priority ?? "medium"])}>{prioLabel(i.priority)}</span>
                 </div>
@@ -85,6 +96,12 @@ function Dev() {
       {editing && <EditDialog item={editing} onClose={() => setEditing(null)} onSave={(it) => { save(it); setEditing(null); toast.success("Tarea guardada"); }} />}
     </ConsoleShell>
   );
+}
+
+const STATUS_LABEL: Record<RoadmapStatus, string> = { pending: "Pendiente", in_progress: "En progreso", done: "Hecho" };
+/** Texto plano para pegar las tareas en el chat, agrupadas por estado. */
+function tasksToText(list: RoadmapItem[]) {
+  return COLS.map(({ s }) => { const col = list.filter((i) => i.status === s); if (!col.length) return ""; return `## ${STATUS_LABEL[s]} (${col.length})\n` + col.map((i) => `- [${prioLabel(i.priority)}] ${i.title}${i.description ? `\n  ${i.description}` : ""}${i.notes ? `\n  Notas: ${i.notes}` : ""}${i.tags?.length ? `\n  Etiquetas: ${i.tags.join(", ")}` : ""}`).join("\n"); }).filter(Boolean).join("\n\n");
 }
 
 function IconBtn({ t, on, children }: { t: string; on: () => void; children: React.ReactNode }) {
