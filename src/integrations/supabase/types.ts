@@ -731,6 +731,7 @@ export type Database = {
           hide_attendance: boolean
           id: string
           preferred_level_name: string | null
+          show_alias: boolean
           updated_at: string
         }
         Insert: {
@@ -742,6 +743,7 @@ export type Database = {
           hide_attendance?: boolean
           id: string
           preferred_level_name?: string | null
+          show_alias?: boolean
           updated_at?: string
         }
         Update: {
@@ -753,6 +755,7 @@ export type Database = {
           hide_attendance?: boolean
           id?: string
           preferred_level_name?: string | null
+          show_alias?: boolean
           updated_at?: string
         }
         Relationships: []

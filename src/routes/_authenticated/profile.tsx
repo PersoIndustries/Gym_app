@@ -10,7 +10,7 @@ import { MAIN_LIFTS } from "@/lib/data/mock";
 import { myPlanQuery, saveProfile } from "@/lib/data/gym";
 import type { FacilityWindow } from "@/lib/access/membership";
 import { WEEKDAYS } from "@/lib/data/box";
-import { myRmsQuery, saveRm, myProfileQuery, setAttendancePrivacy } from "@/lib/data/box";
+import { myRmsQuery, saveRm, myProfileQuery, setAttendancePrivacy, setShowAlias } from "@/lib/data/box";
 import { levelsQuery, setPreferredLevel, myExerciseLevelsQuery, setExerciseLevel } from "@/lib/data/levels";
 import { exercisesQuery } from "@/lib/data/box";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -34,6 +34,7 @@ function Profile() {
   const { data: rms = {} } = useQuery(myRmsQuery());
   const { data: prof } = useQuery(myProfileQuery(user?.id));
   const privacy = useMutation({ mutationFn: async (hidden: boolean) => { if (!user) throw new Error("Inicia sesión"); await setAttendancePrivacy(user.id, hidden); }, onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); qc.invalidateQueries({ queryKey: ["class"] }); }, onError: () => toast.error("No se pudo guardar tu privacidad") });
+  const alias = useMutation({ mutationFn: async (v: boolean) => { if (!user) throw new Error("Inicia sesión"); await setShowAlias(user.id, v); }, onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); qc.invalidateQueries({ queryKey: ["class"] }); }, onError: () => toast.error("No se pudo guardar") });
   const { data: levels = [] } = useQuery(levelsQuery(tenantId));
   const level = useMutation({ mutationFn: (v: string) => setPreferredLevel(user!.id, v === "none" ? null : v), onSuccess: () => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success("Nivel guardado"); }, onError: () => toast.error("No se pudo guardar el nivel") });
   const { data: exercises = [] } = useQuery(exercisesQuery(tenantId));
@@ -76,7 +77,8 @@ function Profile() {
       </div>
         </TabsContent>
         <TabsContent value="privacy">
-      <div className="my-5 flex items-center justify-between gap-4 border-y border-border py-4"><div className="flex items-center gap-1"><span>Ocultar mi asistencia</span><InfoHelp label="Privacidad de asistencia">Seguirás apareciendo y ocupando una plaza, pero los demás verán Anónimo y un icono de interrogación en lugar de tu nombre y foto.</InfoHelp></div><Switch aria-label="Ocultar mi asistencia" checked={prof?.hide_attendance ?? false} disabled={!prof || privacy.isPending} onCheckedChange={v => privacy.mutate(v)} /></div>
+      <div className="my-5 flex items-center justify-between gap-4 border-y border-border py-4"><div className="flex items-center gap-1"><span>Ocultar mi asistencia</span><InfoHelp label="Privacidad de asistencia">Seguirás apareciendo en la lista, pero los demás verán Anónimo y un icono de interrogación en lugar de tu nombre y foto.</InfoHelp></div><Switch aria-label="Ocultar mi asistencia" checked={prof?.hide_attendance ?? false} disabled={!prof || privacy.isPending} onCheckedChange={v => privacy.mutate(v)} /></div>
+          <div className="mb-5 flex items-center justify-between gap-4 border-b border-border pb-4"><div className="flex items-center gap-1"><span>Mostrar mi alias en lugar del nombre</span><InfoHelp label="Alias o nombre">Los demás atletas verán tu alias. Profesores y administradores verán tu alias junto a tu nombre completo.</InfoHelp></div><Switch aria-label="Mostrar mi alias" checked={prof?.show_alias ?? false} disabled={!prof || !prof.alias || alias.isPending} onCheckedChange={v => alias.mutate(v)} /></div>
           <PasswordForm /><HelpForm />
         </TabsContent>
         {staff && <TabsContent value="stats"><CoachStats /></TabsContent>}

@@ -7,6 +7,6 @@ export function monthSummary(classes: SummaryClass[], counts: Record<string, Sum
   const active = classes.filter(c => c.status !== "cancelled");
   const going = active.reduce((s, c) => s + (counts[c.id]?.going ?? 0), 0);
   const seats = active.reduce((s, c) => s + c.capacity, 0);
-  const taken = active.reduce((s, c) => s + (counts[c.id]?.going ?? 0) + (counts[c.id]?.maybe ?? 0), 0);
+  const taken = active.reduce((s, c) => s + (counts[c.id]?.going ?? 0), 0);
   return { total: classes.length, done: done.length, cancelled, avgGoing: active.length ? Math.round((going / active.length) * 10) / 10 : 0, occupancy: seats ? Math.round((taken / seats) * 100) : 0 };
 }

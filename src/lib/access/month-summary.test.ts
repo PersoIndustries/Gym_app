@@ -8,6 +8,6 @@ describe("resumen mensual", () => {
       { id: "b", status: "scheduled", capacity: 10, ends_at: "2026-11-25T10:00:00Z" },
       { id: "c", status: "cancelled", capacity: 10, ends_at: "2026-11-05T10:00:00Z" },
     ], { a: { going: 6, maybe: 2 }, b: { going: 2, maybe: 0 }, c: { going: 1, maybe: 0 } }, now);
-    expect(r).toEqual({ total: 3, done: 1, cancelled: 1, avgGoing: 4, occupancy: 50 });
+    expect(r).toEqual({ total: 3, done: 1, cancelled: 1, avgGoing: 4, occupancy: 40 });
   });
 });

@@ -14,5 +14,5 @@ export const INTENT_STYLE: Record<Intent, string> = {
   not_going: "border-destructive/25 bg-destructive/10 text-destructive hover:bg-destructive/15",
 };
 export function isUpcomingEnrollment(c: { ends_at: string; status: string }, mine: { intent: string; status: string } | undefined, now = new Date()) {
-  return !!mine && mine.intent !== "not_going" && ["booked", "waitlist"].includes(mine.status) && c.status !== "cancelled" && new Date(c.ends_at) > now;
+  return !!mine && (mine.intent === "maybe" || (mine.intent !== "not_going" && ["booked", "waitlist"].includes(mine.status))) && c.status !== "cancelled" && new Date(c.ends_at) > now;
 }

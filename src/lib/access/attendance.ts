@@ -7,8 +7,8 @@ export interface Counts { going: number; maybe: number; not_going: number; waitl
 
 /** Confirmados = "Voy" (las dudas no cuentan para el mínimo). */
 export const confirmed = (c: Counts) => c.going;
-/** Plazas ocupadas = "Voy" + "Dudas"; "No voy" no ocupa plaza. */
-export const occupied = (c: Counts) => c.going + c.maybe;
+/** Plazas ocupadas = solo "Voy"; "Dudas" y "No voy" no reservan. */
+export const occupied = (c: Counts) => c.going;
 
 /** Se cancela si estamos dentro de la ventana de X horas y no hay mínimo de confirmados. */
 export function shouldAutoCancel(cls: ClassRules, c: Counts, now = new Date()): boolean {
