@@ -26,6 +26,10 @@
 - [ ] Foto post-clase con el WOD superpuesto: recorte vertical, filtro, logos del gym y de la clase, descarga para redes.
 - [ ] Logo por tipo de clase (admin) visible en clase, listado y calendario; simplificar el calendario.
 # Tareas
+- [ ] Cancelación automática cada 15 minutos (SQL), verificar ejecución.
+- [ ] Recuperación por email y cambio de contraseña con contraseña actual.
+- [ ] Logos optimizados en almacenamiento, marca del box y tipos de clase.
+- [ ] Editor de foto vertical post-clase con WOD, filtros, recorte y descarga.
 - [x] Copiar tareas al portapapeles (todas, filtradas, seleccionadas) y repaso de hechas.
 
 ## Códigos, roles y perfil
