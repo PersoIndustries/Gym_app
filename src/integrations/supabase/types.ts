@@ -259,6 +259,7 @@ export type Database = {
           kind: string
           location: string | null
           price_cents: number | null
+          review_note: string | null
           scope: string
           starts_at: string
           status: string
@@ -281,6 +282,7 @@ export type Database = {
           kind?: string
           location?: string | null
           price_cents?: number | null
+          review_note?: string | null
           scope?: string
           starts_at: string
           status?: string
@@ -303,6 +305,7 @@ export type Database = {
           kind?: string
           location?: string | null
           price_cents?: number | null
+          review_note?: string | null
           scope?: string
           starts_at?: string
           status?: string
@@ -564,6 +567,47 @@ export type Database = {
           },
         ]
       }
+      help_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          status: string
+          subject: string
+          tenant_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          status?: string
+          subject: string
+          tenant_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          status?: string
+          subject?: string
+          tenant_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "help_requests_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       membership_plans: {
         Row: {
           allowed_activity_type_ids: string[]
@@ -667,6 +711,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          alias: string | null
           avatar_url: string | null
           created_at: string
           full_name: string | null
@@ -676,6 +721,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          alias?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
@@ -685,6 +731,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          alias?: string | null
           avatar_url?: string | null
           created_at?: string
           full_name?: string | null
@@ -694,6 +741,122 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          active: boolean
+          affiliate_email: string | null
+          affiliate_name: string | null
+          code: string
+          commission_pct: number
+          created_at: string
+          discount_pct: number
+          duration_months: number | null
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          notes: string | null
+          plan_id: string | null
+          updated_at: string
+          uses: number
+        }
+        Insert: {
+          active?: boolean
+          affiliate_email?: string | null
+          affiliate_name?: string | null
+          code: string
+          commission_pct?: number
+          created_at?: string
+          discount_pct?: number
+          duration_months?: number | null
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          notes?: string | null
+          plan_id?: string | null
+          updated_at?: string
+          uses?: number
+        }
+        Update: {
+          active?: boolean
+          affiliate_email?: string | null
+          affiliate_name?: string | null
+          code?: string
+          commission_pct?: number
+          created_at?: string
+          discount_pct?: number
+          duration_months?: number | null
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          notes?: string | null
+          plan_id?: string | null
+          updated_at?: string
+          uses?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_codes_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "saas_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_redemptions: {
+        Row: {
+          billing: string
+          code_id: string
+          created_at: string
+          discount_pct: number
+          id: string
+          owner_id: string
+          plan_id: string
+          price_after_cents: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          billing: string
+          code_id: string
+          created_at?: string
+          discount_pct: number
+          id?: string
+          owner_id: string
+          plan_id: string
+          price_after_cents: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          billing?: string
+          code_id?: string
+          created_at?: string
+          discount_pct?: number
+          id?: string
+          owner_id?: string
+          plan_id?: string
+          price_after_cents?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_redemptions_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promo_redemptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       roadmap_items: {
         Row: {
@@ -982,8 +1145,11 @@ export type Database = {
         Row: {
           billing: string
           created_at: string
+          discount_pct: number
+          discount_until: string | null
           owner_id: string
           plan_id: string
+          promo_code_id: string | null
           status: string
           tenant_id: string
           trial_ends_on: string
@@ -992,8 +1158,11 @@ export type Database = {
         Insert: {
           billing?: string
           created_at?: string
+          discount_pct?: number
+          discount_until?: string | null
           owner_id: string
           plan_id: string
+          promo_code_id?: string | null
           status?: string
           tenant_id: string
           trial_ends_on?: string
@@ -1002,8 +1171,11 @@ export type Database = {
         Update: {
           billing?: string
           created_at?: string
+          discount_pct?: number
+          discount_until?: string | null
           owner_id?: string
           plan_id?: string
+          promo_code_id?: string | null
           status?: string
           tenant_id?: string
           trial_ends_on?: string
@@ -1015,6 +1187,13 @@ export type Database = {
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "saas_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_subscriptions_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
             referencedColumns: ["id"]
           },
           {
@@ -1334,6 +1513,15 @@ export type Database = {
         Args: { _reservation: string; _status: string }
         Returns: undefined
       }
+      check_promo_code: {
+        Args: { _code: string }
+        Returns: {
+          code: string
+          discount_pct: number
+          duration_months: number
+          plan_id: string
+        }[]
+      }
       class_attendance: {
         Args: { _from: string; _tenant: string; _to: string }
         Returns: {
@@ -1355,6 +1543,15 @@ export type Database = {
           user_id: string
         }[]
       }
+      coach_stats: {
+        Args: { _from: string; _tenant: string; _to: string }
+        Returns: {
+          attendees: number
+          capacity: number
+          done: number
+          pending: number
+        }[]
+      }
       create_gym_with_plan: {
         Args: {
           _billing: string
@@ -1366,6 +1563,7 @@ export type Database = {
           _min_attendees: number
           _name: string
           _plan: string
+          _promo?: string
           _requires_approval: boolean
           _rounding: number
           _theme: string

@@ -15,11 +15,18 @@ import { exercisesQuery } from "@/lib/data/box";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useSession } from "@/lib/auth/session";
 import { pageHead } from "@/lib/seo";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { PersonAvatar } from "@/components/PersonAvatar";
+import { supabase } from "@/integrations/supabase/client";
+import { isBoxStaff } from "@/lib/auth/session";
 
 export const Route = createFileRoute("/_authenticated/profile")({ head: pageHead("Perfil", "Tu ficha, tus RMs y tu privacidad."), component: Profile });
 
 function Profile() {
-  const { user, tenantId, tenantName } = useSession();
+  const { user, tenantId, tenantName, role } = useSession();
   const { data: plan } = useQuery(myPlanQuery(tenantId,user?.id));
   const qc = useQueryClient();
   const { data: rms = {} } = useQuery(myRmsQuery());
@@ -39,14 +46,21 @@ function Profile() {
     if (kg !== null && (!Number.isFinite(kg) || kg <= 0)) return;
     if ((rms[lift] ?? null) !== kg) save.mutate({ lift, kg });
   };
+  const staff = isBoxStaff(role);
   return (
     <AppShell title="Perfil">
+      <Tabs defaultValue="me">
+        <TabsList className="mb-5 flex h-auto w-full flex-wrap justify-start">
+          <TabsTrigger value="me">Mi perfil</TabsTrigger><TabsTrigger value="level">Mi nivel</TabsTrigger><TabsTrigger value="privacy">Privacidad y cuenta</TabsTrigger>{staff && <TabsTrigger value="stats">Mis datos</TabsTrigger>}
+        </TabsList>
+        <TabsContent value="me"><AccountForm prof={prof} />
       <section className="rounded-xl border border-border bg-card p-5">
         <p className="font-display text-xl font-bold">{prof?.full_name || (user?.user_metadata?.["full_name"] as string) || "Sin nombre"}</p>
         <p className="text-sm text-muted-foreground">{user?.email}{tenantName ? ` · ${tenantName}` : ""}</p>
         <div className="mt-4"><p className="mb-1.5 text-xs text-muted-foreground">Mi cuota</p><p className="font-semibold text-primary">{plan?.name ?? "Sin cuota activa"}</p>{plan && <><p className="mt-1 text-sm text-muted-foreground">{(plan.price_cents/100).toLocaleString("es-ES")} €/mes · {plan.weekly_class_limit ?? "Sin límite de"} clases semanales</p><p className="mt-2 text-sm">Clases: {plan.allowed_weekdays.map(d=>WEEKDAYS[d]).join(", ")}</p>{Array.isArray(plan.facility_windows) && (plan.facility_windows as FacilityWindow[]).map((w,i)=><p key={i} className="mt-1 text-sm text-muted-foreground">Instalaciones: {WEEKDAYS[w.weekday]} · {w.from}–{w.to}</p>)}</>}</div>
       </section>
-      <label className="my-5 flex items-center justify-between gap-4 border-y border-border py-4"><span>Ocultar mi asistencia</span><Switch checked={prof?.hide_attendance ?? false} disabled={!prof || privacy.isPending} onCheckedChange={v => privacy.mutate(v)} /></label>
+        </TabsContent>
+        <TabsContent value="level">
       {levels.length > 0 && <label className="mb-5 flex items-center justify-between gap-4 border-b border-border pb-4"><span><span className="block">Mi nivel en los WOD</span><span className="text-xs text-muted-foreground">Se resalta en cada ejercicio con niveles.</span></span><Select value={prof?.preferred_level_name ?? "none"} onValueChange={v => level.mutate(v)}><SelectTrigger className="w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Sin preferencia</SelectItem>{levels.map(l => <SelectItem key={l.id} value={l.name}>{l.name}</SelectItem>)}</SelectContent></Select></label>}
       {levels.length > 0 && exercises.length > 0 && <details className="mb-5 border-b border-border pb-4"><summary className="cursor-pointer font-medium">Mi nivel por ejercicio</summary><p className="mt-1 text-xs text-muted-foreground">Si no eliges, se usa tu nivel general.</p><div className="mt-3 space-y-2">{exercises.map(e => <div key={e.id} className="flex items-center justify-between gap-3 text-sm"><span className="min-w-0 break-words">{e.name}</span><Select value={exLevels[e.id] ?? "default"} onValueChange={v => exLevel.mutate({ ex: e.id, level: v })}><SelectTrigger className="w-36 shrink-0" aria-label={`Nivel en ${e.name}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="default">General</SelectItem>{levels.map(l => <SelectItem key={l.id} value={l.name}>{l.name}</SelectItem>)}</SelectContent></Select></div>)}</div></details>}
       <h2 className="mt-6 mb-1 font-semibold">Mis RMs (1RM, kg)</h2>
@@ -59,6 +73,56 @@ function Profile() {
               onChange={(e) => setDraft({ ...draft, [l]: e.target.value.replace(/[^0-9.,]/g, "") })} onBlur={() => commit(l)} />
           </label>))}
       </div>
+        </TabsContent>
+        <TabsContent value="privacy">
+      <label className="my-5 flex items-center justify-between gap-4 border-y border-border py-4"><span>Ocultar mi asistencia</span><Switch checked={prof?.hide_attendance ?? false} disabled={!prof || privacy.isPending} onCheckedChange={v => privacy.mutate(v)} /></label>
+          <PasswordForm /><HelpForm />
+        </TabsContent>
+        {staff && <TabsContent value="stats"><CoachStats /></TabsContent>}
+      </Tabs>
     </AppShell>
   );
+}
+
+type Prof = { full_name: string | null; alias: string | null; avatar_url: string | null } | null | undefined;
+function AccountForm({ prof }: { prof: Prof }) {
+  const { user } = useSession(); const qc = useQueryClient();
+  const [v, setV] = useState({ full_name: "", alias: "", avatar_url: "", email: "" });
+  useEffect(() => { setV({ full_name: prof?.full_name ?? "", alias: prof?.alias ?? "", avatar_url: prof?.avatar_url ?? "", email: user?.email ?? "" }); }, [prof, user?.email]);
+  const save = useMutation({ mutationFn: async () => {
+    if (v.avatar_url && !/^https:\/\/\S+$/.test(v.avatar_url)) throw new Error("La foto debe ser un enlace https");
+    const r = await supabase.from("profiles").update({ full_name: v.full_name.trim() || null, alias: v.alias.trim() || null, avatar_url: v.avatar_url.trim() || null }).eq("id", user!.id); if (r.error) throw r.error;
+    if (v.email.trim() && v.email.trim() !== user?.email) { const e = await supabase.auth.updateUser({ email: v.email.trim() }); if (e.error) throw e.error; return "email"; }
+    return "ok";
+  }, onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success(r === "email" ? "Te hemos enviado un correo para confirmar el nuevo email" : "Perfil guardado"); }, onError: (e) => toast.error(e instanceof Error ? e.message : String(e)) });
+  return <section className="mb-5 rounded-xl border border-border bg-card p-5"><div className="mb-4 flex items-center gap-3"><PersonAvatar name={v.full_name || user?.email || "?"} url={v.avatar_url || null} /><p className="text-sm text-muted-foreground">Tu foto y nombre se ven en las clases.</p></div>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <div><Label>Nombre completo</Label><Input value={v.full_name} onChange={(e) => setV({ ...v, full_name: e.target.value })} /></div>
+      <div><Label>Alias</Label><Input value={v.alias} onChange={(e) => setV({ ...v, alias: e.target.value })} placeholder="Cómo te llaman en el box" /></div>
+      <div><Label>Foto (enlace https)</Label><Input value={v.avatar_url} onChange={(e) => setV({ ...v, avatar_url: e.target.value })} placeholder="https://…" /></div>
+      <div><Label>Correo electrónico</Label><Input type="email" value={v.email} onChange={(e) => setV({ ...v, email: e.target.value })} /></div>
+    </div><Button className="mt-4" disabled={save.isPending} onClick={() => save.mutate()}>Guardar</Button></section>;
+}
+function PasswordForm() {
+  const [a, setA] = useState(""); const [b, setB] = useState("");
+  const save = useMutation({ mutationFn: async () => { if (a.length < 8) throw new Error("Mínimo 8 caracteres"); if (a !== b) throw new Error("Las contraseñas no coinciden"); const r = await supabase.auth.updateUser({ password: a }); if (r.error) throw r.error; }, onSuccess: () => { setA(""); setB(""); toast.success("Contraseña cambiada"); }, onError: (e) => toast.error(e instanceof Error ? e.message : String(e)) });
+  return <section className="mb-5 rounded-xl border border-border bg-card p-5"><h2 className="mb-3 font-semibold">Cambiar contraseña</h2><div className="grid gap-3 sm:grid-cols-2"><Input type="password" placeholder="Nueva contraseña" value={a} onChange={(e) => setA(e.target.value)} /><Input type="password" placeholder="Repítela" value={b} onChange={(e) => setB(e.target.value)} /></div><Button className="mt-3" disabled={!a || save.isPending} onClick={() => save.mutate()}>Cambiar</Button></section>;
+}
+function HelpForm() {
+  const { user, tenantId, tenantName } = useSession(); const [subject, setSubject] = useState(""); const [message, setMessage] = useState("");
+  const send = useMutation({ mutationFn: async () => { const r = await supabase.from("help_requests").insert({ tenant_id: tenantId!, user_id: user!.id, subject: subject.trim(), message: message.trim() }); if (r.error) throw r.error; }, onSuccess: () => { setSubject(""); setMessage(""); toast.success("Solicitud enviada al gimnasio"); }, onError: (e) => toast.error(e instanceof Error ? e.message : String(e)) });
+  if (!tenantId) return null;
+  return <section className="rounded-xl border border-border bg-card p-5"><h2 className="font-semibold">Solicitar ayuda a {tenantName ?? "tu gimnasio"}</h2><p className="mb-3 text-sm text-muted-foreground">Le llega al admin del box.</p><Input placeholder="Asunto" value={subject} onChange={(e) => setSubject(e.target.value)} /><Textarea className="mt-2" placeholder="Cuéntanos qué necesitas" value={message} onChange={(e) => setMessage(e.target.value)} /><Button className="mt-3" disabled={!subject.trim() || !message.trim() || send.isPending} onClick={() => send.mutate()}>Enviar</Button></section>;
+}
+const monthRange = (offset: number) => { const d = new Date(); const from = new Date(d.getFullYear(), d.getMonth() + offset, 1); const to = new Date(d.getFullYear(), d.getMonth() + offset + 1, 1); return { from, to }; };
+function CoachStats() {
+  const { tenantId } = useSession();
+  const { data = [], isError } = useQuery({ queryKey: ["coach-stats", tenantId], enabled: !!tenantId, queryFn: async () => Promise.all([0, -1, -2, -3, -4, -5].map(async (o) => { const { from, to } = monthRange(o); const r = await supabase.rpc("coach_stats", { _tenant: tenantId!, _from: from.toISOString(), _to: to.toISOString() }); if (r.error) throw r.error; return { from, ...(r.data?.[0] ?? { done: 0, pending: 0, attendees: 0, capacity: 0 }) }; })) });
+  const cur = data[0];
+  if (isError) return <p role="alert" className="text-destructive">No se pudieron cargar tus datos.</p>;
+  if (!cur) return <p className="text-sm text-muted-foreground">Cargando…</p>;
+  const avg = cur.done ? Math.round((cur.attendees / cur.done) * 10) / 10 : 0; const occ = cur.capacity ? Math.round((cur.attendees / cur.capacity) * 100) : 0;
+  return <div><div className="grid grid-cols-2 gap-3 lg:grid-cols-4">{[["Clases impartidas este mes", cur.done], ["Pendientes este mes", cur.pending], ["Media de asistentes", avg], ["Ocupación", `${occ}%`]].map(([l, v]) => <div key={l} className="rounded-xl border border-border bg-card p-4"><p className="text-xs text-muted-foreground">{l}</p><p className="mt-1 font-display text-2xl font-bold">{v}</p></div>)}</div>
+    <h2 className="mt-6 mb-2 font-semibold">Histórico</h2><ul className="divide-y divide-border rounded-xl border border-border bg-card">{data.map((m) => <li key={m.from.toISOString()} className="flex justify-between px-4 py-2 text-sm"><span className="capitalize">{m.from.toLocaleDateString("es-ES", { month: "long", year: "numeric" })}</span><span className="text-muted-foreground">{m.done} clases · {m.attendees} asistentes</span></li>)}</ul>
+    <p className="mt-2 text-xs text-muted-foreground">Cuenta las clases donde eres el profesor asignado.</p></div>;
 }

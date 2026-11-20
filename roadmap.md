@@ -27,3 +27,8 @@
 - [ ] Logo por tipo de clase (admin) visible en clase, listado y calendario; simplificar el calendario.
 # Tareas
 - [x] Copiar tareas al portapapeles (todas, filtradas, seleccionadas) y repaso de hechas.
+
+## Códigos, roles y perfil
+- [x] Códigos promocionales con descuento, usos y afiliados (Super Admin)
+- [x] Separación Admin / Profesor y solicitudes de eventos
+- [x] Perfil por secciones y "Mis datos" del profesor

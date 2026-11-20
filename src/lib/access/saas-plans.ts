@@ -15,3 +15,11 @@ export const pricePerMember = (p: SaasPlan, members: number) => Math.round((p.mo
 /** Código de acceso sugerido a partir del nombre: letras/números, 4-12, en mayúsculas. */
 export const suggestCode = (name: string) => { const base = name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8); return (base.length >= 2 ? base : "BOX") + String(new Date().getFullYear()).slice(2); };
 export const isValidCode = (c: string) => /^[A-Z0-9]{4,12}$/.test(c.trim().toUpperCase());
+
+/** Códigos promocionales (espejo de promo_codes / create_gym_with_plan). */
+export interface PromoLike { active: boolean; expires_at: string | null; max_uses: number | null; uses: number; plan_id: string | null }
+export const promoUsable = (c: PromoLike, plan: SaasPlanId, now = new Date()) =>
+  c.active && (!c.expires_at || new Date(c.expires_at) > now) && (c.max_uses === null || c.uses < c.max_uses) && (!c.plan_id || c.plan_id === plan);
+export const discounted = (cents: number, pct: number) => Math.round((cents * (100 - Math.min(100, Math.max(0, pct)))) / 100);
+export const commission = (cents: number, pct: number) => Math.round((cents * pct) / 100);
+export const remainingUses = (c: Pick<PromoLike, "max_uses" | "uses">) => (c.max_uses === null ? null : Math.max(0, c.max_uses - c.uses));

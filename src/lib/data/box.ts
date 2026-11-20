@@ -101,7 +101,7 @@ export async function addWod(tenant: string, classId: string, f: Partial<WodItem
 }
 export async function addAttendee(classId: string, uid: string) { return must<string>(await supabase.rpc("add_class_attendee", { _class: classId, _user: uid })); }
 export async function markAttendee(classId: string, uid: string, attended: boolean) { must(await supabase.from("class_enrollments").update({ attended }).eq("class_id", classId).eq("user_id", uid)); }
-export const myProfileQuery = (uid: string | undefined) => queryOptions({ queryKey: ["profile", uid], enabled: !!uid, queryFn: async () => uid ? must<{ full_name: string | null; hide_attendance: boolean; preferred_level_name: string | null }>(await supabase.from("profiles").select("full_name,hide_attendance,preferred_level_name").eq("id", uid).single()) : null });
+export const myProfileQuery = (uid: string | undefined) => queryOptions({ queryKey: ["profile", uid], enabled: !!uid, queryFn: async () => uid ? must<{ full_name: string | null; alias: string | null; avatar_url: string | null; hide_attendance: boolean; preferred_level_name: string | null }>(await supabase.from("profiles").select("full_name,alias,avatar_url,hide_attendance,preferred_level_name").eq("id", uid).single()) : null });
 export async function setAttendancePrivacy(uid: string, hidden: boolean) { must(await supabase.from("profiles").update({ hide_attendance: hidden }).eq("id", uid)); }
 
 export async function deleteGroupItems(classId: string, groupKey: string) { must(await supabase.from("wod_items").delete().eq("class_id", classId).eq("group_key", groupKey)); }

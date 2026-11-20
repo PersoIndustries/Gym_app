@@ -17,6 +17,7 @@ import { Route as EmpezarRouteImport } from './routes/empezar'
 import { Route as PreciosRouteImport } from './routes/precios'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedCodesRouteImport } from './routes/_authenticated/codes'
 import { Route as AuthenticatedCreateGymRouteImport } from './routes/_authenticated/create-gym'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDevRouteImport } from './routes/_authenticated/dev'
@@ -76,6 +77,11 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCodesRoute = AuthenticatedCodesRouteImport.update({
+  id: '/codes',
+  path: '/codes',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCreateGymRoute = AuthenticatedCreateGymRouteImport.update({
@@ -199,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/precios': typeof PreciosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/codes': typeof AuthenticatedCodesRoute
   '/create-gym': typeof AuthenticatedCreateGymRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dev': typeof AuthenticatedDevRoute
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/empezar': typeof EmpezarRoute
   '/precios': typeof PreciosRoute
   '/calendar': typeof AuthenticatedCalendarRoute
+  '/codes': typeof AuthenticatedCodesRoute
   '/create-gym': typeof AuthenticatedCreateGymRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/dev': typeof AuthenticatedDevRoute
@@ -260,6 +268,7 @@ export interface FileRoutesById {
   '/precios': typeof PreciosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
+  '/_authenticated/codes': typeof AuthenticatedCodesRoute
   '/_authenticated/create-gym': typeof AuthenticatedCreateGymRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/dev': typeof AuthenticatedDevRoute
@@ -292,6 +301,7 @@ export interface FileRouteTypes {
     | '/precios'
     | '/admin'
     | '/calendar'
+    | '/codes'
     | '/create-gym'
     | '/dashboard'
     | '/dev'
@@ -321,6 +331,7 @@ export interface FileRouteTypes {
     | '/empezar'
     | '/precios'
     | '/calendar'
+    | '/codes'
     | '/create-gym'
     | '/dashboard'
     | '/dev'
@@ -352,6 +363,7 @@ export interface FileRouteTypes {
     | '/precios'
     | '/_authenticated/admin'
     | '/_authenticated/calendar'
+    | '/_authenticated/codes'
     | '/_authenticated/create-gym'
     | '/_authenticated/dashboard'
     | '/_authenticated/dev'
@@ -444,6 +456,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/codes': {
+      id: '/_authenticated/codes'
+      path: '/codes'
+      fullPath: '/codes'
+      preLoaderRoute: typeof AuthenticatedCodesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/create-gym': {
@@ -618,6 +637,7 @@ const AuthenticatedAdminRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
+  AuthenticatedCodesRoute: typeof AuthenticatedCodesRoute
   AuthenticatedCreateGymRoute: typeof AuthenticatedCreateGymRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDevRoute: typeof AuthenticatedDevRoute
@@ -635,6 +655,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
+  AuthenticatedCodesRoute: AuthenticatedCodesRoute,
   AuthenticatedCreateGymRoute: AuthenticatedCreateGymRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDevRoute: AuthenticatedDevRoute,

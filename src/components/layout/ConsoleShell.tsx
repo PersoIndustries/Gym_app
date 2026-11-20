@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { BarChart3, Building2, Code2, LogOut } from "lucide-react";
+import { BarChart3, Building2, Code2, LogOut, Ticket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "./Logo";
 import { RoleSwitcher } from "./RoleSwitcher";
@@ -9,7 +9,7 @@ import { RoleSwitcher } from "./RoleSwitcher";
 export function ConsoleShell({ title, subtitle, children, action }: { title: string; subtitle?: string; children: ReactNode; action?: ReactNode }) {
   const navigate = useNavigate();
   const signOut = async () => { await supabase.auth.signOut(); navigate({ to: "/auth", replace: true }); };
-  const items = [{ to: "/platform", label: "Gimnasios", icon: Building2 }, { to: "/metrics", label: "Métricas", icon: BarChart3 }, { to: "/dev", label: "Dev / Roadmap", icon: Code2 }] as const;
+  const items = [{ to: "/platform", label: "Gimnasios", icon: Building2 }, { to: "/codes", label: "Códigos", icon: Ticket }, { to: "/metrics", label: "Métricas", icon: BarChart3 }, { to: "/dev", label: "Dev / Roadmap", icon: Code2 }] as const;
   return (
     <div className="flex min-h-screen">
       <aside className="sticky top-0 flex h-screen w-16 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-3 lg:w-64 lg:p-5">

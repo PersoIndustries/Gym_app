@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "@/lib/auth/session";
+import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/data/box";
 import { addLevel, deleteLevel, levelsQuery, setBranding, setFacilitiesEnabled } from "@/lib/data/levels";
 import { THEMES, isValidLogoUrl, resolveTheme } from "@/lib/brand/themes";
@@ -17,18 +18,20 @@ import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_authenticated/admin/")({ head: pageHead("Gestión", "Gestión del box."), component: AdminHome });
 function AdminHome() {
-  const items = [
-    { to: "/admin/classes", t: "Clases", d: "Horarios y capacidad", icon: CalendarCog },
-    { to: "/admin/members", t: "Socios", d: "Roles y cuotas", icon: Users },
+  const { role } = useSession(); const admin = role === "admin";
+  const all = [
+    { to: "/admin/classes", t: "Clases", d: admin ? "Horarios y capacidad" : "Clases de la semana y asistencia", icon: CalendarCog, coach: true },
+    { to: "/admin/members", t: "Socios", d: admin ? "Roles y cuotas" : "Listado de socios", icon: Users, coach: true },
     { to: "/admin/plans", t: "Cuotas", d: "Reglas de acceso", icon: CreditCard },
     { to: "/admin/gym-calendar", t: "Vacaciones y cierres", d: "Calendario del gimnasio", icon: CalendarCog },
     { to: "/spaces", t: "Espacios y reservas", d: "Sauna, pistas y solicitudes", icon: CalendarCog },
-    { to: "/events", t: "Eventos y carreras", d: "Internos y de la comunidad", icon: Trophy },
-  ] as const;
+    { to: "/events", t: "Eventos y carreras", d: admin ? "Internos, comunidad y solicitudes" : "Proponer eventos al admin", icon: Trophy, coach: true },
+  ];
+  const items = all.filter((i) => admin || ("coach" in i && i.coach));
   return (
     <AppShell title="Gestión del box">
       <div className="grid gap-3 sm:grid-cols-2">{items.map(({ to, t, d, icon: I }) => <Link key={to} to={to} className="rounded-lg border border-border bg-card p-5 hover:border-primary"><I className="h-5 w-5 text-primary" /><p className="mt-3 font-semibold">{t}</p><p className="text-sm text-muted-foreground">{d}</p></Link>)}</div>
-      <BoxSettings />
+      {admin ? <><HelpInbox /><BoxSettings /></> : <p className="mt-6 text-sm text-muted-foreground">Como profesor gestionas clases, asistencias y propones eventos. La configuración del box (marca, cuotas, espacios, horario fijo y cierres) es del admin.</p>}
     </AppShell>
   );
 }
@@ -73,4 +76,12 @@ function BrandSettings() {
       <Button disabled={!admin || save.isPending || (logoValue !== "" && !isValidLogoUrl(logoValue))} onClick={() => save.mutate({ logo_url: logoValue.trim() || null })}>Guardar logo</Button></div>
     {logoValue && isValidLogoUrl(logoValue) && <img src={logoValue} alt="Vista previa del logo" className="mt-3 h-12 object-contain" />}
   </div>;
+}
+
+function HelpInbox() {
+  const { tenantId } = useSession(); const qc = useQueryClient();
+  const { data = [] } = useQuery({ queryKey: ["help", tenantId], enabled: !!tenantId, queryFn: async () => { const r = await supabase.from("help_requests").select("*").eq("tenant_id", tenantId!).eq("status", "open").order("created_at", { ascending: false }); if (r.error) throw r.error; return r.data; } });
+  const close = useMutation({ mutationFn: async (id: string) => { const r = await supabase.from("help_requests").update({ status: "closed" }).eq("id", id); if (r.error) throw r.error; }, onSuccess: () => qc.invalidateQueries({ queryKey: ["help"] }) });
+  if (!data.length) return null;
+  return <section className="mt-8"><h2 className="mb-3 font-semibold">Solicitudes de ayuda ({data.length})</h2><ul className="space-y-2">{data.map((h) => <li key={h.id} className="rounded-lg border border-border bg-card p-4"><p className="font-medium">{h.subject}</p><p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{h.message}</p><div className="mt-2 flex justify-between text-xs text-muted-foreground"><span>{new Date(h.created_at).toLocaleString("es-ES")}</span><Button size="sm" variant="secondary" onClick={() => close.mutate(h.id)}>Marcar resuelta</Button></div></li>)}</ul></section>;
 }

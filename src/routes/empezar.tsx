@@ -10,7 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import { Logo } from "@/components/layout/Logo";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/auth/session";
-import { SAAS_PLANS, TRIAL_DAYS, getPlan, isValidCode, suggestCode, type SaasPlanId } from "@/lib/access/saas-plans";
+import { SAAS_PLANS, TRIAL_DAYS, discounted, getPlan, isValidCode, suggestCode, type SaasPlanId } from "@/lib/access/saas-plans";
+import { checkPromo } from "@/lib/data/promos";
 import { THEMES, isValidLogoUrl, type ThemeId } from "@/lib/brand/themes";
 import { useApplyTheme } from "@/lib/brand/use-box-theme";
 import { pageHead } from "@/lib/seo";
@@ -31,6 +32,8 @@ function Wizard() {
   const [step, setStep] = useState(0);
   const [f, setF] = useState({ name: "", city: "", code: "", approval: false, plan: (initialPlan ?? "pro") as SaasPlanId, billing: "month" as "month" | "year", theme: "lime" as ThemeId, logo: "", rounding: 2.5, cancelHours: 4, minAttendees: 3, facilities: false });
   const [codeTouched, setCodeTouched] = useState(false);
+  const [promoText, setPromoText] = useState(""); const [promo, setPromo] = useState<{ code: string; plan_id: string | null; discount_pct: number; duration_months: number | null } | null>(null);
+  async function applyPromo() { try { const p = await checkPromo(promoText); if (!p) { setPromo(null); toast.error("Código no válido, caducado o agotado"); return; } setPromo(p); if (p.plan_id) setF((x) => ({ ...x, plan: p.plan_id as SaasPlanId })); toast.success(`Descuento del ${p.discount_pct}% aplicado`); } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); } }
   const [busy, setBusy] = useState(false); const [created, setCreated] = useState<{ id: string; code: string } | null>(null);
   useApplyTheme(f.theme);
   useEffect(() => { if (!codeTouched) setF((x) => ({ ...x, code: x.name ? suggestCode(x.name) : "" })); }, [f.name, codeTouched]);
@@ -42,7 +45,7 @@ function Wizard() {
   const canNext = [f.name.trim().length > 1 && isValidCode(f.code), true, !f.logo || isValidLogoUrl(f.logo), true][step] ?? true;
   async function create() {
     setBusy(true);
-    const r = await supabase.rpc("create_gym_with_plan", { _name: f.name, _city: f.city, _code: f.code.toUpperCase(), _requires_approval: f.approval, _plan: f.plan, _billing: f.billing, _theme: f.theme, _logo: f.logo, _rounding: f.rounding, _cancel_hours: f.cancelHours, _min_attendees: f.minAttendees, _facilities: f.facilities && plan.facilities });
+    const r = await supabase.rpc("create_gym_with_plan", { _name: f.name, _city: f.city, _code: f.code.toUpperCase(), _requires_approval: f.approval, _plan: f.plan, _billing: f.billing, _theme: f.theme, _logo: f.logo, _rounding: f.rounding, _cancel_hours: f.cancelHours, _min_attendees: f.minAttendees, _facilities: f.facilities && plan.facilities, ...(promo ? { _promo: promo.code } : {}) });
     setBusy(false);
     if (r.error) { toast.error(r.error.message); return; }
     sessionStorage.removeItem("bf.next");
@@ -61,9 +64,11 @@ function Wizard() {
       <label className="flex items-center justify-between text-sm">Aprobar a mano a cada socio nuevo<Switch checked={f.approval} onCheckedChange={(v) => setF({ ...f, approval: v })} /></label></div>}
     {step === 1 && <div><h1 className="mb-4 text-2xl font-bold">Elige tu plan</h1>
       <div className="mb-4 inline-flex rounded-full border border-border p-1 text-sm">{(["month", "year"] as const).map((b) => <button key={b} onClick={() => setF({ ...f, billing: b })} className={cn("rounded-full px-3 py-1", f.billing === b ? "bg-primary text-primary-foreground" : "text-muted-foreground")}>{b === "month" ? "Mensual" : "Anual (2 meses gratis)"}</button>)}</div>
-      <div className="grid gap-3">{SAAS_PLANS.map((p) => <button key={p.id} onClick={() => setF({ ...f, plan: p.id, facilities: p.facilities && f.facilities })} className={cn("rounded-xl border p-4 text-left", f.plan === p.id ? "border-primary bg-primary/10" : "border-border bg-card")}>
-        <div className="flex justify-between"><span className="font-semibold">{p.name}</span><span className="font-bold">{f.billing === "month" ? `${p.month} €/mes` : `${p.year} €/año`}</span></div>
+      <div className="grid gap-3">{SAAS_PLANS.map((p) => <button key={p.id} disabled={!!promo?.plan_id && promo.plan_id !== p.id} onClick={() => setF({ ...f, plan: p.id, facilities: p.facilities && f.facilities })} className={cn("rounded-xl border p-4 text-left disabled:opacity-40", f.plan === p.id ? "border-primary bg-primary/10" : "border-border bg-card")}>
+        <div className="flex justify-between"><span className="font-semibold">{p.name}</span><span className="font-bold">{promo && (!promo.plan_id || promo.plan_id === p.id) && promo.discount_pct > 0 ? <><s className="mr-2 font-normal text-muted-foreground">{f.billing === "month" ? p.month : p.year} €</s>{discounted((f.billing === "month" ? p.month : p.year) * 100, promo.discount_pct) / 100} €/{f.billing === "month" ? "mes" : "año"}</> : f.billing === "month" ? `${p.month} €/mes` : `${p.year} €/año`}</span></div>
         <p className="mt-1 text-sm text-muted-foreground">{p.features.slice(0, 4).join(" · ")}</p></button>)}</div>
+      <div className="mt-4 rounded-xl border border-border p-3"><Label>¿Tienes un código?</Label><div className="mt-1 flex gap-2"><Input className="font-mono uppercase" value={promoText} onChange={(e) => setPromoText(e.target.value.toUpperCase())} placeholder="CODIGO" /><Button variant="secondary" disabled={promoText.trim().length < 3} onClick={applyPromo}>Aplicar</Button></div>
+        {promo && <p className="mt-2 text-sm text-primary">{promo.code}: {promo.discount_pct}% de descuento {promo.duration_months ? `durante ${promo.duration_months} mes(es)` : "para siempre"}{promo.plan_id ? ` · solo plan ${getPlan(promo.plan_id as SaasPlanId).name}` : ""} <button className="ml-2 text-xs text-muted-foreground underline" onClick={() => { setPromo(null); setPromoText(""); }}>Quitar</button></p>}</div>
       <p className="mt-3 text-xs text-muted-foreground">{TRIAL_DAYS} días gratis. No pedimos tarjeta todavía.</p></div>}
     {step === 2 && <div className="grid gap-4"><h1 className="text-2xl font-bold">La marca de tu box</h1>
       <div className="grid grid-cols-2 gap-3">{THEMES.map((t) => <button key={t.id} onClick={() => setF({ ...f, theme: t.id })} className={cn("rounded-xl border p-3 text-left", f.theme === t.id ? "border-primary ring-2 ring-primary" : "border-border")}>
