@@ -7,6 +7,8 @@ begin
   insert into public.tenants(id,name,slug) values(ta,'Media test A',ta::text),(tb,'Media test B',tb::text);
   insert into public.tenant_members(tenant_id,user_id,role) values(ta,ua,'admin'),(tb,ub,'athlete');
   insert into public.activity_types(id,tenant_id,name) values(atype,ta,'CrossFit');
+  insert into public.membership_plans(tenant_id,name,allowed_weekdays) values(ta,'Test membership',array[0,1,2,3,4,5,6]);
+  insert into public.user_memberships(tenant_id,user_id,plan_id,starts_on) select ta,ua,id,current_date from public.membership_plans where tenant_id=ta;
   perform set_config('request.jwt.claims',json_build_object('sub',ua,'role','authenticated')::text,true); execute 'set local role authenticated';
   insert into storage.objects(bucket_id,name) values('gym-logos',ta::text||'/own.webp');
   select count(*) into n from storage.objects where bucket_id='gym-logos' and name=ta::text||'/own.webp'; if n<>1 then raise exception 'FAIL admin no lee su logo'; end if;

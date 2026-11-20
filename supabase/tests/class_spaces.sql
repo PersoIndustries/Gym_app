@@ -10,7 +10,7 @@ begin
  insert into public.tenants(id,name,slug) values(t,'Test spaces','test-'||t);
  insert into public.tenant_members(tenant_id,user_id,role) values(t,admin_id,'admin'),(t,athlete,'athlete');
  insert into public.membership_plans(id,tenant_id,name,allowed_weekdays,facility_windows) values(p,t,'Test plan',array[0,1,2,3,4,5,6],'[{"weekday":0,"from":"07:00","to":"12:00"},{"weekday":1,"from":"07:00","to":"12:00"},{"weekday":2,"from":"07:00","to":"12:00"},{"weekday":3,"from":"07:00","to":"12:00"},{"weekday":4,"from":"07:00","to":"12:00"},{"weekday":5,"from":"07:00","to":"12:00"},{"weekday":6,"from":"07:00","to":"12:00"}]');
- insert into public.user_memberships(tenant_id,user_id,plan_id,starts_on) values(t,athlete,p,current_date);
+ insert into public.user_memberships(tenant_id,user_id,plan_id,starts_on) values(t,athlete,p,current_date),(t,admin_id,p,current_date);
  update public.profiles set hide_attendance=true where id=athlete;
  insert into public.classes(id,tenant_id,title,starts_at,ends_at,capacity,phases) values(c,t,'Test WOD',s,s+interval '1 hour',1,'[{"key":"main","title":"Main","alternatives":""},{"key":"alt","title":"Alternative","alternatives":"","alternativeTo":"main"}]');
  insert into public.class_enrollments(tenant_id,class_id,user_id,intent,status) values(t,c,athlete,'going','booked');
