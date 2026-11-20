@@ -61,3 +61,5 @@ use the editor.
 - Multiple active memberships: access if any one allows, each keeps its own limits; quotas separate facility windows, reservation permission, weekly classes and total trial allowance; SQL locks the member and membership during participation checks, and trials count non-cancelled enrollments from the membership start date; why: concurrent reservations cannot bypass allowances.
 - InfoHelp provides tap/click-accessible contextual explanations through shared popovers; why: guidance stays available on mobile without cluttering screens.
 - Netlify deploys use `netlify.toml` with `NITRO_PRESET=netlify` (publish `dist`); Lovable builds ignore it and keep their own target; why: self-hosting must not change the Lovable preview/publish build.
+
+- Activity types carry a `mode` (wod|cardio|studio|open) from the SQL `activity_catalog()` mirrored in `src/lib/brand/activities.ts`; non-WOD classes store programming in `classes.session` JSON; why: each discipline shows only the fields it needs.

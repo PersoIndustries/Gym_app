@@ -20,6 +20,7 @@ export type Database = {
           id: string
           kind: string
           logo_url: string | null
+          mode: string
           name: string
           tenant_id: string
           updated_at: string
@@ -29,6 +30,7 @@ export type Database = {
           id?: string
           kind?: string
           logo_url?: string | null
+          mode?: string
           name: string
           tenant_id: string
           updated_at?: string
@@ -38,6 +40,7 @@ export type Database = {
           id?: string
           kind?: string
           logo_url?: string | null
+          mode?: string
           name?: string
           tenant_id?: string
           updated_at?: string
@@ -185,6 +188,7 @@ export type Database = {
           id: string
           min_attendees: number
           phases: Json
+          session: Json
           starts_at: string
           status: string
           template_id: string | null
@@ -204,6 +208,7 @@ export type Database = {
           id?: string
           min_attendees?: number
           phases?: Json
+          session?: Json
           starts_at: string
           status?: string
           template_id?: string | null
@@ -223,6 +228,7 @@ export type Database = {
           id?: string
           min_attendees?: number
           phases?: Json
+          session?: Json
           starts_at?: string
           status?: string
           template_id?: string | null
@@ -1527,6 +1533,13 @@ export type Database = {
       _gen_week: {
         Args: { _tenant: string; _week_start: string }
         Returns: number
+      }
+      activity_catalog: {
+        Args: never
+        Returns: {
+          mode: string
+          name: string
+        }[]
       }
       add_class_attendee: {
         Args: { _class: string; _user: string }

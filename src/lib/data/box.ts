@@ -8,7 +8,8 @@ export interface WodGroup { key: string; format: GroupFormat; minutes?: number |
 export const FORMAT_LABEL: Record<GroupFormat, string> = { amrap: "AMRAP", emom: "EMOM", for_time: "For Time", rounds: "Rondas", sets: "Series" };
 export function groupTitle(g: WodGroup) { const parts = [FORMAT_LABEL[g.format]]; if (g.rounds) parts.push(g.format === "for_time" ? `${g.rounds} rondas` : `x${g.rounds}`); if (g.minutes) parts.push(g.format === "for_time" ? `cap ${g.minutes}'` : `${g.minutes}'`); return (g.title ? g.title + " · " : "") + parts.join(" "); }
 export interface Phase { key: string; title: string; alternatives: string; alternativeTo?: string; groups?: WodGroup[] }
-export interface BoxClass { id: string; tenant_id: string; title: string; coach_name: string | null; coach_id: string | null; phases: Phase[]; starts_at: string; ends_at: string; capacity: number; min_attendees: number; cancel_hours_before: number; status: string; cancelled_reason: string | null; activity_type_id: string | null }
+export interface BoxClass { id: string; tenant_id: string; title: string; coach_name: string | null; coach_id: string | null; phases: Phase[]; starts_at: string; ends_at: string; capacity: number; min_attendees: number; cancel_hours_before: number; status: string; cancelled_reason: string | null; activity_type_id: string | null; session?: ClassSession | null }
+export interface ClassSession { distance_km?: number | null; pace?: string; duration?: string; route_url?: string; focus?: string; equipment?: string; description?: string; published?: boolean }
 export interface MyEnrollment { class_id: string; intent: Intent; status: string }
 export interface WodItem { id: string; class_id: string; block: string; position: number; exercise_id: string | null; label: string | null; sets: number | null; reps: string | null; percent_rm: number | null; notes: string | null; alternatives: string | null; alternative_to: string | null; group_key?: string | null }
 export interface Exercise { id: string; name: string; category: string; uses_load: boolean; rm_lift: string | null }
@@ -91,7 +92,7 @@ export const monthClassesQuery = (tenant: string | null, year: number, month: nu
 export const WEEKDAYS = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 export const BLOCKS: Record<string, string> = { warmup: "Calentamiento", strength: "Fuerza", metcon: "Metcon", accessory: "Accesorios" };
 
-export async function updateClass(id: string, values: { title?: string; status?: string; cancelled_reason?: string | null; coach_id?: string | null; coach_name?: string | null }) { must(await supabase.from("classes").update(values).eq("id", id)); }
+export async function updateClass(id: string, values: { title?: string; status?: string; cancelled_reason?: string | null; coach_id?: string | null; coach_name?: string | null; session?: ClassSession }) { must(await supabase.from("classes").update(values as never).eq("id", id)); }
 export async function updatePhases(id: string, phases: Phase[]) { must(await supabase.from("classes").update({ phases: JSON.parse(JSON.stringify(phases)) }).eq("id", id)); }
 export async function deletePhase(id: string, key: string, phases: Phase[]) { must(await supabase.rpc("delete_class_phase", { _class: id, _key: key })); }
 export async function deleteWod(id: string) { must(await supabase.from("wod_items").delete().eq("id", id)); }
