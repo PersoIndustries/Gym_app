@@ -10,7 +10,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InfoHelp } from "@/components/InfoHelp";
-import { QuotaAccessCodes } from "@/components/QuotaAccessCodes";
 import { activitiesQuery, plansQuery, savePlan, deletePlan } from "@/lib/data/gym";
 import { parsePlanValues } from "@/lib/access/plan-values";
 import { useSession } from "@/lib/auth/session";
@@ -39,7 +38,7 @@ function Plans() {
   }, onSuccess: () => { setOpen(false); inv(); toast.success("Cuota guardada"); }, onError: e => toast.error(e && typeof e === "object" && "message" in e ? String(e.message) : "No se pudo guardar") });
   const remove = useMutation({ mutationFn: deletePlan, onSuccess: inv, onError: () => toast.error("No se puede borrar una cuota asignada a socios") });
   return <AppShell title="Cuotas" action={role === "admin" ? <Button size="sm" onClick={() => { setId(null); setF(blank); setOpen(true); }}><Plus />Nueva cuota</Button> : undefined}>
-    <Tabs defaultValue="plans"><TabsList className="mb-5"><TabsTrigger value="plans">Cuotas</TabsTrigger>{role === "admin" && <TabsTrigger value="codes">Códigos de acceso</TabsTrigger>}</TabsList>
+    <Tabs defaultValue="plans">
       <TabsContent value="plans">
         {isLoading && <p className="text-muted-foreground">Cargando cuotas…</p>}{isError && <p role="alert" className="text-destructive">No se pudieron cargar las cuotas.</p>}{!isLoading && !plans.length && <p className="py-8 text-muted-foreground">Aún no hay cuotas configuradas.</p>}
         <div className="grid gap-3 md:grid-cols-2">{plans.map(p => <article key={p.id} className="rounded-lg border border-border bg-card p-5">
@@ -48,7 +47,7 @@ function Plans() {
           <div className="mt-4 border-t border-border pt-3"><h3 className="text-xs font-semibold text-muted-foreground">CLASES</h3><p className="mt-2 text-sm">{!p.classes_enabled ? "No permitidas" : p.weekly_class_limit === 0 ? "0 clases por semana" : p.weekly_class_limit === null ? "Sin límite semanal" : `${p.weekly_class_limit} clases / semana`}</p>{p.classes_enabled && <><p className="mt-1 text-xs text-muted-foreground">{p.allowed_weekdays.length ? days.filter(d => p.allowed_weekdays.includes(d)).map(d => WEEKDAYS[d]).join(" · ") : "Sin días de clases"}</p><p className="mt-1 text-xs text-muted-foreground">{p.allowed_activity_type_ids.length ? p.allowed_activity_type_ids.map(a => activities.find(x => x.id === a)?.name ?? "Actividad").join(", ") : "Todas las actividades"}</p>{p.trial_class_limit !== null && <p className="mt-2 text-sm text-primary">Bono de prueba: {p.trial_class_limit} clases en total</p>}</>}</div>
           <div className="mt-4 border-t border-border pt-3"><h3 className="text-xs font-semibold text-muted-foreground">ACCESO A INSTALACIONES</h3>{Array.isArray(p.facility_windows) && p.facility_windows.length ? (p.facility_windows as unknown as FacilityWindow[]).map((w, i) => <p key={i} className="mt-1 text-sm">{WEEKDAYS[w.weekday]} · {w.from}–{w.to}</p>) : <p className="mt-1 text-sm text-muted-foreground">Sin acceso a instalaciones</p>}<p className="mt-2 text-xs text-muted-foreground">{p.facility_booking_enabled ? "Reservas permitidas dentro de las franjas" : "Reservas no permitidas"}</p></div>
         </article>)}</div>
-      </TabsContent><TabsContent value="codes"><QuotaAccessCodes /></TabsContent>
+      </TabsContent>
     </Tabs>
     <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl"><DialogHeader><DialogTitle>{id ? "Editar cuota" : "Nueva cuota"}</DialogTitle></DialogHeader><div className="space-y-5">
       <label className="block text-sm">Nombre<Input value={f.name} onChange={e => setF({ ...f, name: e.target.value })} /></label>

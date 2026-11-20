@@ -4,13 +4,12 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/auth/session";
 import type { TenantRole } from "@/lib/domain/types";
 import { pageHead } from "@/lib/seo";
-import { membersQuery, plansQuery, addMembership, endMembership, changeMemberRole, setInvitePlan } from "@/lib/data/gym";
+import { membersQuery, plansQuery, addMembership, endMembership, changeMemberRole } from "@/lib/data/gym";
 import { PersonAvatar } from "@/components/PersonAvatar";
 
 export const Route = createFileRoute("/_authenticated/admin/members")({ head: pageHead("Socios", "Socios, solicitudes y códigos del box."), component: Members });
@@ -29,8 +28,6 @@ function Members() {
   const review = useMutation({ mutationFn: async (v: { id: string; approve: boolean }) => ok(await supabase.rpc("review_join_request", { _id: v.id, _approve: v.approve })), onSuccess: (_d, v) => { toast.success(v.approve ? "Socio aceptado" : "Solicitud rechazada"); inv(); } });
   const setRole = useMutation({ mutationFn: async (v: { id: string; role: TenantRole }) => { if (!tenantId) throw new Error("Selecciona un box"); await changeMemberRole(tenantId, v.id, v.role); }, onSuccess: () => { inv(); refresh(); qc.invalidateQueries({ queryKey: ["coaches"] }); toast.success("Rol actualizado"); }, onError: (e) => toast.error(String(e)) });
   const remove = useMutation({ mutationFn: async (id: string) => ok(await supabase.from("tenant_members").delete().eq("id", id)), onSuccess: () => { toast.success("Socio dado de baja del box"); inv(); } });
-  const approval = useMutation({ mutationFn: async (v: { id: string; on: boolean }) => ok(await supabase.from("tenant_invites").update({ requires_approval: v.on }).eq("id", v.id)), onSuccess: inv });
-  const inviteQuota = useMutation({ mutationFn: async (v: { id: string; plan: string }) => { if (!tenantId) throw new Error("Selecciona un box"); await setInvitePlan(tenantId, v.id, v.plan); }, onSuccess: () => { inv(); toast.success("Cuota automática actualizada"); }, onError: () => toast.error("No se pudo asignar la cuota al código") });
 
   return (
     <AppShell title="Socios">
@@ -42,16 +39,6 @@ function Members() {
             <span className="font-medium">{name[r.user_id] ?? "Nuevo usuario"}</span>
             {isAdmin && <span className="flex gap-2"><Button size="sm" onClick={() => review.mutate({ id: r.id, approve: true })}>Aceptar</Button><Button size="sm" variant="ghost" onClick={() => review.mutate({ id: r.id, approve: false })}>Rechazar</Button></span>}
           </div>))}</div></section>}
-
-      {isAdmin && <section className="mb-6 rounded-xl border border-border bg-card p-4">
-        <h2 className="mb-2 font-semibold">Códigos de acceso</h2>
-        {data?.invites.map((i) => (
-          <div key={i.id} className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
-            <span><span className="font-mono text-lg text-primary">{i.code}</span> <span className="text-muted-foreground">· {i.uses} usos</span></span>
-            <label className="flex items-center gap-2">Requiere aprobación<Switch checked={i.requires_approval} onCheckedChange={(on) => approval.mutate({ id: i.id, on })} /></label>
-            <div className="flex items-center gap-2"><span>Cuota automática</span><Select value={i.membership_plan_id ?? "none"} disabled={inviteQuota.isPending} onValueChange={plan => inviteQuota.mutate({ id: i.id, plan })}><SelectTrigger aria-label={`Cuota automática del código ${i.code}`} className="w-44"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Sin cuota automática</SelectItem>{plans.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent></Select></div>
-          </div>))}
-      </section>}
 
       <h2 className="mb-2 font-semibold">Socios ({data?.members.length ?? 0})</h2>
       <div className="space-y-2">{data?.members.map((m) => {

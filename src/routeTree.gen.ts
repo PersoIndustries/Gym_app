@@ -33,10 +33,14 @@ import { Route as BCodeRouteImport } from './routes/b.$code'
 import { Route as EventosIndexRouteImport } from './routes/eventos.index'
 import { Route as EventosIdRouteImport } from './routes/eventos.$id'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as AuthenticatedAdminActivitiesRouteImport } from './routes/_authenticated/admin/activities'
+import { Route as AuthenticatedAdminBrandRouteImport } from './routes/_authenticated/admin/brand'
 import { Route as AuthenticatedAdminClassesRouteImport } from './routes/_authenticated/admin/classes'
+import { Route as AuthenticatedAdminCodesRouteImport } from './routes/_authenticated/admin/codes'
 import { Route as AuthenticatedAdminGymCalendarRouteImport } from './routes/_authenticated/admin/gym-calendar'
 import { Route as AuthenticatedAdminMembersRouteImport } from './routes/_authenticated/admin/members'
 import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin/plans'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedClassClassIdRouteImport } from './routes/_authenticated/class.$classId'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events.$eventId'
@@ -161,12 +165,28 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminActivitiesRoute =
+  AuthenticatedAdminActivitiesRouteImport.update({
+    id: '/activities',
+    path: '/activities',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminBrandRoute = AuthenticatedAdminBrandRouteImport.update({
+  id: '/brand',
+  path: '/brand',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminClassesRoute =
   AuthenticatedAdminClassesRouteImport.update({
     id: '/classes',
     path: '/classes',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminCodesRoute = AuthenticatedAdminCodesRouteImport.update({
+  id: '/codes',
+  path: '/codes',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminGymCalendarRoute =
   AuthenticatedAdminGymCalendarRouteImport.update({
     id: '/gym-calendar',
@@ -184,6 +204,12 @@ const AuthenticatedAdminPlansRoute = AuthenticatedAdminPlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedClassClassIdRoute =
   AuthenticatedClassClassIdRouteImport.update({
     id: '/class/$classId',
@@ -232,10 +258,14 @@ export interface FileRoutesByFullPath {
   '/b/$code': typeof BCodeRoute
   '/eventos/$id': typeof EventosIdRoute
   '/eventos/': typeof EventosIndexRoute
+  '/admin/activities': typeof AuthenticatedAdminActivitiesRoute
+  '/admin/brand': typeof AuthenticatedAdminBrandRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
+  '/admin/codes': typeof AuthenticatedAdminCodesRoute
   '/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
   '/admin/members': typeof AuthenticatedAdminMembersRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/class/$classId': typeof AuthenticatedClassClassIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -264,10 +294,14 @@ export interface FileRoutesByTo {
   '/b/$code': typeof BCodeRoute
   '/eventos/$id': typeof EventosIdRoute
   '/eventos': typeof EventosIndexRoute
+  '/admin/activities': typeof AuthenticatedAdminActivitiesRoute
+  '/admin/brand': typeof AuthenticatedAdminBrandRoute
   '/admin/classes': typeof AuthenticatedAdminClassesRoute
+  '/admin/codes': typeof AuthenticatedAdminCodesRoute
   '/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
   '/admin/members': typeof AuthenticatedAdminMembersRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/class/$classId': typeof AuthenticatedClassClassIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -299,10 +333,14 @@ export interface FileRoutesById {
   '/b/$code': typeof BCodeRoute
   '/eventos/$id': typeof EventosIdRoute
   '/eventos/': typeof EventosIndexRoute
+  '/_authenticated/admin/activities': typeof AuthenticatedAdminActivitiesRoute
+  '/_authenticated/admin/brand': typeof AuthenticatedAdminBrandRoute
   '/_authenticated/admin/classes': typeof AuthenticatedAdminClassesRoute
+  '/_authenticated/admin/codes': typeof AuthenticatedAdminCodesRoute
   '/_authenticated/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
   '/_authenticated/admin/members': typeof AuthenticatedAdminMembersRoute
   '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/class/$classId': typeof AuthenticatedClassClassIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -334,10 +372,14 @@ export interface FileRouteTypes {
     | '/b/$code'
     | '/eventos/$id'
     | '/eventos/'
+    | '/admin/activities'
+    | '/admin/brand'
     | '/admin/classes'
+    | '/admin/codes'
     | '/admin/gym-calendar'
     | '/admin/members'
     | '/admin/plans'
+    | '/admin/settings'
     | '/class/$classId'
     | '/events/$eventId'
     | '/admin/'
@@ -366,10 +408,14 @@ export interface FileRouteTypes {
     | '/b/$code'
     | '/eventos/$id'
     | '/eventos'
+    | '/admin/activities'
+    | '/admin/brand'
     | '/admin/classes'
+    | '/admin/codes'
     | '/admin/gym-calendar'
     | '/admin/members'
     | '/admin/plans'
+    | '/admin/settings'
     | '/class/$classId'
     | '/events/$eventId'
     | '/admin'
@@ -400,10 +446,14 @@ export interface FileRouteTypes {
     | '/b/$code'
     | '/eventos/$id'
     | '/eventos/'
+    | '/_authenticated/admin/activities'
+    | '/_authenticated/admin/brand'
     | '/_authenticated/admin/classes'
+    | '/_authenticated/admin/codes'
     | '/_authenticated/admin/gym-calendar'
     | '/_authenticated/admin/members'
     | '/_authenticated/admin/plans'
+    | '/_authenticated/admin/settings'
     | '/_authenticated/class/$classId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/admin/'
@@ -595,11 +645,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/activities': {
+      id: '/_authenticated/admin/activities'
+      path: '/activities'
+      fullPath: '/admin/activities'
+      preLoaderRoute: typeof AuthenticatedAdminActivitiesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/brand': {
+      id: '/_authenticated/admin/brand'
+      path: '/brand'
+      fullPath: '/admin/brand'
+      preLoaderRoute: typeof AuthenticatedAdminBrandRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/classes': {
       id: '/_authenticated/admin/classes'
       path: '/classes'
       fullPath: '/admin/classes'
       preLoaderRoute: typeof AuthenticatedAdminClassesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/codes': {
+      id: '/_authenticated/admin/codes'
+      path: '/codes'
+      fullPath: '/admin/codes'
+      preLoaderRoute: typeof AuthenticatedAdminCodesRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/gym-calendar': {
@@ -621,6 +692,13 @@ declare module '@tanstack/react-router' {
       path: '/plans'
       fullPath: '/admin/plans'
       preLoaderRoute: typeof AuthenticatedAdminPlansRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/class/$classId': {
@@ -655,18 +733,26 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminActivitiesRoute: typeof AuthenticatedAdminActivitiesRoute
+  AuthenticatedAdminBrandRoute: typeof AuthenticatedAdminBrandRoute
   AuthenticatedAdminClassesRoute: typeof AuthenticatedAdminClassesRoute
+  AuthenticatedAdminCodesRoute: typeof AuthenticatedAdminCodesRoute
   AuthenticatedAdminGymCalendarRoute: typeof AuthenticatedAdminGymCalendarRoute
   AuthenticatedAdminMembersRoute: typeof AuthenticatedAdminMembersRoute
   AuthenticatedAdminPlansRoute: typeof AuthenticatedAdminPlansRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminActivitiesRoute: AuthenticatedAdminActivitiesRoute,
+  AuthenticatedAdminBrandRoute: AuthenticatedAdminBrandRoute,
   AuthenticatedAdminClassesRoute: AuthenticatedAdminClassesRoute,
+  AuthenticatedAdminCodesRoute: AuthenticatedAdminCodesRoute,
   AuthenticatedAdminGymCalendarRoute: AuthenticatedAdminGymCalendarRoute,
   AuthenticatedAdminMembersRoute: AuthenticatedAdminMembersRoute,
   AuthenticatedAdminPlansRoute: AuthenticatedAdminPlansRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
