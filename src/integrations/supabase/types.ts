@@ -889,8 +889,10 @@ export type Database = {
           default_cancel_hours: number
           default_min_attendees: number
           facilities_enabled: boolean
+          logo_url: string | null
           rounding_kg: number
           tenant_id: string
+          theme_preset: string
           updated_at: string
         }
         Insert: {
@@ -898,8 +900,10 @@ export type Database = {
           default_cancel_hours?: number
           default_min_attendees?: number
           facilities_enabled?: boolean
+          logo_url?: string | null
           rounding_kg?: number
           tenant_id: string
+          theme_preset?: string
           updated_at?: string
         }
         Update: {
@@ -907,8 +911,10 @@ export type Database = {
           default_cancel_hours?: number
           default_min_attendees?: number
           facilities_enabled?: boolean
+          logo_url?: string | null
           rounding_kg?: number
           tenant_id?: string
+          theme_preset?: string
           updated_at?: string
         }
         Relationships: [
@@ -1208,6 +1214,14 @@ export type Database = {
         Returns: string
       }
       book_class: { Args: { _class: string; _intent: string }; Returns: string }
+      box_branding: {
+        Args: { _code: string }
+        Returns: {
+          logo_url: string
+          name: string
+          theme_preset: string
+        }[]
+      }
       box_coaches: {
         Args: { _tenant: string }
         Returns: {
