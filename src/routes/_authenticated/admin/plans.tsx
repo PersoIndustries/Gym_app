@@ -35,7 +35,7 @@ function Plans() {
     const values = parsePlanValues(f.price, f.limit, f.trial ? f.trialLimit : "");
     if (f.windows.some(w => !w.days.length)) throw new Error("Selecciona al menos un día en cada franja");
     if (f.windows.some(w => !w.from || !w.to || w.from >= w.to)) throw new Error("La hora final debe ser posterior al inicio");
-    await savePlan(tenantId, id, { ...values, name: f.name.trim(), classes_enabled: f.classes, facility_booking_enabled: f.booking, allowed_weekdays: f.weekdays, allowed_activity_type_ids: f.activities, facility_windows: expandGroups(f.windows) });
+    await savePlan(tenantId, id, { ...values, name: f.name.trim(), classes_enabled: f.classes, facility_booking_enabled: f.booking, allowed_weekdays: f.weekdays, allowed_activity_type_ids: f.activities, facility_windows: expandGroups(f.windows).map(w => ({ ...w })) });
   }, onSuccess: () => { setOpen(false); inv(); toast.success("Cuota guardada"); }, onError: e => toast.error(e && typeof e === "object" && "message" in e ? String(e.message) : "No se pudo guardar") });
   const remove = useMutation({ mutationFn: deletePlan, onSuccess: inv, onError: () => toast.error("No se puede borrar una cuota asignada a socios") });
   return <AppShell title="Cuotas" action={role === "admin" ? <Button size="sm" onClick={() => { setId(null); setF(blank); setOpen(true); }}><Plus />Nueva cuota</Button> : undefined}>
