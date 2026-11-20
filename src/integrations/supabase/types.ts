@@ -901,6 +901,7 @@ export type Database = {
           custom_domain: boolean
           facilities: boolean
           id: string
+          max_activity_types: number | null
           max_gyms: number
           max_member_plans: number | null
           max_members: number | null
@@ -917,6 +918,7 @@ export type Database = {
           custom_domain: boolean
           facilities: boolean
           id: string
+          max_activity_types?: number | null
           max_gyms: number
           max_member_plans?: number | null
           max_members?: number | null
@@ -933,6 +935,7 @@ export type Database = {
           custom_domain?: boolean
           facilities?: boolean
           id?: string
+          max_activity_types?: number | null
           max_gyms?: number
           max_member_plans?: number | null
           max_members?: number | null
