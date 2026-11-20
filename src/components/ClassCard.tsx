@@ -1,3 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+import { activitiesQuery } from "@/lib/data/gym";
+import { BrandImage } from "@/components/BrandImage";
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, Lock } from "lucide-react";
 import type { BoxClass, MyEnrollment } from "@/lib/data/box";
@@ -15,6 +18,8 @@ export function ClassCard({ c, counts, mine, blockedReason, onIntent, busy, coac
   onIntent: (i: Intent) => void; onLeave: () => void; busy?: boolean;
   coachAvatar?: string | null | undefined;
 }) {
+  const { data: activities = [] } = useQuery(activitiesQuery(c.tenant_id));
+  const activity = activities.find(a => a.id === c.activity_type_id);
   const cancelled = c.status === "cancelled";
   const state = classState(c);
   const past = state === "live" || state === "finished";
@@ -25,7 +30,7 @@ export function ClassCard({ c, counts, mine, blockedReason, onIntent, busy, coac
     <div className={cn("rounded-lg border border-border bg-card p-4", cancelled && "opacity-60")}>
       <div className="mb-2 flex justify-end"><span className={cn("rounded px-2 py-0.5 text-xs font-medium", STATE_STYLE[state])}>{STATE_LABEL[state]}</span></div>
       <div className="flex items-start gap-4">
-        <div className="w-14 text-center"><p className="font-display text-lg font-bold">{fmt(c.starts_at)}</p><p className="text-xs text-muted-foreground">{mins(c)} min</p></div>
+        <BrandImage url={activity?.logo_url} alt={activity?.name ?? "Tipo de clase"} className="h-9 w-9 shrink-0 object-contain"/><div className="w-14 shrink-0 text-center"><p className="font-display text-lg font-bold">{fmt(c.starts_at)}</p><p className="text-xs text-muted-foreground">{mins(c)} min</p></div>
         <Link to="/class/$classId" params={{ classId: c.id }} className="min-w-0 flex-1">
           <p className="truncate font-semibold hover:text-primary">{c.title}{cancelled && " · Cancelada"}</p>
           <div className="my-2 flex items-center gap-2"><PersonAvatar name={c.coach_name ?? "Sin coach"} url={coachAvatar} className="h-6 w-6" /><span className="text-xs text-muted-foreground">{c.coach_name ?? "Sin coach"}</span></div>

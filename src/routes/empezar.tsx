@@ -14,6 +14,9 @@ import { SAAS_PLANS, TRIAL_DAYS, discounted, getPlan, isValidCode, suggestCode, 
 import { checkPromo } from "@/lib/data/promos";
 import { THEMES, isValidLogoUrl, type ThemeId } from "@/lib/brand/themes";
 import { useApplyTheme } from "@/lib/brand/use-box-theme";
+import { LogoUpload } from "@/components/LogoUpload";
+import { BrandImage } from "@/components/BrandImage";
+import { setBranding } from "@/lib/data/levels";
 import { pageHead } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +53,7 @@ function Wizard() {
     if (r.error) { toast.error(r.error.message); return; }
     sessionStorage.removeItem("bf.next");
     setCreated({ id: r.data, code: f.code.toUpperCase() }); setStep(4);
+    if (f.logo) { try { const { adoptDraftLogo } = await import("@/lib/data/media"); const adopted = await adoptDraftLogo(f.logo, r.data); if (adopted !== f.logo) { await setBranding(r.data, { logo_url: adopted }); setF(x => ({ ...x, logo: adopted })); } } catch { toast.error("Gimnasio creado; vuelve a subir el logo en Gestión"); } }
     await qc.invalidateQueries();
   }
   const link = created ? `${typeof window !== "undefined" ? window.location.origin : ""}/b/${created.code}` : "";
@@ -73,8 +77,8 @@ function Wizard() {
     {step === 2 && <div className="grid gap-4"><h1 className="text-2xl font-bold">La marca de tu box</h1>
       <div className="grid grid-cols-2 gap-3">{THEMES.map((t) => <button key={t.id} onClick={() => setF({ ...f, theme: t.id })} className={cn("rounded-xl border p-3 text-left", f.theme === t.id ? "border-primary ring-2 ring-primary" : "border-border")}>
         <div className="mb-2 flex gap-1">{t.swatch.map((c) => <span key={c} className="h-6 w-6 rounded-full border border-border" style={{ background: c }} />)}</div><p className="text-sm font-medium">{t.label}</p><p className="text-xs text-muted-foreground">{t.hint}</p></button>)}</div>
-      <div><Label>Logo (enlace https a la imagen)</Label><Input value={f.logo} onChange={(e) => setF({ ...f, logo: e.target.value })} placeholder="https://…/logo.png" />{f.logo && !isValidLogoUrl(f.logo) && <p className="mt-1 text-xs text-destructive">Debe empezar por https://</p>}</div>
-      <div className="rounded-xl border border-border bg-card p-6 text-center"><p className="mb-3 text-xs text-muted-foreground">Así verán tus socios el acceso</p>{f.logo && isValidLogoUrl(f.logo) ? <img src={f.logo} alt="Logo" className="mx-auto h-14 object-contain" /> : <p className="text-2xl font-bold">{f.name || "Tu box"}</p>}<Button className="mt-4" size="sm">Entrar</Button></div></div>}
+      <div><LogoUpload tenant={null} onUploaded={url => setF({ ...f, logo: url })} /><Label>Logo (enlace https a la imagen)</Label><Input value={f.logo} onChange={(e) => setF({ ...f, logo: e.target.value })} placeholder="https://…/logo.png" />{f.logo && !isValidLogoUrl(f.logo) && <p className="mt-1 text-xs text-destructive">Debe empezar por https://</p>}</div>
+      <div className="rounded-xl border border-border bg-card p-6 text-center"><p className="mb-3 text-xs text-muted-foreground">Así verán tus socios el acceso</p>{f.logo && isValidLogoUrl(f.logo) ? <BrandImage url={f.logo} alt="Logo" className="mx-auto h-14 object-contain" /> : <p className="text-2xl font-bold">{f.name || "Tu box"}</p>}<Button className="mt-4" size="sm">Entrar</Button></div></div>}
     {step === 3 && <div className="grid gap-4"><h1 className="text-2xl font-bold">Ajustes básicos</h1>
       <div><Label>Redondeo de discos (kg)</Label><Input type="number" step="0.5" value={f.rounding} onChange={(e) => setF({ ...f, rounding: Number(e.target.value) || 2.5 })} /></div>
       <div><Label>Horas antes para cancelar clases con pocos asistentes</Label><Input type="number" value={f.cancelHours} onChange={(e) => setF({ ...f, cancelHours: Number(e.target.value) || 0 })} /></div>

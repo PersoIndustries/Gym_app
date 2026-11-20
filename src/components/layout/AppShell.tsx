@@ -1,3 +1,4 @@
+import { BrandImage } from "@/components/BrandImage";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -34,7 +35,7 @@ export function AppShell({ title, children, action }: { title: string; children:
   return (
     <div className="min-h-screen md:flex">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-4 md:flex">
-        <Link to="/dev-home" aria-label="Inicio de desarrollo">{brand?.logo_url ? <img src={brand.logo_url} alt={tenantName ?? "Logo del box"} className="h-10 max-w-[10rem] object-contain" /> : <Logo />}</Link>
+        <Link to="/dev-home" aria-label="Inicio de desarrollo">{brand?.logo_url ? <BrandImage url={brand.logo_url} alt={tenantName ?? "Logo del box"} className="h-10 max-w-[10rem] object-contain" /> : <Logo />}</Link>
         <p className="mt-1 text-xs text-muted-foreground">{tenantName ?? "BoxFlow"}</p>
         <nav className="mt-8 flex flex-1 flex-col gap-1">
           {items.map(({ to, label, icon: Icon }) => (

@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           id: string
           kind: string
+          logo_url: string | null
           name: string
           tenant_id: string
           updated_at: string
@@ -27,6 +28,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: string
+          logo_url?: string | null
           name: string
           tenant_id: string
           updated_at?: string
@@ -35,6 +37,7 @@ export type Database = {
           created_at?: string
           id?: string
           kind?: string
+          logo_url?: string | null
           name?: string
           tenant_id?: string
           updated_at?: string

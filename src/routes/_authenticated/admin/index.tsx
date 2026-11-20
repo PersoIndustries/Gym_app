@@ -14,6 +14,9 @@ import { addLevel, deleteLevel, levelsQuery, setBranding, setFacilitiesEnabled }
 import { THEMES, isValidLogoUrl, resolveTheme } from "@/lib/brand/themes";
 import { cn } from "@/lib/utils";
 import { AppShell } from "@/components/layout/AppShell";
+import { LogoUpload } from "@/components/LogoUpload";
+import { BrandImage } from "@/components/BrandImage";
+import { ActivityLogos } from "@/components/ActivityLogos";
 import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_authenticated/admin/")({ head: pageHead("Gestión", "Gestión del box."), component: AdminHome });
@@ -49,7 +52,7 @@ function BoxSettings() {
   if (!tenantId) return null;
   return <section className="mt-8 space-y-6">
     <h2 className="font-semibold">Ajustes del box</h2>
-    <BrandSettings />
+    <BrandSettings /><ActivityLogos />
     <label className="flex items-start justify-between gap-4 rounded-lg border border-border bg-card p-4"><span><span className="font-medium">Reservas de instalaciones activas</span><span className="block text-sm text-muted-foreground">Si está apagado, los socios no ven “Espacios” ni pueden reservar. Tú puedes seguir configurándolos.</span></span><Switch checked={!!settings?.facilities_enabled} disabled={role !== "admin" || toggle.isPending} onCheckedChange={v => toggle.mutate(v)} /></label>
     <div className="rounded-lg border border-border bg-card p-4"><p className="flex items-center gap-2 font-medium"><Layers className="h-4 w-4 text-primary" />Niveles del WOD</p><p className="mb-3 text-sm text-muted-foreground">Aparecen en cada ejercicio para indicar pesos o reps por nivel (RX ♂, RX ♀, Open, Masters…).</p>
       <div className="flex flex-wrap gap-2">{levels.map(l => <span key={l.id} className="flex items-center gap-1 rounded bg-muted px-2 py-1 text-sm">{l.name}<button aria-label={`Quitar ${l.name}`} onClick={() => confirm(`¿Quitar el nivel ${l.name}?`) && del.mutate(l.id)}><Trash2 className="h-3.5 w-3.5 text-muted-foreground" /></button></span>)}</div>
@@ -72,9 +75,10 @@ function BrandSettings() {
     <div className="grid gap-2 sm:grid-cols-2">{THEMES.map(t => <button key={t.id} type="button" disabled={!admin || save.isPending} onClick={() => save.mutate({ theme_preset: t.id })} aria-pressed={current === t.id} className={cn("flex items-center gap-3 rounded-md border p-3 text-left", current === t.id ? "border-primary ring-1 ring-primary" : "border-border")}>
       <span className="flex overflow-hidden rounded">{t.swatch.map(c => <span key={c} className="h-8 w-6" style={{ background: c }} />)}</span>
       <span><span className="block text-sm font-medium">{t.label}</span><span className="block text-xs text-muted-foreground">{t.hint}</span></span></button>)}</div>
+    <div className="mt-4"><LogoUpload tenant={tenantId} disabled={!admin || save.isPending} onUploaded={url => save.mutateAsync({ logo_url: url }).then(() => undefined)} /></div>
     <div className="mt-4 flex gap-2"><Input placeholder="URL del logo (https://…)" value={logoValue} disabled={!admin} onChange={e => setLogo(e.target.value)} />
       <Button disabled={!admin || save.isPending || (logoValue !== "" && !isValidLogoUrl(logoValue))} onClick={() => save.mutate({ logo_url: logoValue.trim() || null })}>Guardar logo</Button></div>
-    {logoValue && isValidLogoUrl(logoValue) && <img src={logoValue} alt="Vista previa del logo" className="mt-3 h-12 object-contain" />}
+    {logoValue && isValidLogoUrl(logoValue) && <BrandImage url={logoValue} alt="Vista previa del logo" className="mt-3 h-12 object-contain" />}
   </div>;
 }
 

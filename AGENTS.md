@@ -48,3 +48,7 @@ use the editor.
 - SaaS plans live in `saas_plans`/`tenant_subscriptions` (mirrored in `src/lib/access/saas-plans.ts`); limits enforced by `enforce_plan_limits` triggers and self-serve signup via `create_gym_with_plan`; why: plan limits must hold outside the UI.
 - Box config (branding, member plans, facilities, class templates, gym closures, facility approvals) is admin-only in RLS; coaches manage classes/WOD/attendance and their box events are forced to `pending` by `validate_event` until an admin approves; why: role separation must hold outside the UI.
 - SaaS promo codes live in `promo_codes`/`promo_redemptions` (platform-admin RLS only; affiliate data never exposed); public check via `check_promo_code`, redemption atomically inside `create_gym_with_plan`; why: usage limits and commission data must not be bypassed or leaked.
+
+- Minimum-attendance cancellation uses a SQL-only pg_cron job; why: timed transitions require no external HTTP callbacks or scheduler secrets.
+- Uploaded logos use tenant-prefixed storage paths with admin-write/member-read policies and renewable signed URLs; why: preserve tenant isolation while the workspace blocks public buckets.
+- Post-class photos are cropped and composed locally with canvas, never uploaded; why: user photos remain private and exports include personalized WOD loads.

@@ -21,6 +21,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { PersonAvatar } from "@/components/PersonAvatar";
 import { supabase } from "@/integrations/supabase/client";
+import { changePassword } from "@/lib/data/passwords";
 import { isBoxStaff } from "@/lib/auth/session";
 
 export const Route = createFileRoute("/_authenticated/profile")({ head: pageHead("Perfil", "Tu ficha, tus RMs y tu privacidad."), component: Profile });
@@ -104,9 +105,9 @@ function AccountForm({ prof }: { prof: Prof }) {
     </div><Button className="mt-4" disabled={save.isPending} onClick={() => save.mutate()}>Guardar</Button></section>;
 }
 function PasswordForm() {
-  const [a, setA] = useState(""); const [b, setB] = useState("");
-  const save = useMutation({ mutationFn: async () => { if (a.length < 8) throw new Error("Mínimo 8 caracteres"); if (a !== b) throw new Error("Las contraseñas no coinciden"); const r = await supabase.auth.updateUser({ password: a }); if (r.error) throw r.error; }, onSuccess: () => { setA(""); setB(""); toast.success("Contraseña cambiada"); }, onError: (e) => toast.error(e instanceof Error ? e.message : String(e)) });
-  return <section className="mb-5 rounded-xl border border-border bg-card p-5"><h2 className="mb-3 font-semibold">Cambiar contraseña</h2><div className="grid gap-3 sm:grid-cols-2"><Input type="password" placeholder="Nueva contraseña" value={a} onChange={(e) => setA(e.target.value)} /><Input type="password" placeholder="Repítela" value={b} onChange={(e) => setB(e.target.value)} /></div><Button className="mt-3" disabled={!a || save.isPending} onClick={() => save.mutate()}>Cambiar</Button></section>;
+  const [current, setCurrent] = useState(""); const [a, setA] = useState(""); const [b, setB] = useState("");
+  const save = useMutation({ mutationFn: () => changePassword(a, b, current), onSuccess: () => { setCurrent(""); setA(""); setB(""); toast.success("Contraseña cambiada"); }, onError: (e) => toast.error(e && typeof e === "object" && "message" in e ? String(e.message) : "No se pudo cambiar la contraseña") });
+  return <section className="mb-5 border-y border-border py-5"><h2 className="mb-3 font-semibold">Cambiar contraseña</h2><form className="space-y-3" onSubmit={e => { e.preventDefault(); save.mutate(); }}><Label htmlFor="current-password">Contraseña actual</Label><Input id="current-password" type="password" autoComplete="current-password" required value={current} onChange={e => setCurrent(e.target.value)}/><div className="grid gap-3 sm:grid-cols-2"><div><Label htmlFor="profile-new-password">Nueva contraseña</Label><Input id="profile-new-password" type="password" autoComplete="new-password" minLength={8} required value={a} onChange={e => setA(e.target.value)}/></div><div><Label htmlFor="profile-confirm-password">Repetir contraseña</Label><Input id="profile-confirm-password" type="password" autoComplete="new-password" required value={b} onChange={e => setB(e.target.value)}/></div></div><Button disabled={save.isPending}>Cambiar contraseña</Button></form></section>;
 }
 function HelpForm() {
   const { user, tenantId, tenantName } = useSession(); const [subject, setSubject] = useState(""); const [message, setMessage] = useState("");

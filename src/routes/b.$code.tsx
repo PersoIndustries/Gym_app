@@ -1,3 +1,4 @@
+import { BrandImage } from "@/components/BrandImage";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
@@ -25,7 +26,7 @@ function BoxEntry() {
   return (
     <div className="grid min-h-screen place-items-center bg-hero px-5">
       <div className="w-full max-w-sm space-y-5 text-center">
-        {brand?.logo_url ? <img src={brand.logo_url} alt={brand.name} className="mx-auto h-20 max-w-[14rem] object-contain" /> : <div className="flex justify-center"><Logo /></div>}
+        {brand?.logo_url ? <BrandImage url={brand.logo_url} alt={brand.name} className="mx-auto h-20 max-w-[14rem] object-contain" /> : <div className="flex justify-center"><Logo /></div>}
         <h1 className="text-3xl font-bold">{brand ? `Bienvenido a ${brand.name}` : isLoading ? "…" : "Te han invitado a un box"}</h1>
         {!isLoading && !brand && <p role="alert" className="text-sm text-destructive">No encontramos un box activo con este código. Pídeselo de nuevo a tu gimnasio.</p>}
         <p className="text-muted-foreground">Código <span className="font-mono text-primary">{code.toUpperCase()}</span>. Usa tu cuenta de siempre: una sola cuenta sirve para todos tus boxes.</p>

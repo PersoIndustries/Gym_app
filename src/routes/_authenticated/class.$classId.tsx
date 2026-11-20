@@ -1,3 +1,6 @@
+import { SocialPhoto } from "@/components/SocialPhoto";
+import { BrandImage } from "@/components/BrandImage";
+import { canShareClass } from "@/lib/media/images";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { BLOCKS, classDetailQuery, exercisesQuery, myRmsQuery, settingsQuery, updateClass, updatePhases, deletePhase, deleteWod, deleteGroupItems, groupTitle, FORMAT_LABEL, type WodGroup, type GroupFormat, addWod, addAttendee, markAttendee, saveRm, copyClassSetup, reorderWod, pasteClassSetup, hasClassClipboard, clipboardTitle, type WodItem, type Phase } from "@/lib/data/box";
-import { coachesQuery, membersQuery } from "@/lib/data/gym";
+import { coachesQuery, membersQuery, activitiesQuery } from "@/lib/data/gym";
 import { classState, STATE_LABEL, STATE_STYLE, INTENT_STYLE } from "@/lib/access/class-state";
 import { useClassActions } from "@/lib/data/use-class-actions";
 import { PersonAvatar } from "@/components/PersonAvatar";
@@ -30,7 +33,7 @@ export const Route = createFileRoute("/_authenticated/class/$classId")({
 const errorToast = (e: unknown) => toast.error(e instanceof Error ? e.message : (e && typeof e === "object" && "message" in e ? String((e as { message: unknown }).message) : "Algo ha fallado"));
 function ClassPage() {
   const { classId } = Route.useParams();
-  const { role, tenantId, user } = useSession();
+  const { role, tenantId, tenantName, user } = useSession();
   const [preview, setPreview] = useState(false);
   const [dragId, setDragId] = useState<string | null>(null);
   const canManage = isBoxStaff(role);
@@ -40,6 +43,7 @@ function ClassPage() {
   const { data: exercises = [] } = useQuery(exercisesQuery(tenantId));
   const { data: rms = {} } = useQuery(myRmsQuery());
   const { data: settings } = useQuery(settingsQuery(tenantId));
+  const { data: activities = [] } = useQuery(activitiesQuery(tenantId));
   const { data: coaches = [] } = useQuery(coachesQuery(tenantId));
   const { data: levels = [] } = useQuery(levelsQuery(tenantId));
   const { data: itemLevels = [] } = useQuery(classLevelsQuery((data?.wod ?? []).map(w => w.id)));
@@ -51,6 +55,7 @@ function ClassPage() {
   const mark = useMutation({ mutationFn: (v: { uid: string; attended: boolean }) => markAttendee(classId, v.uid, v.attended), onSuccess: refresh, onError: errorToast });
   if (isLoading || !data) return <AppShell title="Clase"><p className="text-sm text-muted-foreground">Cargando…</p></AppShell>;
   const { cls, wod, attendees } = data;
+  const activity = activities.find(a => a.id === cls.activity_type_id);
   const me = attendees.find(a => a.user_id === user?.id);
   const booked = attendees.filter(a => a.status === "booked");
   const counts = { going: booked.filter(a => a.intent === "going").length, maybe: booked.filter(a => a.intent === "maybe").length, not_going: attendees.filter(a => a.status === "declined").length, waitlist: attendees.filter(a => a.status === "waitlist").length };
@@ -71,10 +76,17 @@ function ClassPage() {
       {staff && !w.alternative_to && tenantId && <WodEditor phases={allPhases} initialBlock={w.block} groupKey={w.group_key ?? null} alternativeTo={w.id} levels={levels} classId={cls.id} tenantId={tenantId} exercises={exercises} nextPos={wod.length} onDone={refresh}/>}
     </div>;
   };
+  function socialItem(w: WodItem) {
+    const ex = exercises.find(e => e.id === w.exercise_id); const preferred = (w.exercise_id && exLevels[w.exercise_id]) || prof?.preferred_level_name;
+    const level = itemLevels.find(l => l.wod_item_id === w.id && levels.find(x => x.id === l.level_id)?.name === preferred);
+    const pct = level?.percent_rm ?? w.percent_rm; const rm = ex?.rm_lift ? rms[ex.rm_lift] : undefined;
+    const kg = level?.load_kg ?? (pct ? recommendedKg(rm, pct, rounding) : null);
+    return [w.alternative_to ? "Alternativa:" : "", ex?.name ?? w.label ?? "Ejercicio", w.sets ? `${w.sets} series` : "", level?.reps ?? w.reps ?? "", kg != null ? `${kg} kg` : pct ? `${pct}% RM` : "", level?.notes ?? w.notes ?? ""].filter(Boolean).join(" · ");
+  }
   return <AppShell title={cls.title} action={<Button asChild size="icon" variant="ghost" title="Calendario"><Link to="/calendar"><ArrowLeft className="h-4 w-4"/></Link></Button>}>
     {canManage && <div className="mb-4 flex flex-wrap justify-end gap-2">{staff && <><Button variant="outline" size="sm" onClick={async()=>{ try { await copyClassSetup(cls.id,cls.title,phases,wod); toast.success("Configuración copiada"); refresh(); } catch(e){ errorToast(e); } }}><Copy className="mr-2 h-4 w-4"/>Copiar WOD</Button>{hasClassClipboard() && <Button variant="outline" size="sm" onClick={async()=>{ if(!confirm(`¿Pegar "${clipboardTitle() ?? "clase copiada"}"? Se reemplazará el WOD actual.`)) return; try { await pasteClassSetup(cls.tenant_id,cls.id); toast.success("Configuración pegada"); refresh(); } catch(e){ errorToast(e); } }}><ClipboardPaste className="mr-2 h-4 w-4"/>Pegar WOD</Button>}</>}<Button variant="outline" size="sm" onClick={() => setPreview(!preview)}><Eye className="mr-2 h-4 w-4"/>{preview ? "Volver a gestión" : "Ver como alumno"}</Button></div>}
     <section className="border-y border-border py-5">
-      <div className="flex items-center gap-2"><h2 className="font-display text-xl font-bold">{cls.title}</h2>{staff && <ClassNameEditor id={cls.id} title={cls.title} onDone={refresh}/>}</div>
+      <div className="flex items-center gap-2"><BrandImage url={activity?.logo_url} alt={activity?.name ?? "Tipo de clase"} className="h-12 w-12 shrink-0 object-contain"/><h2 className="font-display text-xl font-bold">{cls.title}</h2>{staff && <ClassNameEditor id={cls.id} title={cls.title} onDone={refresh}/>}</div>
       <p className="mt-2 text-sm capitalize">{new Date(cls.starts_at).toLocaleString("es-ES", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}</p>
       <div className="my-3 flex flex-wrap items-center gap-3"><PersonAvatar name={cls.coach_name ?? "Sin profesor"} url={coaches.find(p => p.user_id === cls.coach_id)?.avatar_url} className="h-10 w-10"/><div><p className="text-sm font-medium">{cls.coach_name ?? "Sin profesor"}</p><p className="text-xs text-muted-foreground">Profesor</p></div><span className={cn("ml-auto rounded px-2 py-1 text-xs", STATE_STYLE[classState(cls)])}>{STATE_LABEL[classState(cls)]}</span></div>
       <p className="text-sm text-muted-foreground">{booked.length}/{cls.capacity} plazas · {confirmed(counts)}/{cls.min_attendees} confirmados mínimo</p>
@@ -83,6 +95,7 @@ function ClassPage() {
       {cls.status !== "cancelled" && new Date(cls.starts_at) > new Date() && <div className="mt-4 flex flex-wrap gap-2" role="group" aria-label="Tu asistencia">{(["going", "maybe", "not_going"] as Intent[]).map(i => { const sel = me?.intent===i && me?.status!==undefined; return <Button key={i} size="sm" disabled={busy} variant="outline" aria-pressed={sel} className={cn(sel ? cn(INTENT_STYLE[i], "font-semibold ring-2 ring-current shadow-sm") : "border-border/60 bg-transparent text-muted-foreground opacity-60 hover:opacity-100")} onClick={() => book.mutate({id:cls.id,intent:i})}>{sel && <Check className="mr-1 h-4 w-4"/>}{INTENT_LABEL[i]}</Button>; })}</div>}
       {staff && <Button className="mt-4" size="sm" variant="outline" disabled={cancel.isPending} onClick={() => (cls.status==="cancelled" || confirm("¿Cancelar esta clase?")) && cancel.mutate(cls.status==="cancelled" ? "scheduled" : "cancelled")}>{cls.status==="cancelled" ? "Reactivar clase" : "Cancelar clase"}</Button>}
     </section>
+    {canShareClass(cls) && <SocialPhoto title={cls.title} gym={tenantName ?? "Mi gimnasio"} activity={activity?.name ?? cls.title} gymLogo={settings && "logo_url" in settings ? settings.logo_url as string | null : null} classLogo={activity?.logo_url} sections={blocks.map(p => ({ key: p.key, title: p.title, lines: [...(p.groups ?? []).flatMap(g => [groupTitle(g), ...wod.filter(w => w.group_key === g.key).map(w => socialItem(w))]), ...wod.filter(w => w.block === p.key && !(p.groups ?? []).some(g => g.key === w.group_key)).map(w => socialItem(w))] }))}/>}
     <h2 className="mt-6 mb-3 font-semibold">WOD</h2>
     {wod.length===0 && !staff && <p className="text-sm text-muted-foreground">El profesor aún no ha publicado el entreno.</p>}
     {blocks.map(phase => <section key={phase.key} className={cn("border-t border-border py-4", phase.alternativeTo && "border-l-2 border-l-warning pl-3")}>

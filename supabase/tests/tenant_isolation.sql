@@ -20,6 +20,8 @@ begin
     (b_adm, 'b_adm@iso.test', '{}', 'authenticated', 'authenticated');
   insert into public.tenants(id, name, slug) values (ta, 'Iso A', 'iso-a-' || left(ta::text, 8)), (tb, 'Iso B', 'iso-b-' || left(tb::text, 8));
   insert into public.tenant_members(tenant_id, user_id, role) values (ta, a_ath, 'athlete'), (ta, a_adm, 'admin'), (tb, b_ath, 'athlete'), (tb, b_adm, 'admin');
+  insert into public.activity_types(tenant_id,name,logo_url) values(tb,'Tipo B','https://example.com/b.webp');
+  insert into storage.objects(bucket_id,name) values('gym-logos',tb::text||'/isolation.webp');
   insert into public.classes(id, tenant_id, title, starts_at, ends_at, capacity) values
     (ca, ta, 'Clase A', now() + interval '2 day', now() + interval '2 day 1 hour', 10),
     (cb, tb, 'Clase B', now() + interval '2 day', now() + interval '2 day 1 hour', 10);
@@ -54,6 +56,13 @@ begin
     select count(*) into n from public.class_attendees(cb);                 if n <> 0 then raise exception 'FAIL % ve asistentes B', u; end if;
     select count(*) into n from public.class_attendance(tb, now() - interval '1 day', now() + interval '9 day'); if n <> 0 then raise exception 'FAIL % ve contadores B', u; end if;
     checks := checks + 9;
+
+    select count(*) into n from public.activity_types where tenant_id=tb; if n<>0 then raise exception 'FAIL lee logos de tipos B'; end if;
+    update public.activity_types set logo_url='https://example.com/hack.webp' where tenant_id=tb; get diagnostics n=row_count; if n<>0 then raise exception 'FAIL modifica logos de tipos B'; end if;
+    select count(*) into n from storage.objects where bucket_id='gym-logos' and name=tb::text||'/isolation.webp'; if n<>0 then raise exception 'FAIL lee archivo logo B'; end if;
+    blocked:=false; begin insert into storage.objects(bucket_id,name) values('gym-logos',tb::text||'/hack.webp'); exception when insufficient_privilege then blocked:=true; end; if not blocked then raise exception 'FAIL sube logo en B'; end if;
+    delete from storage.objects where bucket_id='gym-logos' and name=tb::text||'/isolation.webp'; get diagnostics n=row_count; if n<>0 then raise exception 'FAIL borra archivo logo B'; end if;
+    checks:=checks+5;
 
     -- ESCRITURA: updates/deletes afectan 0 filas
     update public.classes set title = 'hack' where id = cb; get diagnostics n = row_count; if n <> 0 then raise exception 'FAIL % edita clase B', u; end if;

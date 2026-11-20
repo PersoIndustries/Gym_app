@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DevHomeRouteImport } from './routes/dev-home'
 import { Route as EmpezarRouteImport } from './routes/empezar'
 import { Route as PreciosRouteImport } from './routes/precios'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedCodesRouteImport } from './routes/_authenticated/codes'
@@ -67,6 +68,11 @@ const EmpezarRoute = EmpezarRouteImport.update({
 const PreciosRoute = PreciosRouteImport.update({
   id: '/precios',
   path: '/precios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -203,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/dev-home': typeof DevHomeRoute
   '/empezar': typeof EmpezarRoute
   '/precios': typeof PreciosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/calendar': typeof AuthenticatedCalendarRoute
   '/codes': typeof AuthenticatedCodesRoute
@@ -234,6 +241,7 @@ export interface FileRoutesByTo {
   '/dev-home': typeof DevHomeRoute
   '/empezar': typeof EmpezarRoute
   '/precios': typeof PreciosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/codes': typeof AuthenticatedCodesRoute
   '/create-gym': typeof AuthenticatedCreateGymRoute
@@ -266,6 +274,7 @@ export interface FileRoutesById {
   '/dev-home': typeof DevHomeRoute
   '/empezar': typeof EmpezarRoute
   '/precios': typeof PreciosRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/codes': typeof AuthenticatedCodesRoute
@@ -299,6 +308,7 @@ export interface FileRouteTypes {
     | '/dev-home'
     | '/empezar'
     | '/precios'
+    | '/reset-password'
     | '/admin'
     | '/calendar'
     | '/codes'
@@ -330,6 +340,7 @@ export interface FileRouteTypes {
     | '/dev-home'
     | '/empezar'
     | '/precios'
+    | '/reset-password'
     | '/calendar'
     | '/codes'
     | '/create-gym'
@@ -361,6 +372,7 @@ export interface FileRouteTypes {
     | '/dev-home'
     | '/empezar'
     | '/precios'
+    | '/reset-password'
     | '/_authenticated/admin'
     | '/_authenticated/calendar'
     | '/_authenticated/codes'
@@ -394,6 +406,7 @@ export interface RootRouteChildren {
   DevHomeRoute: typeof DevHomeRoute
   EmpezarRoute: typeof EmpezarRoute
   PreciosRoute: typeof PreciosRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   BCodeRoute: typeof BCodeRoute
   EventosIdRoute: typeof EventosIdRoute
   EventosIndexRoute: typeof EventosIndexRoute
@@ -442,6 +455,13 @@ declare module '@tanstack/react-router' {
       path: '/precios'
       fullPath: '/precios'
       preLoaderRoute: typeof PreciosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -680,6 +700,7 @@ const rootRouteChildren: RootRouteChildren = {
   DevHomeRoute: DevHomeRoute,
   EmpezarRoute: EmpezarRoute,
   PreciosRoute: PreciosRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   BCodeRoute: BCodeRoute,
   EventosIdRoute: EventosIdRoute,
   EventosIndexRoute: EventosIndexRoute,

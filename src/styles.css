@@ -77,6 +77,8 @@
 }
 
 :root {
+  --social-ink: oklch(0.99 0 0);
+  --social-panel: oklch(0.12 0 0 / 72%);
   --radius: 0.75rem;
   --background: oklch(0.17 0.008 260);
   --foreground: oklch(0.96 0.005 260);
