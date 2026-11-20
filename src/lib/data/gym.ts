@@ -37,7 +37,7 @@ export const membersQuery = (tenant: string | null) => queryOptions({ queryKey: 
   if (!tenant) return { members: [], requests: [], invites: [], profiles: [], memberships: [] };
   const members = result(await supabase.from("tenant_members").select("id,user_id,role").eq("tenant_id", tenant));
   const requests = result(await supabase.from("tenant_join_requests").select("id,user_id,role,created_at").eq("tenant_id", tenant).eq("status", "pending"));
-  const invites = result(await supabase.from("tenant_invites").select("id,code,requires_approval,uses").eq("tenant_id", tenant));
+  const invites = result(await supabase.from("tenant_invites").select("id,code,requires_approval,uses,membership_plan_id").eq("tenant_id", tenant));
   const ids = [...members.map(m => m.user_id), ...requests.map(r => r.user_id)];
   const profiles = ids.length ? result(await supabase.from("profiles").select("id,full_name,avatar_url").in("id", ids)) : [];
   const memberships = result(await supabase.from("user_memberships").select("*").eq("tenant_id", tenant).order("starts_on", { ascending: false }).order("created_at", { ascending: false }));
@@ -50,3 +50,4 @@ export async function assignPlan(tenant: string, user: string, plan: string, exi
   else assertOk(await supabase.from("user_memberships").insert(value));
 }
 export async function changeMemberRole(tenant: string, id: string, role: "athlete" | "coach" | "admin") { assertOk(await supabase.from("tenant_members").update({ role }).eq("tenant_id", tenant).eq("id", id)); }
+export async function setInvitePlan(tenant: string, invite: string, plan: string) { assertOk(await supabase.from("tenant_invites").update({ membership_plan_id: plan === "none" ? null : plan }).eq("tenant_id", tenant).eq("id", invite)); }

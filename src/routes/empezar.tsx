@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Logo } from "@/components/layout/Logo";
-import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/auth/session";
 import { SAAS_PLANS, TRIAL_DAYS, discounted, getPlan, isValidCode, suggestCode, type SaasPlanId } from "@/lib/access/saas-plans";
 import { checkPromo } from "@/lib/data/promos";
@@ -20,6 +19,10 @@ import { BrandImage } from "@/components/BrandImage";
 import { setBranding } from "@/lib/data/levels";
 import { pageHead } from "@/lib/seo";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ActivityMark } from "@/components/ActivityMark";
+import { DEFAULT_ACTIVITIES, validActivitySelection, type ActivityName } from "@/lib/brand/activities";
+import { createGym } from "@/lib/data/onboarding";
 
 const PLAN_IDS = ["starter", "pro", "elite"] as const;
 export const Route = createFileRoute("/empezar")({
@@ -35,6 +38,7 @@ function Wizard() {
   const qc = useQueryClient(); const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [f, setF] = useState({ name: "", city: "", code: "", approval: false, plan: (initialPlan ?? "pro") as SaasPlanId, billing: "month" as "month" | "year", theme: "lime" as ThemeId, logo: "", rounding: 2.5, cancelHours: 4, minAttendees: 3, facilities: false });
+  const [activities, setActivities] = useState<ActivityName[]>(["CrossFit"]);
   const [codeTouched, setCodeTouched] = useState(false);
   const [promoText, setPromoText] = useState(""); const [promo, setPromo] = useState<{ code: string; plan_id: string | null; discount_pct: number; duration_months: number | null } | null>(null);
   async function applyPromo() { try { const p = await checkPromo(promoText); if (!p) { setPromo(null); toast.error("Código no válido, caducado o agotado"); return; } setPromo(p); if (p.plan_id) setF((x) => ({ ...x, plan: p.plan_id as SaasPlanId })); toast.success(`Descuento del ${p.discount_pct}% aplicado`); } catch (e) { toast.error(e instanceof Error ? e.message : String(e)); } }
@@ -46,10 +50,10 @@ function Wizard() {
   if (!user) return <Shell><h1 className="text-3xl font-bold">Crea tu gimnasio</h1><p className="mt-2 text-muted-foreground">Primero crea tu cuenta o inicia sesión. Después volverás aquí para configurar tu box.</p>
     <Button className="mt-6" asChild><Link to="/auth" search={{ intent: "create_gym", plan: f.plan, mode: "signup" }}>Crear cuenta o entrar</Link></Button></Shell>;
 
-  const canNext = [f.name.trim().length > 1 && isValidCode(f.code), true, !f.logo || isValidLogoUrl(f.logo), true][step] ?? true;
+  const canNext = [f.name.trim().length > 1 && isValidCode(f.code), true, !f.logo || isValidLogoUrl(f.logo), validActivitySelection(activities, plan.maxActivityTypes)][step] ?? true;
   async function create() {
     setBusy(true);
-    const r = await supabase.rpc("create_gym_with_plan", { _name: f.name, _city: f.city, _code: f.code.toUpperCase(), _requires_approval: f.approval, _plan: f.plan, _billing: f.billing, _theme: f.theme, _logo: f.logo, _rounding: f.rounding, _cancel_hours: f.cancelHours, _min_attendees: f.minAttendees, _facilities: f.facilities && plan.facilities, ...(promo ? { _promo: promo.code } : {}) });
+    const r = await createGym({ name: f.name, city: f.city, code: f.code.toUpperCase(), approval: f.approval, plan: f.plan, billing: f.billing, theme: f.theme, logo: f.logo, rounding: f.rounding, cancelHours: f.cancelHours, minAttendees: f.minAttendees, facilities: f.facilities && plan.facilities, activities, promo: promo?.code ?? null });
     setBusy(false);
     if (r.error) { toast.error(r.error.message); return; }
     sessionStorage.removeItem("bf.next");
@@ -80,6 +84,7 @@ function Wizard() {
       <div><LogoUpload tenant={null} onUploaded={url => setF({ ...f, logo: url })} /><Label>Logo (enlace https a la imagen)</Label><Input value={f.logo} onChange={(e) => setF({ ...f, logo: e.target.value })} placeholder="https://…/logo.png" />{f.logo && !isValidLogoUrl(f.logo) && <p className="mt-1 text-xs text-destructive">Debe empezar por https://</p>}</div>
       <div className="rounded-xl border border-border bg-card p-6 text-center"><p className="mb-3 text-xs text-muted-foreground">Así verán tus socios el acceso</p>{f.logo && isValidLogoUrl(f.logo) ? <BrandImage url={f.logo} alt="Logo" className="mx-auto h-14 object-contain" /> : <p className="text-2xl font-bold">{f.name || "Tu box"}</p>}<Button className="mt-4" size="sm">Entrar</Button></div></div>}
     {step === 3 && <div className="grid gap-4"><h1 className="text-2xl font-bold">Ajustes básicos</h1>
+      <fieldset><legend className="mb-3 font-semibold">Actividades de tu gimnasio · {activities.length}{plan.maxActivityTypes === null ? " seleccionadas" : ` / ${plan.maxActivityTypes}`}</legend><div className="grid grid-cols-2 gap-2">{DEFAULT_ACTIVITIES.map(name => <label key={name} className={cn("flex items-center gap-3 rounded-lg border p-3", activities.includes(name) ? "border-primary bg-primary/10" : "border-border")}><Checkbox aria-label={name} checked={activities.includes(name)} disabled={!activities.includes(name) && plan.maxActivityTypes !== null && activities.length >= plan.maxActivityTypes} onCheckedChange={checked => setActivities(current => checked ? [...current, name] : current.filter(n => n !== name))}/><ActivityMark name={name} className="h-8 w-8"/><span className="text-sm">{name}</span></label>)}</div>{!validActivitySelection(activities, plan.maxActivityTypes) && <p role="alert" className="mt-2 text-sm text-destructive">Selecciona al menos una actividad, sin superar el límite de tu plan.</p>}</fieldset>
       <div><Label>Redondeo de discos (kg)</Label><Input type="number" step="0.5" value={f.rounding} onChange={(e) => setF({ ...f, rounding: Number(e.target.value) || 2.5 })} /></div>
       <div><Label>Horas antes para cancelar clases con pocos asistentes</Label><Input type="number" value={f.cancelHours} onChange={(e) => setF({ ...f, cancelHours: Number(e.target.value) || 0 })} /></div>
       <div><Label>Mínimo de asistentes por clase</Label><Input type="number" value={f.minAttendees} onChange={(e) => setF({ ...f, minAttendees: Number(e.target.value) || 0 })} /></div>
@@ -89,7 +94,7 @@ function Wizard() {
       <ul className="mt-6 space-y-2 text-left text-sm">{["Crea tu horario fijo de clases", "Configura las cuotas de tus socios", "Invita a tus coaches con el código", "Comparte el enlace o ponlo en el mostrador"].map((t) => <li key={t} className="rounded-lg border border-border p-3">☐ {t}</li>)}</ul>
       <Button className="mt-6" onClick={() => { setTenantId(created.id); setView("box"); navigate({ to: "/admin" }); }}>Ir a la gestión de mi box</Button></div>}
     {step < 4 && <div className="mt-8 flex justify-between"><Button variant="ghost" disabled={step === 0} onClick={() => setStep(step - 1)}>Atrás</Button>
-      {step < 3 ? <Button disabled={!canNext} onClick={() => setStep(step + 1)}>Siguiente</Button> : <Button disabled={busy} onClick={create}>{busy ? "Creando…" : "Crear gimnasio"}</Button>}</div>}
+      {step < 3 ? <Button disabled={!canNext} onClick={() => setStep(step + 1)}>Siguiente</Button> : <Button disabled={busy || !canNext} onClick={create}>{busy ? "Creando…" : "Crear gimnasio"}</Button>}</div>}
   </Shell>;
 }
 function Shell({ children }: { children: React.ReactNode }) {

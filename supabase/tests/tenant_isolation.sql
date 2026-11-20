@@ -20,6 +20,8 @@ begin
     (b_adm, 'b_adm@iso.test', '{}', 'authenticated', 'authenticated');
   insert into public.tenants(id, name, slug) values (ta, 'Iso A', 'iso-a-' || left(ta::text, 8)), (tb, 'Iso B', 'iso-b-' || left(tb::text, 8));
   insert into public.tenant_members(tenant_id, user_id, role) values (ta, a_ath, 'athlete'), (ta, a_adm, 'admin'), (tb, b_ath, 'athlete'), (tb, b_adm, 'admin');
+  insert into public.membership_plans(id,tenant_id,name,price_cents,allowed_weekdays) values(pb,tb,'Cuota B',1000,array[0,1,2,3,4,5,6]);
+  insert into public.user_memberships(tenant_id,user_id,plan_id,starts_on,status) values(tb,b_ath,pb,current_date,'active');
   insert into public.activity_types(tenant_id,name,logo_url) values(tb,'Tipo B','https://example.com/b.webp');
   insert into storage.objects(bucket_id,name) values('gym-logos',tb::text||'/isolation.webp');
   insert into public.classes(id, tenant_id, title, starts_at, ends_at, capacity) values
@@ -29,7 +31,6 @@ begin
   insert into public.wod_items(tenant_id, class_id, block, position, label) values (tb, cb, 'strength', 1, 'Secreto B');
   insert into public.tenant_settings(tenant_id) values (tb) on conflict do nothing;
   insert into public.gym_events(id,tenant_id,title,starts_at,ends_at,blocks_classes) values(eb,tb,'Vacaciones B',now()+interval '30 day',now()+interval '31 day',false);
-  insert into public.membership_plans(id,tenant_id,name,price_cents,allowed_weekdays,allowed_activity_type_ids) values(pb,tb,'Cuota B',1000,array[1,2,3,4,5],array[]::uuid[]);
   insert into public.exercises(id,tenant_id,name) values(xb,tb,'Ejercicio B');
   insert into public.facilities(id,tenant_id,name,kind) values(fb,tb,'Sauna B','sauna');
   insert into public.facility_reservations(id,tenant_id,facility_id,user_id,starts_at,ends_at,status) values(rb,tb,fb,b_adm,now()+interval '1 day',now()+interval '1 day 1 hour','cancelled');

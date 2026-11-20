@@ -1,32 +1,27 @@
-import { BrandImage } from "@/components/BrandImage";
+import { ActivityMark } from "@/components/ActivityMark";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ClassCard } from "@/components/ClassCard";
-import { PersonAvatar } from "@/components/PersonAvatar";
 import { classesQuery, monthClassesQuery, EMPTY_COUNTS, weekRange } from "@/lib/data/box";
-import { coachesQuery, eventsQuery, myPlanQuery, activitiesQuery } from "@/lib/data/gym";
+import { coachesQuery, eventsQuery, myPlanQuery } from "@/lib/data/gym";
 import { calendarEventsQuery } from "@/lib/data/events";
 import { EVENT_KIND_LABEL } from "@/lib/access/events";
 import { useClassActions } from "@/lib/data/use-class-actions";
 import { useSession } from "@/lib/auth/session";
 import { canAccessClass } from "@/lib/access/membership";
-import { classState, STATE_LABEL, STATE_STYLE } from "@/lib/access/class-state";
-import { occupied } from "@/lib/access/attendance";
 import { cn } from "@/lib/utils";
 
 export function GymCalendar({ staff = false, onWeekChange }: { staff?: boolean; onWeekChange?: (week: number) => void }) {
- const { tenantId, user, realRole } = useSession();
+ const { tenantId, user } = useSession();
  const [mode, setMode] = useState<"week" | "month">("week");
  const [offset, setOffset] = useState(0);
  const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
  const [selected, setSelected] = useState(() => new Date().toLocaleDateString("sv-SE"));
  const week = useQuery(classesQuery(tenantId, offset));
  const monthly = useQuery(monthClassesQuery(tenantId, month.getFullYear(), month.getMonth()));
- const { data: activities = [] } = useQuery(activitiesQuery(tenantId));
- const classLogo = (id: string | null) => activities.find(a => a.id === id)?.logo_url;
  const { data: coaches = [] } = useQuery(coachesQuery(tenantId));
  const { data: events = [] } = useQuery(eventsQuery(tenantId));
  const { data: plan } = useQuery(myPlanQuery(tenantId, user?.id));
@@ -60,16 +55,13 @@ export function GymCalendar({ staff = false, onWeekChange }: { staff?: boolean; 
   <div className="overflow-x-auto">
    <div className={cn("grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-border bg-border", staff && mode === "week" ? "min-w-[700px]" : "") }>
     {["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"].map(d => <div key={d} className="bg-background py-2 text-center text-xs font-medium text-muted-foreground">{d}</div>)}
-    {days.map(d => { const list = dayClasses(d); const ev = dayEvents(d); const selectedDay = dateKey(d) === selected; return <div key={dateKey(d)} className={cn("min-w-0 bg-background", mode === "month" ? "min-h-24 sm:min-h-32" : "min-h-24", selectedDay && "bg-accent/50", mode === "month" && d.getMonth() !== month.getMonth() && "opacity-40")}>
-      <Button variant="ghost" className={cn("h-auto w-full flex-col items-start gap-1 rounded-none px-1.5 py-2 sm:px-2", selectedDay && "text-primary")} onClick={() => { setSelected(dateKey(d)); if (mode === "month" && d.getMonth() !== month.getMonth()) setMonth(new Date(d.getFullYear(),d.getMonth(),1)); }} aria-label={d.toLocaleDateString("es-ES",{dateStyle:"full"})}><span className={cn("text-sm font-bold",dateKey(d) === dateKey(new Date()) && "text-primary")}>{d.getDate()}</span>{list.length > 0 && <span className="text-[10px] text-muted-foreground">{list.length} clases</span>}{ev.length > 0 && <span className="w-full truncate text-[10px] text-warning">{ev[0]?.title}</span>}{dayComm(d).slice(0,1).map(x => <span key={x.id} className="w-full truncate text-[10px] text-primary">★ {x.title}</span>)}</Button>
-      {staff && mode === "week" ? <div className="space-y-2 px-1 pb-2">{list.map(c => <Link key={c.id} to="/class/$classId" params={{classId:c.id}} className={cn("block rounded border border-border p-2 text-xs",STATE_STYLE[classState(c)])}><BrandImage url={classLogo(c.activity_type_id)} alt="" className="float-left mr-1 h-5 w-5 object-contain"/><p className="font-semibold">{new Date(c.starts_at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}</p><p className="mt-1 break-words font-medium">{c.title}</p><p>{occupied(data?.counts[c.id] ?? EMPTY_COUNTS)}/{c.capacity} plazas</p><p className="mt-1 text-[10px]">{STATE_LABEL[classState(c)]}</p></Link>)}</div> : <div className="space-y-1 px-1 pb-2">{list.slice(0,mode === "month" ? 2 : 3).map(c => <Link to="/class/$classId" params={{classId:c.id}} key={c.id} className={cn("flex min-w-0 items-center gap-1 rounded px-1 py-0.5 text-[9px] sm:text-[11px]",STATE_STYLE[classState(c)])}><BrandImage url={classLogo(c.activity_type_id)} alt="" className="h-4 w-4 shrink-0 object-contain"/>{new Date(c.starts_at).toLocaleTimeString("es-ES",{hour:"2-digit",minute:"2-digit"})}<span className="hidden truncate sm:inline"> · {c.title}</span></Link>)}{list.length > 2 && mode === "month" && <p className="text-[10px] text-muted-foreground">+{list.length-2}</p>}</div>}
-     </div>; })}
+    {days.map(d => { const list = dayClasses(d); const ev = dayEvents(d); const selectedDay = dateKey(d) === selected; const closed = events.some(e => e.blocks_classes && new Date(e.starts_at) < new Date(d.getFullYear(), d.getMonth(), d.getDate()+1) && new Date(e.ends_at) > d); return <Button key={dateKey(d)} variant="ghost" aria-pressed={selectedDay} className={cn("h-full min-w-0 flex-col items-start justify-start gap-1 rounded-none px-1.5 py-2 sm:px-2", mode === "month" ? "min-h-24 sm:min-h-28" : "min-h-24", closed ? "bg-warning/20 text-warning hover:bg-warning/30" : selectedDay ? "bg-accent text-primary" : "bg-background", selectedDay && "ring-2 ring-inset ring-primary", mode === "month" && d.getMonth() !== month.getMonth() && "opacity-40")} onClick={() => { setSelected(dateKey(d)); if (mode === "month" && d.getMonth() !== month.getMonth()) setMonth(new Date(d.getFullYear(),d.getMonth(),1)); }} aria-label={`${d.toLocaleDateString("es-ES",{dateStyle:"full"})}${closed ? ", gimnasio cerrado" : ""}`}><span className="text-sm font-bold">{d.getDate()}</span>{list.length > 0 && <span className="text-[10px] text-muted-foreground">{list.length} clases</span>}{closed && <span className="text-[10px]">Cerrado</span>}{!closed && ev.length > 0 && <span className="text-[10px] text-warning">Vacaciones</span>}{dayComm(d).length > 0 && <span className="text-[10px] text-muted-foreground">{dayComm(d).length} eventos</span>}</Button>; })}
    </div>
   </div>
   <h3 className="font-semibold capitalize">{new Date(`${selected}T00:00:00`).toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"})}</h3>
   {selectedEvents.map(e => <div key={e.id} className="border-l-2 border-warning bg-warning/10 p-3 text-sm"><p className="font-medium text-warning">{e.title} · {e.blocks_classes ? "Cerrado" : "Vacaciones"}</p>{e.description && <p className="mt-1 text-muted-foreground">{e.description}</p>}<p className="mt-1 text-xs text-muted-foreground">{new Date(e.starts_at).toLocaleString("es-ES")} — {new Date(e.ends_at).toLocaleString("es-ES")}</p></div>)}
-  {selectedComm.map(e => <Link key={e.id} to="/events/$eventId" params={{eventId:e.id}} className="block border-l-2 border-primary bg-primary/10 p-3 text-sm"><p className="font-medium text-primary">{e.title} · {EVENT_KIND_LABEL[e.kind] ?? e.kind}</p><p className="mt-1 text-xs text-muted-foreground">{e.scope === "community" ? "Comunidad" : "Evento del box"}{e.location ? ` · ${e.location}` : ""}</p></Link>)}
+  {selectedComm.map(e => <Link key={e.id} to="/events/$eventId" params={{eventId:e.id}} className="flex items-center gap-3 border-l-2 border-primary bg-primary/10 p-3 text-sm"><ActivityMark name="Evento" className="h-9 w-9"/><div><p className="font-medium text-primary">{e.title} · {EVENT_KIND_LABEL[e.kind] ?? e.kind}</p><p className="mt-1 text-xs text-muted-foreground">{e.scope === "community" ? "Comunidad" : "Evento del box"}{e.location ? ` · ${e.location}` : ""}</p></div></Link>)}
   {!active.isLoading && shown.length === 0 && <p className="py-5 text-sm text-muted-foreground">No hay clases este día.</p>}
-  <div className="grid gap-3 lg:grid-cols-2">{shown.map(c => { const count = mode === "month" ? (data?.classes ?? []).filter(x => { const start = new Date(c.starts_at); start.setDate(start.getDate()-((start.getDay()+6)%7));start.setHours(0,0,0,0); const end = new Date(start);end.setDate(end.getDate()+7);const mine = data?.mine[x.id];return new Date(x.starts_at)>=start && new Date(x.starts_at)<end && mine && mine.intent!=="not_going" && x.status!=="cancelled"; }).length : weeklyCount; const access = canAccessClass(plan ?? null,{...c,coach:c.coach_name ?? "",booked:0,activity_type_id:c.activity_type_id ?? ""}, count - (data?.mine[c.id]?.intent !== "not_going" && data?.mine[c.id] ? 1 : 0)); return <ClassCard key={c.id} c={c} coachAvatar={coaches.find(p => p.user_id === c.coach_id)?.avatar_url} counts={data?.counts[c.id] ?? EMPTY_COUNTS} mine={data?.mine[c.id]} busy={busy} blockedReason={realRole === "coach" || realRole === "admin" || access.allowed ? undefined : access.reason} onIntent={intent => book.mutate({id:c.id,intent})} onLeave={() => leave.mutate(c.id)} />; })}</div>
+  <div className="grid gap-3 lg:grid-cols-2">{shown.map(c => { const count = mode === "month" ? (data?.classes ?? []).filter(x => { const start = new Date(c.starts_at); start.setDate(start.getDate()-((start.getDay()+6)%7));start.setHours(0,0,0,0); const end = new Date(start);end.setDate(end.getDate()+7);const mine = data?.mine[x.id];return new Date(x.starts_at)>=start && new Date(x.starts_at)<end && mine && mine.intent!=="not_going" && x.status!=="cancelled"; }).length : weeklyCount; const access = canAccessClass(plan ?? null,{...c,coach:c.coach_name ?? "",booked:0,activity_type_id:c.activity_type_id ?? ""}, count - (data?.mine[c.id]?.intent !== "not_going" && data?.mine[c.id] ? 1 : 0)); return <ClassCard key={c.id} c={c} coachAvatar={coaches.find(p => p.user_id === c.coach_id)?.avatar_url} counts={data?.counts[c.id] ?? EMPTY_COUNTS} mine={data?.mine[c.id]} busy={busy} blockedReason={access.allowed ? undefined : access.reason} onIntent={intent => book.mutate({id:c.id,intent})} onLeave={() => leave.mutate(c.id)} />; })}</div>
  </div>;
 }

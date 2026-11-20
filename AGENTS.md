@@ -54,3 +54,5 @@ use the editor.
 - Post-class photos are cropped and composed locally with canvas, never uploaded; why: user photos remain private and exports include personalized WOD loads.
 - ThemeSelector shares token-based preset previews between onboarding and gym settings; background effects use global CSS tokens and respect reduced motion; why: previews match real screens without arbitrary tenant colors.
 - Auth intent, invitation code and selected SaaS plan travel as validated same-origin URL context through email/OAuth callbacks; shared flow helpers choose destinations from real membership roles, and the view picker stays out of onboarding; why: cross-tab/device returns must not confuse gym creators with invited athletes.
+- Participation triggers enforce membership on direct writes and RPCs regardless of staff role; invitation-linked membership is assigned atomically on joining or approval; why: UI and staff privileges cannot bypass athlete access rules.
+- ActivityMark provides shared vector defaults when no custom logo exists; onboarding activity selection uses an atomic invoker RPC; why: recognizable branding works without uploads and partial gyms are not created.

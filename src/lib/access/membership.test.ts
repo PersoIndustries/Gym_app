@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canAccessClass, canAccessFacility } from "./membership";
+import { canAccessClass, canAccessFacility, canAccessEvent } from "./membership";
 import type { GymClass, MembershipPlan } from "@/lib/domain/types";
 
 const base: MembershipPlan = { id: "p", tenant_id: "t", name: "Entre semana", price_cents: 0, allowed_weekdays: [1, 2, 3, 4, 5], allowed_activity_type_ids: [], weekly_class_limit: null };
@@ -28,4 +28,11 @@ describe("Saturday facilities until midday", () => {
  it("allows a Saturday slot ending at 12:00",()=>expect(canAccessFacility(windows,new Date("2026-11-21T11:00:00"),new Date("2026-11-21T12:00:00"))).toBe(true));
  it("rejects a Saturday slot extending past 12:00",()=>expect(canAccessFacility(windows,new Date("2026-11-21T11:30:00"),new Date("2026-11-21T12:30:00"))).toBe(false));
  it("does not grant Saturday classes with facility access",()=>expect(canAccessClass(base,cls("2026-11-21T11:00:00")).allowed).toBe(false));
+});
+
+describe("event membership", () => {
+ const event = { starts_at: "2026-11-23T09:00:00", activity_type_ids: ["running"] };
+ it("requires a quota for event participation", () => expect(canAccessEvent(null, event).allowed).toBe(false));
+ it("does not grant running to a CrossFit-only quota", () => expect(canAccessEvent({ ...base, allowed_activity_type_ids: ["crossfit"] }, event).allowed).toBe(false));
+ it("allows included activities", () => expect(canAccessEvent({ ...base, allowed_activity_type_ids: ["running"] }, event).allowed).toBe(true));
 });

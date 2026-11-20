@@ -12,7 +12,9 @@ import { PersonAvatar } from "@/components/PersonAvatar";
 import { EventEditor } from "@/components/events/EventEditor";
 import { fmtEventDate } from "@/components/events/EventCard";
 import { clearParticipation, deleteEvent, eventAttendeesQuery, eventQuery, myParticipationQuery, setParticipation } from "@/lib/data/events";
-import { activitiesQuery } from "@/lib/data/gym";
+import { activitiesQuery, myPlanQuery } from "@/lib/data/gym";
+import { canAccessEvent } from "@/lib/access/membership";
+import { ActivityMark } from "@/components/ActivityMark";
 import { EVENT_FORMAT_LABEL, EVENT_INTENT_LABEL, EVENT_KIND_LABEL, type EventIntent } from "@/lib/access/events";
 import { isBoxStaff, useSession } from "@/lib/auth/session";
 import { pageHead } from "@/lib/seo";
@@ -30,22 +32,24 @@ function EventPage() {
   const { data: people = [] } = useQuery(eventAttendeesQuery(eventId, tenantId));
   const { data: mine } = useQuery(myParticipationQuery(eventId, user?.id, tenantId));
   const { data: activities = [] } = useQuery(activitiesQuery(tenantId));
+  const { data: plan } = useQuery(myPlanQuery(tenantId, user?.id));
   const [partner, setPartner] = useState(false); const [category, setCategory] = useState(""); const [note, setNote] = useState("");
   useEffect(() => { setPartner(mine?.looking_for_partner ?? false); setCategory(mine?.category ?? ""); setNote(mine?.note ?? ""); }, [mine]);
   const refresh = () => { qc.invalidateQueries({ queryKey: ["event-attendees", eventId] }); qc.invalidateQueries({ queryKey: ["event-me", eventId] }); };
-  const join = useMutation({ mutationFn: (intent: EventIntent) => setParticipation(eventId, tenantId!, user!.id, { intent, looking_for_partner: intent !== "not_going" && partner, category: category || null, note: note || null }), onSuccess: () => { refresh(); toast.success("Guardado"); }, onError: err });
-  const leave = useMutation({ mutationFn: () => clearParticipation(eventId, tenantId!, user!.id), onSuccess: refresh, onError: err });
+  const join = useMutation({ mutationFn: (intent: EventIntent) => { if (!tenantId || !user) throw new Error("Inicia sesión"); return setParticipation(eventId, tenantId, user.id, { intent, looking_for_partner: intent !== "not_going" && partner, category: category || null, note: note || null }); }, onSuccess: () => { refresh(); toast.success("Guardado"); }, onError: err });
+  const leave = useMutation({ mutationFn: () => { if (!tenantId || !user) throw new Error("Inicia sesión"); return clearParticipation(eventId, tenantId, user.id); }, onSuccess: refresh, onError: err });
   const del = useMutation({ mutationFn: () => deleteEvent(eventId), onSuccess: () => { qc.invalidateQueries({ queryKey: ["community-events"] }); history.back(); }, onError: err });
   if (isLoading) return <AppShell title="Evento"><p className="text-sm text-muted-foreground">Cargando…</p></AppShell>;
   if (!e) return <AppShell title="Evento"><p>Este evento no existe o no tienes acceso.</p></AppShell>;
   const canEdit = isBoxStaff(role) && e.tenant_id === tenantId;
+  const access = canAccessEvent(plan ?? null, e);
   const seekers = people.filter(p => p.looking_for_partner && p.intent !== "not_going");
   const share = () => { const url = `${location.origin}/eventos/${e.id}`; navigator.clipboard.writeText(url).then(() => toast.success("Enlace copiado: compártelo con un compañero")); };
   return <AppShell title="Evento">
     <Link to="/events" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" />Eventos</Link>
     <section className="rounded-xl border border-border bg-card p-5">
       <p className="text-xs text-muted-foreground">{e.scope === "community" ? "Comunidad" : "Solo socios del box"} · {EVENT_KIND_LABEL[e.kind]} · {EVENT_FORMAT_LABEL[e.format]}{e.tenants?.name ? ` · ${e.tenants.name}` : ""}</p>
-      <h2 className="mt-1 font-display text-2xl font-bold">{e.title}</h2>
+      <div className="mt-2 flex items-center gap-3"><ActivityMark name="Evento" className="h-10 w-10"/><h2 className="font-display text-2xl font-bold">{e.title}</h2></div>
       <p className="text-sm text-muted-foreground">{fmtEventDate(e)}{e.location ? ` · ${e.location}` : ""}</p>
       {e.description && <p className="mt-3 whitespace-pre-line text-sm">{e.description}</p>}
       <div className="mt-3 flex flex-wrap gap-2 text-sm">{e.price_cents != null && <span>{(e.price_cents / 100).toLocaleString("es-ES")} €</span>}{e.capacity && <span>· {e.capacity} plazas</span>}</div>
@@ -58,7 +62,8 @@ function EventPage() {
     </section>
     {tenantId && user && <section className="mt-5 space-y-3 border-b border-border pb-5">
       <h3 className="font-semibold">Mi participación</h3>
-      <div className="grid grid-cols-3 gap-2">{(Object.keys(EVENT_INTENT_LABEL) as EventIntent[]).map(i => <Button key={i} variant="outline" disabled={join.isPending} className={cn(mine?.intent === i && STYLE[i])} onClick={() => join.mutate(i)}>{EVENT_INTENT_LABEL[i]}</Button>)}</div>
+      {!access.allowed && <p className="text-sm text-warning">{access.reason}</p>}
+      <div className="grid grid-cols-3 gap-2">{(Object.keys(EVENT_INTENT_LABEL) as EventIntent[]).map(i => <Button key={i} variant="outline" aria-pressed={mine?.intent === i} disabled={join.isPending || (i !== "not_going" && !access.allowed)} className={cn(mine?.intent === i ? STYLE[i] : "border-border bg-transparent text-muted-foreground")} onClick={() => join.mutate(i)}>{EVENT_INTENT_LABEL[i]}</Button>)}</div>
       <label className="flex items-center justify-between gap-3 text-sm">Busco pareja / equipo<Switch checked={partner} onCheckedChange={setPartner} /></label>
       <div className="grid gap-3 sm:grid-cols-2">
         {e.categories.length > 0 && <label className="text-sm">Categoría<Select value={category} onValueChange={setCategory}><SelectTrigger><SelectValue placeholder="Elegir" /></SelectTrigger><SelectContent>{e.categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent></Select></label>}

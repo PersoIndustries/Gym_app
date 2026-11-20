@@ -22,3 +22,10 @@ export function canAccessClass(plan: MembershipPlan | null, gymClass: GymClass, 
     return { allowed: false, reason: "Has alcanzado el límite semanal de clases" };
   return { allowed: true };
 }
+
+export function canAccessEvent(plan: MembershipPlan | null, event: { starts_at: string; activity_type_ids: string[] }): AccessResult {
+  if (!plan) return { allowed: false, reason: "Sin cuota activa" };
+  if (!plan.allowed_weekdays.includes(new Date(event.starts_at).getDay())) return { allowed: false, reason: "Tu cuota no incluye este día" };
+  if (plan.allowed_activity_type_ids.length > 0 && (event.activity_type_ids.length === 0 || event.activity_type_ids.some(id => !plan.allowed_activity_type_ids.includes(id)))) return { allowed: false, reason: "Tu cuota no incluye esta actividad" };
+  return { allowed: true };
+}

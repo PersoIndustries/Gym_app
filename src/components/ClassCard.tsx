@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { activitiesQuery } from "@/lib/data/gym";
-import { BrandImage } from "@/components/BrandImage";
+import { ActivityMark } from "@/components/ActivityMark";
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, Lock } from "lucide-react";
 import type { BoxClass, MyEnrollment } from "@/lib/data/box";
@@ -25,19 +25,19 @@ export function ClassCard({ c, counts, mine, blockedReason, onIntent, busy, coac
   const past = state === "live" || state === "finished";
   const full = isFull(c, counts) && !mine;
   const risk = atRisk(c, counts);
-  const disabled = busy || cancelled || past || (!mine && !!blockedReason);
+  const disabled = busy || cancelled || past || !!blockedReason;
   return (
     <div className={cn("rounded-lg border border-border bg-card p-4", cancelled && "opacity-60")}>
       <div className="mb-2 flex justify-end"><span className={cn("rounded px-2 py-0.5 text-xs font-medium", STATE_STYLE[state])}>{STATE_LABEL[state]}</span></div>
       <div className="flex items-start gap-4">
-        <BrandImage url={activity?.logo_url} alt={activity?.name ?? "Tipo de clase"} className="h-9 w-9 shrink-0 object-contain"/><div className="w-14 shrink-0 text-center"><p className="font-display text-lg font-bold">{fmt(c.starts_at)}</p><p className="text-xs text-muted-foreground">{mins(c)} min</p></div>
+        <ActivityMark url={activity?.logo_url} name={activity?.name ?? c.title} className="h-9 w-9"/><div className="w-14 shrink-0 text-center"><p className="font-display text-lg font-bold">{fmt(c.starts_at)}</p><p className="text-xs text-muted-foreground">{mins(c)} min</p></div>
         <Link to="/class/$classId" params={{ classId: c.id }} className="min-w-0 flex-1">
           <p className="truncate font-semibold hover:text-primary">{c.title}{cancelled && " · Cancelada"}</p>
           <div className="my-2 flex items-center gap-2"><PersonAvatar name={c.coach_name ?? "Sin coach"} url={coachAvatar} className="h-6 w-6" /><span className="text-xs text-muted-foreground">{c.coach_name ?? "Sin coach"}</span></div>
           <p className="text-xs text-muted-foreground">{occupied(counts)}/{c.capacity} plazas · {confirmed(counts)}/{c.min_attendees} mín.{counts.waitlist ? ` · ${counts.waitlist} en espera` : ""}</p>
           {cancelled && c.cancelled_reason && <p className="mt-1 text-xs text-destructive">{c.cancelled_reason}</p>}
           {!cancelled && risk && <p className="mt-1 flex items-center gap-1 text-xs text-warning"><AlertTriangle className="h-3 w-3" />Faltan confirmados: puede cancelarse {c.cancel_hours_before} h antes</p>}
-          {blockedReason && !mine && <p className="mt-1 flex items-center gap-1 text-xs text-warning"><Lock className="h-3 w-3" />{blockedReason}</p>}
+          {blockedReason && <p className="mt-1 flex items-center gap-1 text-xs text-warning"><Lock className="h-3 w-3" />{blockedReason}</p>}
           {mine?.status === "waitlist" && <p className="mt-1 text-xs text-primary">Estás en lista de espera</p>}
         </Link>
       </div>
@@ -45,7 +45,7 @@ export function ClassCard({ c, counts, mine, blockedReason, onIntent, busy, coac
         <div className="mt-3 flex flex-wrap gap-1.5">
           {INTENTS.map((i) => (
             <Button key={i} variant="outline" aria-pressed={mine?.intent === i} disabled={busy || cancelled || past || (i !== "not_going" && disabled)} onClick={() => onIntent(i)}
-              className={cn("min-h-9 px-3 text-sm font-medium", INTENT_STYLE[i], mine?.intent === i && "ring-1 ring-current")}>
+              className={cn("min-h-9 px-3 text-sm font-medium", mine?.intent === i ? cn(INTENT_STYLE[i], "ring-1 ring-current") : "border-border bg-transparent text-muted-foreground")}>
               {INTENT_LABEL[i]}{!mine && full && i === "going" ? " (espera)" : ""}
             </Button>))}
         </div>)}

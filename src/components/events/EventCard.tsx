@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { EVENT_FORMAT_LABEL, EVENT_KIND_LABEL } from "@/lib/access/events";
 import type { CommunityEvent } from "@/lib/data/events";
 import { cn } from "@/lib/utils";
+import { ActivityMark } from "@/components/ActivityMark";
 
 export const fmtEventDate = (e: { starts_at: string; ends_at: string }) => {
   const s = new Date(e.starts_at), en = new Date(e.ends_at);
@@ -14,6 +15,7 @@ export const fmtEventDate = (e: { starts_at: string; ends_at: string }) => {
 export function EventCard({ e, to, highlight }: { e: CommunityEvent; to: "public" | "app"; highlight?: boolean }) {
   const body = <>
     <div className="flex flex-wrap items-center gap-2">
+      <ActivityMark name="Evento" className="h-9 w-9" />
       <Badge variant={e.scope === "community" ? "default" : "secondary"}>{e.scope === "community" ? "Comunidad" : "Mi box"}</Badge>
       <span className="text-xs text-muted-foreground">{EVENT_KIND_LABEL[e.kind] ?? e.kind} · {EVENT_FORMAT_LABEL[e.format] ?? e.format}</span>
       {e.featured && <Star className="h-4 w-4 text-primary" aria-label="Destacado" />}
