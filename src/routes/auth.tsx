@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from "@tanstack/react-query";
 import { Logo } from "@/components/layout/Logo";
+import { brandingByCodeQuery, useApplyTheme } from "@/lib/brand/use-box-theme";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [
@@ -22,6 +24,8 @@ function AuthPage() {
   const [loading, setLoading] = useState(false); const [sent, setSent] = useState(false);
   const navigate = useNavigate();
   const [pendingCode, setPendingCode] = useState<string | null>(null);
+  const { data: brand } = useQuery(brandingByCodeQuery(pendingCode));
+  useApplyTheme(brand?.theme_preset);
   const next = () => (sessionStorage.getItem("bf.pendingCode") ? "/join" : "/dashboard") as "/join" | "/dashboard";
   // Vuelta de Google/OAuth o sesión ya abierta: continuar al destino guardado.
   useEffect(() => {
@@ -51,8 +55,8 @@ function AuthPage() {
   return (
     <div className="grid min-h-screen place-items-center bg-hero px-5">
       <div className="w-full max-w-sm">
-        <Logo />
-        {pendingCode && <p className="mt-4 rounded-md border border-primary/40 bg-card px-3 py-2 text-sm">Entrando al box con código <span className="font-mono text-primary">{pendingCode}</span></p>}
+        {brand?.logo_url ? <img src={brand.logo_url} alt={brand.name} className="h-16 max-w-[12rem] object-contain" /> : <Logo />}
+        {pendingCode && <p className="mt-4 rounded-md border border-primary/40 bg-card px-3 py-2 text-sm">{brand ? <>Accede a <b>{brand.name}</b></> : <>Entrando al box con código <span className="font-mono text-primary">{pendingCode}</span></>}</p>}
         {sent ? (
           <div className="mt-8 rounded-xl border border-border bg-card p-6"><h1 className="text-xl font-bold">Revisa tu email</h1><p className="mt-2 text-sm text-muted-foreground">Te hemos enviado un enlace para confirmar tu cuenta en {email}.</p></div>
         ) : (

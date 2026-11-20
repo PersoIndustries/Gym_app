@@ -44,3 +44,4 @@ use the editor.
 - Facility reservations use authenticated SQL RPCs and serialized facility validation; why: approval and availability must be enforced atomically, not by browser controls.
 - Class booking and facility access enforce real membership restrictions in SQL; why: browser controls are not an authorization boundary.
 - Events/races live in `community_events` (scope box|community) with `event_participants` read via `event_attendees`; per-level WOD loads in `wod_item_levels`; facility booking is gated by `tenant_settings.facilities_enabled` in RLS and the booking trigger; why: visibility and toggles enforced in SQL, not only hidden in UI.
+- Box branding is a closed theme preset (`src/lib/brand/themes.ts` + `[data-theme]` in styles.css) plus an https logo in `tenant_settings`; public entry reads it via the `box_branding(code)` RPC; why: consistent contrast and no tenant data leaked before login.

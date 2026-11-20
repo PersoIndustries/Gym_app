@@ -15,3 +15,11 @@
 - [x] Vacaciones y cierres visibles del gimnasio.
 - [x] Pruebas de reglas (38) y aislamiento entre boxes (58); inicio verificado en móvil/escritorio.
 - [ ] Verificar los flujos con sesión: Supabase externo no permite obtener una sesión de prueba.
+# Entrada, alta de gimnasio y marca
+- [x] Temas cerrados por box (lima actual, amarillo, rojo, azul) + logo.
+- [x] Acceso del socio tematizado en /b/código y /auth.
+- [ ] Landing SaaS B2B en la raíz (para dueños de box).
+- [ ] Precios y planes SaaS (Starter/Pro/Elite, prueba 14 días).
+- [ ] Asistente de alta de gimnasio autoservicio (cuenta → box → plan → marca).
+- [ ] Suscripción SaaS real del box (pasarela de pago).
+- [ ] Checklist inicial del admin, QR del enlace y subida de logo.

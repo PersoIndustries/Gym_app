@@ -85,4 +85,13 @@ export const ROADMAP_SEED: RoadmapItem[] = [
   "F6 · Chat light por evento||pending|low|Fase 6,Comunidad",
   "F7 · Apps nativas e integraciones||pending|low|Fase 7,Escalado",
   "Abierto · Pricing, KPIs y unit economics|Definir precios, métricas de éxito y costes (sección 9 del documento).|pending|high|Negocio",
+  "Marca · Temas cerrados por box|4 paletas (lima, amarillo, rojo, azul) y logo; sin colores libres.|done|urgent|Marca,Onboarding",
+  "Marca · Acceso del socio tematizado (/b/código y /auth)|Logo, nombre y tema del box antes de iniciar sesión.|done|urgent|Marca,Auth",
+  "Negocio · Landing SaaS B2B en la raíz|Sustituir el inicio temporal por la web comercial para dueños de box.|pending|urgent|Negocio,Growth",
+  "Negocio · Página de precios y planes SaaS|Starter/Pro/Elite, mensual/anual, prueba 14 días.|pending|high|Negocio,Pagos",
+  "Onboarding · Asistente de alta de gimnasio autoservicio|Cuenta → datos del box → plan → marca → checklist inicial.|pending|urgent|Onboarding",
+  "Pagos · Suscripción SaaS real del box|Checkout y facturas del plan del gimnasio con pasarela real.|pending|high|Pagos",
+  "Onboarding · Checklist de primeros pasos del admin|Crear horario, cuotas, invitar coaches y compartir enlace/QR.|pending|medium|Onboarding",
+  "Marca · Subida de logo a almacenamiento|Hoy el logo es una URL https; permitir subir el archivo.|pending|medium|Marca",
+  "Acceso · QR y enlace compartible del box|Generar QR del enlace /b/código para el mostrador.|pending|medium|Onboarding",
 ].map((r, i) => { const [title = "", description = "", status = "pending", priority = "medium", tags = ""] = r.split("|"); return { id: `r${i + 1}`, title, description, status: status as RoadmapItem["status"], priority: priority as NonNullable<RoadmapItem["priority"]>, tags: tags.split(",").filter(Boolean), notes: "", due: null, sort_order: i + 1 }; });

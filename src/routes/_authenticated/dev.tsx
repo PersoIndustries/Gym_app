@@ -1,5 +1,5 @@
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { ArrowDown, ArrowUp, Copy, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ConsoleShell } from "@/components/layout/ConsoleShell";
@@ -27,6 +27,8 @@ export const Route = createFileRoute("/_authenticated/dev")({ head: pageHead("De
 function Dev() {
   const { platformRole } = useSession();
   const [items, setItems] = useLocalState<RoadmapItem[]>("bf.roadmap.v2", ROADMAP_SEED);
+  // Añade tareas nuevas del plan sin pisar las editadas en este navegador.
+  useEffect(() => { setItems((cur) => { const missing = ROADMAP_SEED.filter((r) => !cur.some((c) => c.id === r.id || c.title === r.title)); return missing.length ? [...cur, ...missing] : cur; }); }, [items.length]); // eslint-disable-line react-hooks/exhaustive-deps
   const [title, setTitle] = useState("");
   const [q, setQ] = useState("");
   const [prio, setPrio] = useState<"all" | TaskPriority>("all");

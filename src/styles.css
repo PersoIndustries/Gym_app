@@ -133,3 +133,23 @@
 @utility bg-hero { background-image: var(--gradient-hero); }
 @utility shadow-glow { box-shadow: var(--shadow-glow); }
 @utility pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 4.5rem); }
+
+/* Temas de marca del box (ver src/lib/brand/themes.ts). "lime" es el tema base de :root. */
+[data-theme="amber"] {
+  --background: oklch(0.16 0.005 80);
+  --primary: oklch(0.86 0.17 90);
+  --primary-foreground: oklch(0.18 0.03 80);
+  --ring: oklch(0.86 0.17 90);
+}
+[data-theme="crimson"] {
+  --background: oklch(0.16 0.008 20);
+  --primary: oklch(0.62 0.22 25);
+  --primary-foreground: oklch(0.98 0.01 25);
+  --ring: oklch(0.62 0.22 25);
+}
+[data-theme="cobalt"] {
+  --background: oklch(0.17 0.015 250);
+  --primary: oklch(0.68 0.17 245);
+  --primary-foreground: oklch(0.98 0.01 245);
+  --ring: oklch(0.68 0.17 245);
+}

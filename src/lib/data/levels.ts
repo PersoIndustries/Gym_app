@@ -14,6 +14,7 @@ export async function saveItemLevel(tenant: string, item: string, level: string,
 export async function deleteItemLevel(id: string) { assertOk(await supabase.from("wod_item_levels").delete().eq("id", id)); }
 export async function setPreferredLevel(user: string, name: string | null) { assertOk(await supabase.from("profiles").update({ preferred_level_name: name }).eq("id", user)); }
 export async function setFacilitiesEnabled(tenant: string, enabled: boolean) { assertOk(await supabase.from("tenant_settings").update({ facilities_enabled: enabled }).eq("tenant_id", tenant)); }
+export async function setBranding(tenant: string, patch: { theme_preset?: string; logo_url?: string | null }) { assertOk(await supabase.from("tenant_settings").update(patch as never).eq("tenant_id", tenant)); }
 export const myExerciseLevelsQuery = (tenant: string | null, user: string | undefined) => queryOptions({ queryKey: ["exercise-levels", tenant, user], enabled: !!tenant && !!user, queryFn: async () => { const rows = result(await supabase.from("user_exercise_levels").select("exercise_id,level_name").eq("tenant_id", tenant!).eq("user_id", user!)); return Object.fromEntries(rows.map(r => [r.exercise_id, r.level_name])) as Record<string, string>; } });
 export async function setExerciseLevel(tenant: string, user: string, exercise: string, level: string | null) {
   if (!level) { assertOk(await supabase.from("user_exercise_levels").delete().eq("user_id", user).eq("exercise_id", exercise)); return; }

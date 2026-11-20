@@ -7,6 +7,7 @@ import { isBoxStaff, useSession } from "@/lib/auth/session";
 import { settingsQuery } from "@/lib/data/box";
 import { facilitiesVisible } from "@/lib/access/events";
 import { Logo } from "./Logo";
+import { useApplyTheme } from "@/lib/brand/use-box-theme";
 import { RoleSwitcher } from "./RoleSwitcher";
 
 /** Shell mobile-first para atletas y staff del box: barra inferior en móvil, sidebar en escritorio. */
@@ -14,6 +15,8 @@ export function AppShell({ title, children, action }: { title: string; children:
   const { role, realRole, boxMode, setBoxMode, tenantName, tenantId } = useSession();
   const { data: settings } = useQuery(settingsQuery(tenantId));
   const showSpaces = facilitiesVisible(!!settings?.facilities_enabled, isBoxStaff(role));
+  const brand = settings as { theme_preset?: string; logo_url?: string | null } | null | undefined;
+  useApplyTheme(brand?.theme_preset);
   const canToggle = realRole === "coach" || realRole === "admin";
   const toggle = () => { const m = boxMode === "athlete" ? "staff" : "athlete"; setBoxMode(m); navigate({ to: m === "staff" ? "/admin" : "/dashboard" }); };
   const navigate = useNavigate();
@@ -31,7 +34,7 @@ export function AppShell({ title, children, action }: { title: string; children:
   return (
     <div className="min-h-screen md:flex">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-4 md:flex">
-        <Link to="/" aria-label="Inicio de desarrollo"><Logo /></Link>
+        <Link to="/" aria-label="Inicio de desarrollo">{brand?.logo_url ? <img src={brand.logo_url} alt={tenantName ?? "Logo del box"} className="h-10 max-w-[10rem] object-contain" /> : <Logo />}</Link>
         <p className="mt-1 text-xs text-muted-foreground">{tenantName ?? "BoxFlow"}</p>
         <nav className="mt-8 flex flex-1 flex-col gap-1">
           {items.map(({ to, label, icon: Icon }) => (
