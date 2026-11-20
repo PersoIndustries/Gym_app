@@ -1,4 +1,8 @@
 # Mejoras durante desarrollo
+- [ ] Separar acceso a instalaciones de permiso de reserva, con días y franjas propios.
+- [ ] Cuotas: clases opcionales, límite semanal 0, bono de prueba total y precio mensual 0.
+- [ ] Pestaña de códigos en Cuotas: varios códigos, cuota automática opcional, aprobación, usos y caducidad.
+- [ ] Ayudas (i) discretas en cuotas, calendario, perfil, reservas y gestión; probar las nuevas reglas.
 - [x] Ocultar Espacios del menú y accesos de Gestión cuando esté desactivado, también para admins/profesores; regla probada.
 - [x] Alumnos sin cuota: pantalla de espera y lecturas protegidas; staff conserva gestión. CONTENT_ACCESS_OK: 8 comprobaciones reales sin fixtures persistidos.
 - [x] Ocultar fases vacías, avatar del profesor con ficha y biografía editable para todos; logos a la derecha de la hora y tarjetas rediseñadas.
