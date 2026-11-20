@@ -26,7 +26,7 @@ function AdminHome() {
   const items = all.filter((i) => (i.to !== "/spaces" || !!settings?.facilities_enabled) && (admin || ("coach" in i && i.coach)));
   return (
     <AppShell title="Gestión del box">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{items.map(({ to, t, d, icon: I }) => <Link key={to} to={to} className="flex aspect-square flex-col justify-between rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary sm:aspect-auto sm:min-h-32"><span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10"><I className="h-5 w-5 text-primary" /></span><span><span className="block font-semibold leading-tight">{t}</span><span className="block text-xs text-muted-foreground">{d}</span></span></Link>)}</div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{items.map(({ to, t, d, icon: I }) => <Link key={to} to={to} className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary"><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10"><I className="h-4 w-4 text-primary" /></span><span className="min-w-0"><span className="block font-semibold leading-tight">{t}</span><span className="block truncate text-xs text-muted-foreground">{d}</span></span></Link>)}</div>
       {admin ? <HelpInbox /> : <p className="mt-6 text-sm text-muted-foreground">Como profesor gestionas clases, asistencias y propones eventos. La configuración del box es del admin.</p>}
     </AppShell>
   );

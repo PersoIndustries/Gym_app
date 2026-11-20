@@ -43,13 +43,25 @@ export function BrandSettings() {
   const logoValue = logo ?? s?.logo_url ?? "";
   const save = useMutation({ mutationFn: (p: { theme_preset?: string; logo_url?: string | null }) => setBranding(tenantId!, p), onSuccess: () => { qc.invalidateQueries({ queryKey: ["settings"] }); qc.invalidateQueries({ queryKey: ["branding"] }); setLogo(null); toast.success("Marca guardada"); }, onError: (e) => toast.error(e instanceof Error ? e.message : String(e)) });
   const admin = role === "admin";
-  return <div className="rounded-lg border border-border bg-card p-4">
-    <p className="font-medium">Marca del box</p><p className="mb-3 text-sm text-muted-foreground">Tus socios verán este tema y logo al entrar por el enlace del box y dentro de la app.</p>
-    <ThemeSelector value={current} disabled={!admin || save.isPending} onChange={theme => save.mutate({ theme_preset: theme })} />
-    <div className="mt-4"><LogoUpload tenant={tenantId} disabled={!admin || save.isPending} onUploaded={url => save.mutateAsync({ logo_url: url }).then(() => undefined)} /></div>
-    <div className="mt-4 flex gap-2"><Input placeholder="URL del logo (https://…)" value={logoValue} disabled={!admin} onChange={e => setLogo(e.target.value)} />
-      <Button disabled={!admin || save.isPending || (logoValue !== "" && !isValidLogoUrl(logoValue))} onClick={() => save.mutate({ logo_url: logoValue.trim() || null })}>Guardar logo</Button></div>
-    {logoValue && isValidLogoUrl(logoValue) && <BrandImage url={logoValue} alt="Vista previa del logo" className="mt-3 h-12 object-contain" />}
+  const { tenantName } = useSession();
+  const [gymName, setGymName] = useState<string | null>(null);
+  const nameValue = gymName ?? tenantName ?? "";
+  const rename = useMutation({ mutationFn: async () => { const n = nameValue.trim(); if (n.length < 2) throw new Error("Escribe el nombre del gimnasio"); const r = await supabase.from("tenants").update({ name: n }).eq("id", tenantId!); if (r.error) throw r.error; }, onSuccess: () => { toast.success("Nombre guardado"); window.location.reload(); }, onError: (e) => toast.error(e instanceof Error ? e.message : String(e)) });
+  return <div className="space-y-4">
+    <section className="rounded-lg border border-border bg-card p-4">
+      <p className="font-medium">Identidad del box</p><p className="mb-3 text-sm text-muted-foreground">Nombre y logo que verán tus socios al entrar y dentro de la app.</p>
+      <label className="text-sm font-medium" htmlFor="gym-name">Nombre del gimnasio</label>
+      <div className="mt-1 flex gap-2"><Input id="gym-name" value={nameValue} disabled={!admin} onChange={e => setGymName(e.target.value)} /><Button disabled={!admin || rename.isPending || nameValue.trim() === (tenantName ?? "")} onClick={() => rename.mutate()}>Guardar</Button></div>
+      <p className="mt-4 text-sm font-medium">Logo</p>
+      {logoValue && isValidLogoUrl(logoValue) && <BrandImage url={logoValue} alt="Vista previa del logo" className="my-2 h-16 object-contain" />}
+      <LogoUpload tenant={tenantId} disabled={!admin || save.isPending} onUploaded={url => save.mutateAsync({ logo_url: url }).then(() => undefined)} />
+      <div className="mt-3 flex gap-2"><Input placeholder="URL del logo (https://…)" value={logoValue} disabled={!admin} onChange={e => setLogo(e.target.value)} />
+        <Button variant="secondary" disabled={!admin || save.isPending || (logoValue !== "" && !isValidLogoUrl(logoValue))} onClick={() => save.mutate({ logo_url: logoValue.trim() || null })}>Guardar logo</Button></div>
+    </section>
+    <section className="rounded-lg border border-border bg-card p-4">
+      <p className="font-medium">Tema visual</p><p className="mb-3 text-sm text-muted-foreground">Colores y fondo de la app de tu box.</p>
+      <ThemeSelector value={current} disabled={!admin || save.isPending} onChange={theme => save.mutate({ theme_preset: theme })} />
+    </section>
   </div>;
 }
 

@@ -3,7 +3,7 @@ import { ScreenHelp } from "@/components/ScreenHelp";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, DoorOpen, Trophy, Eye, Home, ListChecks, LogOut, Settings2, User, Clock3, RefreshCw } from "lucide-react";
+import { CalendarDays, DoorOpen, Eye, Home, ListChecks, LogOut, Settings2, User, Clock3, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { myPlanQuery } from "@/lib/data/gym";
 import { needsMembershipWait } from "@/lib/access/content";
@@ -30,7 +30,6 @@ export function AppShell({ title, children, action }: { title: string; children:
     { to: "/dashboard" as const, label: "Inicio", icon: Home },
     { to: "/calendar" as const, label: "Calendario", icon: CalendarDays },
     { to: "/my-classes" as const, label: "Mis clases", icon: ListChecks },
-    { to: "/events" as const, label: "Eventos", icon: Trophy },
     ...(showSpaces ? [{ to: "/spaces" as const, label: "Espacios", icon: DoorOpen }] : []),
     ...(isBoxStaff(role) ? [{ to: "/admin" as const, label: "Gestión", icon: Settings2 }] : []),
     { to: "/profile" as const, label: "Perfil", icon: User },
