@@ -9,6 +9,7 @@ begin
  insert into auth.users(id,email,raw_user_meta_data,aud,role) values(admin_id,'admin-'||admin_id||'@test.invalid','{"full_name":"Teacher Test"}','authenticated','authenticated'),(athlete,'athlete-'||athlete||'@test.invalid','{"full_name":"Private Athlete","avatar_url":"https://example.com/private.jpg"}','authenticated','authenticated');
  insert into public.tenants(id,name,slug) values(t,'Test spaces','test-'||t);
  insert into public.tenant_members(tenant_id,user_id,role) values(t,admin_id,'admin'),(t,athlete,'athlete');
+ insert into public.tenant_settings(tenant_id,facilities_enabled) values(t,true);
  insert into public.membership_plans(id,tenant_id,name,allowed_weekdays,facility_windows) values(p,t,'Test plan',array[0,1,2,3,4,5,6],'[{"weekday":0,"from":"07:00","to":"12:00"},{"weekday":1,"from":"07:00","to":"12:00"},{"weekday":2,"from":"07:00","to":"12:00"},{"weekday":3,"from":"07:00","to":"12:00"},{"weekday":4,"from":"07:00","to":"12:00"},{"weekday":5,"from":"07:00","to":"12:00"},{"weekday":6,"from":"07:00","to":"12:00"}]');
  insert into public.user_memberships(tenant_id,user_id,plan_id,starts_on) values(t,athlete,p,current_date),(t,admin_id,p,current_date);
  update public.profiles set hide_attendance=true where id=athlete;
