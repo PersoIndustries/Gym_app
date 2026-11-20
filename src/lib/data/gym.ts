@@ -1,3 +1,4 @@
+import { mergePlans } from "@/lib/access/membership";
 import { queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
@@ -17,15 +18,16 @@ export const myPlanQuery = (tenant: string | null, user: string | undefined) => 
   queryFn: async () => {
     if (!tenant || !user) return null;
     const day = new Date().toLocaleDateString("sv-SE");
-    const rows = result(await supabase.from("user_memberships").select("*, membership_plans(*)").eq("tenant_id", tenant).eq("user_id", user).eq("status", "active").lte("starts_on", day).or(`ends_on.is.null,ends_on.gte.${day}`).order("starts_on", { ascending: false }).order("created_at", { ascending: false }).limit(1));
-    const plan = rows[0]?.membership_plans;
-    if (!plan) return null;
-    const windows = Array.isArray(plan.facility_windows) ? plan.facility_windows.flatMap(w => {
+    const rows = result(await supabase.from("user_memberships").select("*, membership_plans(*)").eq("tenant_id", tenant).eq("user_id", user).eq("status", "active").lte("starts_on", day).or(`ends_on.is.null,ends_on.gte.${day}`).order("starts_on", { ascending: false }).order("created_at", { ascending: false }));
+    const plans = rows.flatMap(r => r.membership_plans ? [r.membership_plans] : []);
+    if (!plans.length) return null;
+    const parsed = plans.map(plan => ({ ...plan, facility_windows: Array.isArray(plan.facility_windows) ? plan.facility_windows.flatMap(w => {
       if (!w || typeof w !== "object" || Array.isArray(w) || typeof w["weekday"] !== "number" || typeof w["from"] !== "string" || typeof w["to"] !== "string") return [];
       return [{weekday:w["weekday"],from:w["from"],to:w["to"]}];
-    }) : [];
+    }) : [] }));
+    const plan = mergePlans(parsed)!;
     const usage = plan.trial_class_limit === null ? null : result(await supabase.rpc("my_trial_usage", { _tenant: tenant }))[0];
-    return { ...plan, facility_windows: windows, trial_used: usage?.used ?? 0, trial_class_ids: usage?.class_ids ?? [] } satisfies MembershipPlan;
+    return { ...plan, trial_used: usage?.used ?? 0, trial_class_ids: usage?.class_ids ?? [] } satisfies MembershipPlan;
   },
 });
 export const tenantLinksQuery = () => queryOptions({ queryKey: ["tenant-links"], queryFn: async () => result(await supabase.from("tenants").select("id,name,city,slug,tenant_invites(code)").order("name")) });
@@ -46,6 +48,10 @@ export const membersQuery = (tenant: string | null) => queryOptions({ queryKey: 
   const memberships = result(await supabase.from("user_memberships").select("*").eq("tenant_id", tenant).order("starts_on", { ascending: false }).order("created_at", { ascending: false }));
   return { members, requests, invites, profiles, memberships };
 } });
+export async function addMembership(tenant: string, user: string, plan: string) {
+  assertOk(await supabase.from("user_memberships").insert({ tenant_id: tenant, user_id: user, plan_id: plan, starts_on: new Date().toLocaleDateString("sv-SE"), ends_on: null, status: "active" }));
+}
+export async function endMembership(tenant: string, id: string) { assertOk(await supabase.from("user_memberships").update({ status: "inactive" }).eq("id", id).eq("tenant_id", tenant)); }
 export async function assignPlan(tenant: string, user: string, plan: string, existing?: string) {
   if (plan === "none") { if (existing) assertOk(await supabase.from("user_memberships").update({ status: "inactive" }).eq("id", existing).eq("tenant_id", tenant)); return; }
   const value = { tenant_id: tenant, user_id: user, plan_id: plan, starts_on: new Date().toLocaleDateString("sv-SE"), ends_on: null, status: "active" };

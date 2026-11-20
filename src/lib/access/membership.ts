@@ -36,3 +36,26 @@ export function canAccessEvent(plan: MembershipPlan | null, event: { starts_at: 
   if (plan.allowed_activity_type_ids.length > 0 && (event.activity_type_ids.length === 0 || event.activity_type_ids.some(id => !plan.allowed_activity_type_ids.includes(id)))) return { allowed: false, reason: "Tu cuota no incluye esta actividad" };
   return { allowed: true };
 }
+
+/** Combina varias cuotas activas sumando derechos: basta con que una permita el día, la actividad o la franja. */
+export function mergePlans(plans: MembershipPlan[]): MembershipPlan | null {
+  const first = plans[0];
+  if (!first) return null;
+  if (plans.length === 1) return first;
+  const cls = plans.filter(p => p.classes_enabled !== false);
+  const unlimited = cls.some(p => p.weekly_class_limit === null);
+  const allTrial = cls.length > 0 && cls.every(p => p.trial_class_limit != null);
+  return {
+    ...first,
+    id: plans.map(p => p.id).join("+"),
+    name: plans.map(p => p.name).join(" + "),
+    price_cents: plans.reduce((s, p) => s + p.price_cents, 0),
+    classes_enabled: cls.length > 0,
+    facility_booking_enabled: plans.some(p => p.facility_booking_enabled !== false),
+    allowed_weekdays: [...new Set(cls.flatMap(p => p.allowed_weekdays))].sort(),
+    allowed_activity_type_ids: cls.some(p => p.allowed_activity_type_ids.length === 0) ? [] : [...new Set(cls.flatMap(p => p.allowed_activity_type_ids))],
+    weekly_class_limit: unlimited || cls.length === 0 ? null : cls.reduce((s, p) => s + (p.weekly_class_limit ?? 0), 0),
+    trial_class_limit: allTrial ? cls.reduce((s, p) => s + (p.trial_class_limit ?? 0), 0) : null,
+    facility_windows: plans.flatMap(p => p.facility_windows ?? []),
+  };
+}
