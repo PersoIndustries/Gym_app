@@ -1,0 +1,1 @@
+create or replace trigger participation_quota before insert or update of intent,status,user_id,class_id,tenant_id on public.class_enrollments for each row execute function public.require_participation_membership();

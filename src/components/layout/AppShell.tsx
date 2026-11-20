@@ -57,12 +57,12 @@ export function AppShell({ title, children, action }: { title: string; children:
         <button onClick={signOut} className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-sidebar-accent"><LogOut className="h-4 w-4" />Salir</button>
       </aside>
       <div className="flex-1 pb-safe md:pb-8">
-        <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-background/90 px-4 py-3 backdrop-blur md:px-8 md:py-5">
-          <div>
+        <header className="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-border bg-background/90 px-4 py-3 backdrop-blur md:px-8 md:py-5">
+          <div className="min-w-0">
             <p className="text-xs text-muted-foreground md:hidden">{tenantName ?? "BoxFlow"}</p>
             <div className="flex items-center gap-1"><h1 className="min-w-0 break-words text-xl font-bold md:text-2xl">{title}</h1><ScreenHelp /></div>
           </div>
-          <div className="flex items-center gap-2">{action}{canToggle && <button onClick={toggle} aria-label="Cambiar vista" className="rounded-md p-2 text-muted-foreground md:hidden"><Eye className="h-5 w-5" /></button>}<RoleSwitcher className="w-36 md:hidden" /></div>
+          <div className="ml-auto flex max-w-full flex-wrap items-center gap-2">{action}{canToggle && <button onClick={toggle} aria-label="Cambiar vista" className="rounded-md p-2 text-muted-foreground md:hidden"><Eye className="h-5 w-5" /></button>}<RoleSwitcher className="w-36 md:hidden" /></div>
         </header>
         <main className="mx-auto max-w-5xl px-4 py-5 md:px-8">{children}</main>
       </div>

@@ -1,8 +1,8 @@
 # Mejoras durante desarrollo
-- [ ] Separar acceso a instalaciones de permiso de reserva, con días y franjas propios.
-- [ ] Cuotas: clases opcionales, límite semanal 0, bono de prueba total y precio mensual 0.
-- [ ] Pestaña de códigos en Cuotas: varios códigos, cuota automática opcional, aprobación, usos y caducidad.
-- [ ] Ayudas (i) discretas en cuotas, calendario, perfil, reservas y gestión; probar las nuevas reglas.
+- [x] Separar acceso a instalaciones de permiso de reserva, con días y franjas propios; validación SQL también para staff participante.
+- [x] Cuotas: clases opcionales, límite semanal 0, bono de prueba total por periodo de cuota y precio mensual 0; 118 pruebas y 16 comprobaciones SQL reales pasan, sin datos temporales.
+- [x] Pestaña de códigos en Cuotas: varios códigos, cuota automática opcional, aprobación, usos y caducidad; permisos y aislamiento comprobados.
+- [x] Ayudas (i) discretas en cuotas, calendario, perfil, reservas, clases y consola; explicaciones al pulsar, no permanentes. Pantallas con sesión pendientes por Supabase externo.
 - [x] Ocultar Espacios del menú y accesos de Gestión cuando esté desactivado, también para admins/profesores; regla probada.
 - [x] Alumnos sin cuota: pantalla de espera y lecturas protegidas; staff conserva gestión. CONTENT_ACCESS_OK: 8 comprobaciones reales sin fixtures persistidos.
 - [x] Ocultar fases vacías, avatar del profesor con ficha y biografía editable para todos; logos a la derecha de la hora y tarjetas rediseñadas.
