@@ -43,8 +43,8 @@ export function AppShell({ title, children, action }: { title: string; children:
   return (
     <div className="min-h-screen md:flex">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-sidebar-border bg-sidebar p-4 md:flex">
-        <Link to="/dev-home" aria-label="Inicio de desarrollo">{brand?.logo_url ? <BrandImage url={brand.logo_url} alt={tenantName ?? "Logo del box"} className="h-10 max-w-[10rem] object-contain" /> : <Logo />}</Link>
-        <p className="mt-1 text-xs text-muted-foreground">{tenantName ?? "BoxFlow"}</p>
+        <Link to="/dev-home" aria-label={tenantName ?? "Inicio"} className="flex min-w-0 items-center gap-2">{brand?.logo_url ? <BrandImage url={brand.logo_url} alt={tenantName ?? "Logo del box"} className="h-10 max-w-[10rem] object-contain" /> : tenantName ? <><span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-primary text-sm font-bold text-primary-foreground">{tenantName.split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase()}</span><span className="min-w-0 truncate font-bold">{tenantName}</span></> : <Logo />}</Link>
+        {tenantName && <p className="mt-2 text-[11px] text-muted-foreground">Powered by <span className="font-semibold text-foreground/80">BoxFlow</span></p>}
         <nav className="mt-8 flex flex-1 flex-col gap-1">
           {items.map(({ to, label, icon: Icon }) => (
             <Link key={to} to={to} className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-sidebar-foreground hover:bg-sidebar-accent" activeProps={{ className: "bg-sidebar-accent text-primary" }}>
