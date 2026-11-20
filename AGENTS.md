@@ -59,7 +59,7 @@ use the editor.
 - Athlete content is gated by AppShell and restrictive quota read policies, including attendance RPCs; staff management remains accessible; why: waiting users cannot bypass the screen through direct reads.
 - Empty workout phases are hidden from athletes; CoachProfile shares avatar-only triggers and profile bios; why: class summaries remain compact and empty programming does not look published.
 - Multiple active memberships: access if any one allows, each keeps its own limits; quotas separate facility windows, reservation permission, weekly classes and total trial allowance; SQL locks the member and membership during participation checks, and trials count non-cancelled enrollments from the membership start date; why: concurrent reservations cannot bypass allowances.
-- InfoHelp provides tap/click-accessible contextual explanations through shared popovers; why: guidance stays available on mobile without cluttering screens.
-- Netlify deploys use `netlify.toml` with `NITRO_PRESET=netlify` (publish `dist`); Lovable builds ignore it and keep their own target; why: self-hosting must not change the Lovable preview/publish build.
+- InfoHelp gives tap-accessible contextual popovers; why: mobile guidance without clutter.
+- Netlify uses `netlify.toml` (`NITRO_PRESET=netlify`); Lovable builds ignore it; why: self-hosting must not change Lovable builds.
 
-- Activity types carry a `mode` (wod|cardio|studio|open) from the SQL `activity_catalog()` mirrored in `src/lib/brand/activities.ts`; non-WOD classes store programming in `classes.session` JSON; why: each discipline shows only the fields it needs.
+- Activity `mode` comes from SQL `activity_catalog()` (mirrored in `brand/activities.ts`); non-WOD programming lives in `classes.session`; why: each discipline shows only its fields.
