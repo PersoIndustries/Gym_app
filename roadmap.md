@@ -1,4 +1,7 @@
 # Mejoras durante desarrollo
+- [ ] Exigir cuota para participar; asignación automática de cuota por código, también tras aprobación.
+- [ ] Calendario de selección de día sin tarjetas dentro; fondo de día cerrado y asistencia neutra sin seleccionar.
+- [ ] Logos predeterminados de actividades/eventos y selección de tipos al crear gimnasio, respetando límites.
 - [x] Actualizar socios por plan (100/500/ilimitado) y tipos de clase (5/15/ilimitado), con límites SQL y pruebas autenticadas sin conservar fixtures.
 - [x] Ampliar temas cerrados con fondos claros y aurora, vista previa compartida en alta y gestión; 80 pruebas y visualización móvil/escritorio verificadas.
 - [x] Privacidad con asistente anónimo y avatar de interrogación.
