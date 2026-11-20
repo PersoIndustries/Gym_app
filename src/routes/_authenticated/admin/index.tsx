@@ -11,8 +11,8 @@ import { useSession } from "@/lib/auth/session";
 import { supabase } from "@/integrations/supabase/client";
 import { settingsQuery } from "@/lib/data/box";
 import { addLevel, deleteLevel, levelsQuery, setBranding, setFacilitiesEnabled } from "@/lib/data/levels";
-import { THEMES, isValidLogoUrl, resolveTheme } from "@/lib/brand/themes";
-import { cn } from "@/lib/utils";
+import { isValidLogoUrl, resolveTheme } from "@/lib/brand/themes";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import { AppShell } from "@/components/layout/AppShell";
 import { LogoUpload } from "@/components/LogoUpload";
 import { BrandImage } from "@/components/BrandImage";
@@ -72,9 +72,7 @@ function BrandSettings() {
   const admin = role === "admin";
   return <div className="rounded-lg border border-border bg-card p-4">
     <p className="font-medium">Marca del box</p><p className="mb-3 text-sm text-muted-foreground">Tus socios verán este tema y logo al entrar por el enlace del box y dentro de la app.</p>
-    <div className="grid gap-2 sm:grid-cols-2">{THEMES.map(t => <button key={t.id} type="button" disabled={!admin || save.isPending} onClick={() => save.mutate({ theme_preset: t.id })} aria-pressed={current === t.id} className={cn("flex items-center gap-3 rounded-md border p-3 text-left", current === t.id ? "border-primary ring-1 ring-primary" : "border-border")}>
-      <span className="flex overflow-hidden rounded">{t.swatch.map(c => <span key={c} className="h-8 w-6" style={{ background: c }} />)}</span>
-      <span><span className="block text-sm font-medium">{t.label}</span><span className="block text-xs text-muted-foreground">{t.hint}</span></span></button>)}</div>
+    <ThemeSelector value={current} disabled={!admin || save.isPending} onChange={theme => save.mutate({ theme_preset: theme })} />
     <div className="mt-4"><LogoUpload tenant={tenantId} disabled={!admin || save.isPending} onUploaded={url => save.mutateAsync({ logo_url: url }).then(() => undefined)} /></div>
     <div className="mt-4 flex gap-2"><Input placeholder="URL del logo (https://…)" value={logoValue} disabled={!admin} onChange={e => setLogo(e.target.value)} />
       <Button disabled={!admin || save.isPending || (logoValue !== "" && !isValidLogoUrl(logoValue))} onClick={() => save.mutate({ logo_url: logoValue.trim() || null })}>Guardar logo</Button></div>

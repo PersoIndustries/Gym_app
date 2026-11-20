@@ -12,7 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from "@/lib/auth/session";
 import { SAAS_PLANS, TRIAL_DAYS, discounted, getPlan, isValidCode, suggestCode, type SaasPlanId } from "@/lib/access/saas-plans";
 import { checkPromo } from "@/lib/data/promos";
-import { THEMES, isValidLogoUrl, type ThemeId } from "@/lib/brand/themes";
+import { isValidLogoUrl, type ThemeId } from "@/lib/brand/themes";
+import { ThemeSelector } from "@/components/ThemeSelector";
 import { useApplyTheme } from "@/lib/brand/use-box-theme";
 import { LogoUpload } from "@/components/LogoUpload";
 import { BrandImage } from "@/components/BrandImage";
@@ -75,8 +76,7 @@ function Wizard() {
         {promo && <p className="mt-2 text-sm text-primary">{promo.code}: {promo.discount_pct}% de descuento {promo.duration_months ? `durante ${promo.duration_months} mes(es)` : "para siempre"}{promo.plan_id ? ` · solo plan ${getPlan(promo.plan_id as SaasPlanId).name}` : ""} <button className="ml-2 text-xs text-muted-foreground underline" onClick={() => { setPromo(null); setPromoText(""); }}>Quitar</button></p>}</div>
       <p className="mt-3 text-xs text-muted-foreground">{TRIAL_DAYS} días gratis. No pedimos tarjeta todavía.</p></div>}
     {step === 2 && <div className="grid gap-4"><h1 className="text-2xl font-bold">La marca de tu box</h1>
-      <div className="grid grid-cols-2 gap-3">{THEMES.map((t) => <button key={t.id} onClick={() => setF({ ...f, theme: t.id })} className={cn("rounded-xl border p-3 text-left", f.theme === t.id ? "border-primary ring-2 ring-primary" : "border-border")}>
-        <div className="mb-2 flex gap-1">{t.swatch.map((c) => <span key={c} className="h-6 w-6 rounded-full border border-border" style={{ background: c }} />)}</div><p className="text-sm font-medium">{t.label}</p><p className="text-xs text-muted-foreground">{t.hint}</p></button>)}</div>
+      <ThemeSelector value={f.theme} onChange={theme => setF({ ...f, theme })} />
       <div><LogoUpload tenant={null} onUploaded={url => setF({ ...f, logo: url })} /><Label>Logo (enlace https a la imagen)</Label><Input value={f.logo} onChange={(e) => setF({ ...f, logo: e.target.value })} placeholder="https://…/logo.png" />{f.logo && !isValidLogoUrl(f.logo) && <p className="mt-1 text-xs text-destructive">Debe empezar por https://</p>}</div>
       <div className="rounded-xl border border-border bg-card p-6 text-center"><p className="mb-3 text-xs text-muted-foreground">Así verán tus socios el acceso</p>{f.logo && isValidLogoUrl(f.logo) ? <BrandImage url={f.logo} alt="Logo" className="mx-auto h-14 object-contain" /> : <p className="text-2xl font-bold">{f.name || "Tu box"}</p>}<Button className="mt-4" size="sm">Entrar</Button></div></div>}
     {step === 3 && <div className="grid gap-4"><h1 className="text-2xl font-bold">Ajustes básicos</h1>
@@ -93,5 +93,5 @@ function Wizard() {
   </Shell>;
 }
 function Shell({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-screen bg-background"><header className="mx-auto flex max-w-2xl items-center justify-between px-5 py-5"><Link to="/"><Logo /></Link></header><main className="mx-auto max-w-2xl px-5 pb-16">{children}</main></div>;
+  return <div className="min-h-screen bg-brand"><header className="mx-auto flex max-w-2xl items-center justify-between px-5 py-5"><Link to="/"><Logo /></Link></header><main className="mx-auto max-w-2xl px-5 pb-16">{children}</main></div>;
 }

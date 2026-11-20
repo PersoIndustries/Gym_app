@@ -9,7 +9,7 @@ export const Route = createFileRoute("/precios")({ head: pageHead("Precios", "St
 const yes = (v: boolean) => (v ? "Sí" : "—");
 const lim = (v: number | null) => (v === null ? "Ilimitado" : String(v));
 const ROWS: [string, (p: (typeof SAAS_PLANS)[number]) => string][] = [
-  ["Gimnasios", (p) => String(p.maxGyms)], ["Socios", (p) => lim(p.maxMembers)], ["Coaches/staff", (p) => lim(p.maxStaff)], ["Cuotas de socio", (p) => lim(p.maxMemberPlans)],
+  ["Gimnasios", (p) => String(p.maxGyms)], ["Socios por gimnasio", (p) => lim(p.maxMembers)], ["Tipos de clase por gimnasio", (p) => lim(p.maxActivityTypes)], ["Coaches/staff", (p) => lim(p.maxStaff)], ["Cuotas de socio", (p) => lim(p.maxMemberPlans)],
   ["Reserva de espacios", (p) => yes(p.facilities)], ["Métricas avanzadas", (p) => yes(p.advancedMetrics)], ["Dominio personalizado", (p) => (p.customDomain ? "Próximamente" : "—")],
 ];
 function Pricing() {
