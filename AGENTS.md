@@ -53,3 +53,4 @@ use the editor.
 - Uploaded logos use tenant-prefixed storage paths with admin-write/member-read policies and renewable signed URLs; why: preserve tenant isolation while the workspace blocks public buckets.
 - Post-class photos are cropped and composed locally with canvas, never uploaded; why: user photos remain private and exports include personalized WOD loads.
 - ThemeSelector shares token-based preset previews between onboarding and gym settings; background effects use global CSS tokens and respect reduced motion; why: previews match real screens without arbitrary tenant colors.
+- Auth intent, invitation code and selected SaaS plan travel as validated same-origin URL context through email/OAuth callbacks; shared flow helpers choose destinations from real membership roles, and the view picker stays out of onboarding; why: cross-tab/device returns must not confuse gym creators with invited athletes.

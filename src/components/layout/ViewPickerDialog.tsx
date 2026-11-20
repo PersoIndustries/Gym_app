@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { Dumbbell, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,15 +12,17 @@ const ICON = { athlete: Dumbbell, staff: LayoutDashboard, console: ShieldCheck }
 export function ViewPickerDialog() {
   const s = useSession();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: state => state.location.pathname });
+  const entryFlow = ["/auth", "/empezar", "/join", "/bienvenida", "/reset-password"].includes(pathname) || pathname.startsWith("/b/");
   const [open, setOpen] = useState(false);
   const [remember, setRemember] = useState(false);
   const options = viewOptions(s.memberships, s.platformRole);
   useEffect(() => {
-    if (s.loading || options.length < 2) return;
+    if (entryFlow || s.loading || options.length < 2) return;
     if (sessionStorage.getItem("bf.viewPicked") || localStorage.getItem("bf.rememberView")) return;
     setOpen(true);
-  }, [s.loading, options.length]);
-  if (!open) return null;
+  }, [entryFlow, s.loading, options.length]);
+  if (!open || entryFlow) return null;
   const pick = (o: ViewOption) => {
     sessionStorage.setItem("bf.viewPicked", "1");
     if (remember) localStorage.setItem("bf.rememberView", "1");

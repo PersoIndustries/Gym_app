@@ -18,6 +18,8 @@
 - [x] Pruebas de reglas (38) y aislamiento entre boxes (58); inicio verificado en móvil/escritorio.
 - [ ] Verificar los flujos con sesión: Supabase externo no permite obtener una sesión de prueba.
 # Entrada, alta de gimnasio y marca
+- [x] Acceso contextual: alta con plan conservado, código en URL, bienvenida genérica, roles reales y retorno de confirmación/OAuth; 93 pruebas pasan y entradas verificadas en navegador móvil/escritorio (registro real y retorno por email pendientes de sesión externa).
+- [ ] Desactivar confirmación de registro en Supabase externo: requiere ajustar «Confirm email» en su panel.
 - [x] Temas cerrados por box (lima actual, amarillo, rojo, azul) + logo.
 - [x] Acceso del socio tematizado en /b/código y /auth.
 - [x] Landing SaaS B2B en la raíz (para dueños de box).

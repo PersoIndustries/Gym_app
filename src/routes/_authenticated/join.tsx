@@ -5,34 +5,35 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/layout/Logo";
-import { supabase } from "@/integrations/supabase/client";
+import { joinBox } from "@/lib/data/auth";
+import { validateAuthFlow } from "@/lib/auth/flow";
 import { useSession } from "@/lib/auth/session";
 import { pageHead } from "@/lib/seo";
 
-export const Route = createFileRoute("/_authenticated/join")({ head: pageHead("Unirme a un box", "Introduce el código de invitación de tu gimnasio."), component: Join });
+export const Route = createFileRoute("/_authenticated/join")({ validateSearch: (search: Record<string, unknown>) => { const { code } = validateAuthFlow(search); return code ? { code } : {}; }, head: pageHead("Unirme a un box", "Introduce el código de invitación de tu gimnasio."), component: Join });
 
 const MSG: Record<string, string> = { "invalid code": "Código no válido", "code expired": "Este código ha caducado", "code exhausted": "Este código ya no admite más usos" };
 
 function Join() {
+  const { code: invitation } = Route.useSearch();
   const [code, setCode] = useState(""); const [busy, setBusy] = useState(false); const [pending, setPending] = useState(false);
   const { setTenantId, setView } = useSession();
   const qc = useQueryClient(); const navigate = useNavigate();
   const auto = useRef(false);
   useEffect(() => {
-    const c = sessionStorage.getItem("bf.pendingCode");
-    if (c && !auto.current) { auto.current = true; sessionStorage.removeItem("bf.pendingCode"); setCode(c); void run(c); }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (invitation && !auto.current) { auto.current = true; setCode(invitation); void run(invitation); }
+  }, [invitation]); // eslint-disable-line react-hooks/exhaustive-deps
   async function submit(e: FormEvent) { e.preventDefault(); await run(code); }
   async function run(code: string) {
     setBusy(true);
-    const { data: tid, error } = await supabase.rpc("join_tenant_with_code", { _code: code });
-    setBusy(false);
-    if (error) { toast.error(MSG[error.message] ?? error.message); return; }
-    await qc.invalidateQueries({ queryKey: ["session-roles"] });
-    const { data: m } = await supabase.from("tenant_members").select("id").eq("tenant_id", tid as string).maybeSingle();
-    if (!m) { setPending(true); return; }
-    setTenantId(tid as string); setView("box");
-    toast.success("¡Bienvenido a tu box!"); navigate({ to: "/dashboard" });
+    try {
+      const result = await joinBox(code.trim().toUpperCase());
+      await qc.invalidateQueries({ queryKey: ["session-roles"] });
+      if (!result.role) { setPending(true); return; }
+      setTenantId(result.tenantId); setView("box");
+      toast.success("¡Bienvenido a tu box!"); navigate({ to: result.role === "athlete" ? "/dashboard" : "/admin", replace: true });
+    } catch (error) { const message = error && typeof error === "object" && "message" in error ? String(error.message) : "No se pudo acceder al gimnasio"; toast.error(MSG[message] ?? message); }
+    finally { setBusy(false); }
   }
   return (
     <div className="grid min-h-screen place-items-center bg-hero px-5">

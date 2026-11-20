@@ -44,7 +44,7 @@ function Wizard() {
   const plan = getPlan(f.plan);
 
   if (!user) return <Shell><h1 className="text-3xl font-bold">Crea tu gimnasio</h1><p className="mt-2 text-muted-foreground">Primero crea tu cuenta o inicia sesión. Después volverás aquí para configurar tu box.</p>
-    <Button className="mt-6" asChild><Link to="/auth" onClick={() => sessionStorage.setItem("bf.next", "/empezar")}>Crear cuenta o entrar</Link></Button></Shell>;
+    <Button className="mt-6" asChild><Link to="/auth" search={{ intent: "create_gym", plan: f.plan, mode: "signup" }}>Crear cuenta o entrar</Link></Button></Shell>;
 
   const canNext = [f.name.trim().length > 1 && isValidCode(f.code), true, !f.logo || isValidLogoUrl(f.logo), true][step] ?? true;
   async function create() {

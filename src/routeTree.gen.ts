@@ -17,6 +17,7 @@ import { Route as EmpezarRouteImport } from './routes/empezar'
 import { Route as PreciosRouteImport } from './routes/precios'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedBienvenidaRouteImport } from './routes/_authenticated/bienvenida'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedCodesRouteImport } from './routes/_authenticated/codes'
 import { Route as AuthenticatedCreateGymRouteImport } from './routes/_authenticated/create-gym'
@@ -78,6 +79,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedBienvenidaRoute = AuthenticatedBienvenidaRouteImport.update({
+  id: '/bienvenida',
+  path: '/bienvenida',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/precios': typeof PreciosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/bienvenida': typeof AuthenticatedBienvenidaRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/codes': typeof AuthenticatedCodesRoute
   '/create-gym': typeof AuthenticatedCreateGymRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/empezar': typeof EmpezarRoute
   '/precios': typeof PreciosRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/bienvenida': typeof AuthenticatedBienvenidaRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/codes': typeof AuthenticatedCodesRoute
   '/create-gym': typeof AuthenticatedCreateGymRoute
@@ -276,6 +284,7 @@ export interface FileRoutesById {
   '/precios': typeof PreciosRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/bienvenida': typeof AuthenticatedBienvenidaRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/codes': typeof AuthenticatedCodesRoute
   '/_authenticated/create-gym': typeof AuthenticatedCreateGymRoute
@@ -310,6 +319,7 @@ export interface FileRouteTypes {
     | '/precios'
     | '/reset-password'
     | '/admin'
+    | '/bienvenida'
     | '/calendar'
     | '/codes'
     | '/create-gym'
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/empezar'
     | '/precios'
     | '/reset-password'
+    | '/bienvenida'
     | '/calendar'
     | '/codes'
     | '/create-gym'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/precios'
     | '/reset-password'
     | '/_authenticated/admin'
+    | '/_authenticated/bienvenida'
     | '/_authenticated/calendar'
     | '/_authenticated/codes'
     | '/_authenticated/create-gym'
@@ -469,6 +481,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bienvenida': {
+      id: '/_authenticated/bienvenida'
+      path: '/bienvenida'
+      fullPath: '/bienvenida'
+      preLoaderRoute: typeof AuthenticatedBienvenidaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/calendar': {
@@ -656,6 +675,7 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedBienvenidaRoute: typeof AuthenticatedBienvenidaRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCodesRoute: typeof AuthenticatedCodesRoute
   AuthenticatedCreateGymRoute: typeof AuthenticatedCreateGymRoute
@@ -674,6 +694,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedBienvenidaRoute: AuthenticatedBienvenidaRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCodesRoute: AuthenticatedCodesRoute,
   AuthenticatedCreateGymRoute: AuthenticatedCreateGymRoute,

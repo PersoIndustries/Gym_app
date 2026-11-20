@@ -22,7 +22,7 @@ function BoxEntry() {
   const navigate = useNavigate();
   const { data: brand, isLoading } = useQuery(brandingByCodeQuery(code));
   useApplyTheme(brand?.theme_preset);
-  const go = () => { sessionStorage.setItem("bf.pendingCode", code.toUpperCase()); navigate({ to: "/auth" }); };
+  const go = () => { navigate({ to: "/auth", search: { code: code.toUpperCase() } }); };
   return (
     <div className="grid min-h-screen place-items-center bg-hero px-5">
       <div className="w-full max-w-sm space-y-5 text-center">

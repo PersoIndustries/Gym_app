@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/layout/Logo";
 import { PricingCards } from "@/components/marketing/PricingCards";
 import { pageHead } from "@/lib/seo";
+import { AccountAccess } from "@/components/layout/AccountAccess";
 
 export const Route = createFileRoute("/")({ head: pageHead("Software para boxes de CrossFit", "Clases, WOD con kilos según tu RM, asistencia, cuotas y reservas para tu box. Desde 10 €/mes."), component: Landing });
 const FEATURES = [
@@ -16,7 +17,7 @@ const FEATURES = [
 ];
 function Landing() {
   return <div className="min-h-screen bg-background">
-    <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5"><Logo /><nav className="flex items-center gap-2"><Button asChild variant="ghost"><Link to="/precios">Precios</Link></Button><Button asChild variant="ghost"><Link to="/auth">Entrar</Link></Button><Button asChild><Link to="/empezar" search={{ plan: "pro" }}>Crear mi gimnasio</Link></Button></nav></header>
+    <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5"><Logo /><nav className="flex items-center gap-2"><Button asChild variant="ghost"><Link to="/precios">Precios</Link></Button><AccountAccess /><Button asChild><Link to="/empezar" search={{ plan: "pro" }}>Crear mi gimnasio</Link></Button></nav></header>
     <section className="mx-auto max-w-6xl px-5 pb-16 pt-12 text-center">
       <p className="text-sm font-semibold uppercase tracking-widest text-primary">Para dueños de box</p>
       <h1 className="mx-auto mt-4 max-w-3xl text-5xl font-bold leading-tight md:text-6xl">Gestiona tu box. Tus atletas entrenan con su peso exacto.</h1>
