@@ -2,7 +2,10 @@ import { BrandImage } from "@/components/BrandImage";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, DoorOpen, Trophy, Eye, Home, ListChecks, LogOut, Settings2, User } from "lucide-react";
+import { CalendarDays, DoorOpen, Trophy, Eye, Home, ListChecks, LogOut, Settings2, User, Clock3, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { myPlanQuery } from "@/lib/data/gym";
+import { needsMembershipWait } from "@/lib/access/content";
 import { supabase } from "@/integrations/supabase/client";
 import { isBoxStaff, useSession } from "@/lib/auth/session";
 import { settingsQuery } from "@/lib/data/box";
@@ -13,7 +16,8 @@ import { RoleSwitcher } from "./RoleSwitcher";
 
 /** Shell mobile-first para atletas y staff del box: barra inferior en móvil, sidebar en escritorio. */
 export function AppShell({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {
-  const { role, realRole, boxMode, setBoxMode, tenantName, tenantId } = useSession();
+  const { role, realRole, boxMode, setBoxMode, tenantName, tenantId, user } = useSession();
+  const quota = useQuery(myPlanQuery(tenantId, user?.id));
   const { data: settings } = useQuery(settingsQuery(tenantId));
   const showSpaces = facilitiesVisible(!!settings?.facilities_enabled, isBoxStaff(role));
   const brand = settings as { theme_preset?: string; logo_url?: string | null } | null | undefined;
@@ -31,6 +35,9 @@ export function AppShell({ title, children, action }: { title: string; children:
     { to: "/profile" as const, label: "Perfil", icon: User },
   ];
   const signOut = async () => { await supabase.auth.signOut(); navigate({ to: "/auth", replace: true }); };
+
+  if (tenantId && role === "athlete" && quota.isPending) return <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">Comprobando tu acceso…</div>;
+  if (needsMembershipWait(role, !!tenantId, !!quota.data)) return <div className="flex min-h-screen flex-col bg-background px-6"><header className="mx-auto flex w-full max-w-lg items-center justify-between py-6"><Logo/><Button variant="ghost" onClick={signOut}><LogOut className="h-4 w-4"/>Salir</Button></header><main className="mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center pb-24 text-center"><Clock3 className="mb-5 h-12 w-12 text-primary"/><p className="mb-2 text-sm text-muted-foreground">{tenantName}</p><h1 className="text-2xl font-bold">Tu acceso está pendiente</h1><p className="mt-3 max-w-sm text-muted-foreground">Espera a que tu gimnasio te asigne una cuota activa para entrar.</p>{quota.isError && <p role="alert" className="mt-3 text-sm text-destructive">No se pudo comprobar tu cuota. Inténtalo de nuevo.</p>}<Button className="mt-6" variant="outline" disabled={quota.isFetching} onClick={() => quota.refetch()}><RefreshCw className="h-4 w-4"/>Comprobar acceso</Button>{canToggle && <Button className="mt-3" variant="ghost" onClick={toggle}><Eye className="h-4 w-4"/>Volver a gestión</Button>}</main></div>;
 
   return (
     <div className="min-h-screen md:flex">

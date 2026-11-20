@@ -7,7 +7,7 @@ import type { BoxClass, MyEnrollment } from "@/lib/data/box";
 import { INTENTS, INTENT_LABEL, atRisk, confirmed, isFull, occupied, type Counts, type Intent } from "@/lib/access/attendance";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { PersonAvatar } from "@/components/PersonAvatar";
+import { CoachProfile } from "@/components/CoachProfile";
 import { classState, STATE_LABEL, STATE_STYLE, INTENT_STYLE } from "@/lib/access/class-state";
 
 const fmt = (iso: string) => new Date(iso).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
@@ -28,19 +28,15 @@ export function ClassCard({ c, counts, mine, blockedReason, onIntent, busy, coac
   const disabled = busy || cancelled || past || !!blockedReason;
   return (
     <div className={cn("rounded-lg border border-border bg-card p-4", cancelled && "opacity-60")}>
-      <div className="mb-2 flex justify-end"><span className={cn("rounded px-2 py-0.5 text-xs font-medium", STATE_STYLE[state])}>{STATE_LABEL[state]}</span></div>
-      <div className="flex items-start gap-4">
-        <ActivityMark url={activity?.logo_url} name={activity?.name ?? c.title} className="h-9 w-9"/><div className="w-14 shrink-0 text-center"><p className="font-display text-lg font-bold">{fmt(c.starts_at)}</p><p className="text-xs text-muted-foreground">{mins(c)} min</p></div>
-        <Link to="/class/$classId" params={{ classId: c.id }} className="min-w-0 flex-1">
-          <p className="truncate font-semibold hover:text-primary">{c.title}{cancelled && " · Cancelada"}</p>
-          <div className="my-2 flex items-center gap-2"><PersonAvatar name={c.coach_name ?? "Sin coach"} url={coachAvatar} className="h-6 w-6" /><span className="text-xs text-muted-foreground">{c.coach_name ?? "Sin coach"}</span></div>
-          <p className="text-xs text-muted-foreground">{occupied(counts)}/{c.capacity} plazas · {confirmed(counts)}/{c.min_attendees} mín.{counts.waitlist ? ` · ${counts.waitlist} en espera` : ""}</p>
-          {cancelled && c.cancelled_reason && <p className="mt-1 text-xs text-destructive">{c.cancelled_reason}</p>}
-          {!cancelled && risk && <p className="mt-1 flex items-center gap-1 text-xs text-warning"><AlertTriangle className="h-3 w-3" />Faltan confirmados: puede cancelarse {c.cancel_hours_before} h antes</p>}
-          {blockedReason && <p className="mt-1 flex items-center gap-1 text-xs text-warning"><Lock className="h-3 w-3" />{blockedReason}</p>}
-          {mine?.status === "waitlist" && <p className="mt-1 text-xs text-primary">Estás en lista de espera</p>}
-        </Link>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3"><div className="w-14 shrink-0"><p className="font-display text-xl font-bold">{fmt(c.starts_at)}</p><p className="mt-0.5 text-xs text-muted-foreground">{mins(c)} min</p></div><ActivityMark url={activity?.logo_url} name={activity?.name ?? c.title} className="h-11 w-11"/></div>
+        <span className={cn("shrink-0 rounded px-2 py-0.5 text-[11px] font-medium", STATE_STYLE[state])}>{STATE_LABEL[state]}</span>
       </div>
+      <Link to="/class/$classId" params={{ classId: c.id }} className="mt-3 block min-w-0"><p className="break-words font-display text-lg font-bold hover:text-primary">{c.title}</p></Link>
+      <div className="mt-2 flex items-center justify-between gap-3"><div className="min-w-0 text-xs text-muted-foreground"><p>{occupied(counts)}/{c.capacity} plazas · {confirmed(counts)}/{c.min_attendees} mín.</p>{mine?.status === "waitlist" && <p className="mt-1 text-primary">Estás en lista de espera</p>}</div><CoachProfile id={c.coach_id} name={c.coach_name} avatar={coachAvatar}/></div>
+      {cancelled && c.cancelled_reason && <p className="mt-2 text-xs text-destructive">{c.cancelled_reason}</p>}
+      {!cancelled && !past && risk && <p className="mt-2 flex items-start gap-1 text-xs text-warning"><AlertTriangle className="h-3 w-3 shrink-0"/>Mínimo pendiente · revisión {c.cancel_hours_before} h antes</p>}
+      {blockedReason && <p className="mt-2 flex items-center gap-1 text-xs text-warning"><Lock className="h-3 w-3"/>{blockedReason}</p>}
       {!cancelled && !past && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {INTENTS.map((i) => (

@@ -6,7 +6,7 @@ import { AppShell } from "@/components/layout/AppShell";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { MAIN_LIFTS } from "@/lib/data/mock";
-import { myPlanQuery } from "@/lib/data/gym";
+import { myPlanQuery, saveProfile } from "@/lib/data/gym";
 import type { FacilityWindow } from "@/lib/access/membership";
 import { WEEKDAYS } from "@/lib/data/box";
 import { myRmsQuery, saveRm, myProfileQuery, setAttendancePrivacy } from "@/lib/data/box";
@@ -85,24 +85,25 @@ function Profile() {
   );
 }
 
-type Prof = { full_name: string | null; alias: string | null; avatar_url: string | null } | null | undefined;
+type Prof = { full_name: string | null; alias: string | null; avatar_url: string | null; bio: string | null } | null | undefined;
 function AccountForm({ prof }: { prof: Prof }) {
   const { user } = useSession(); const qc = useQueryClient();
-  const [v, setV] = useState({ full_name: "", alias: "", avatar_url: "", email: "" });
-  useEffect(() => { setV({ full_name: prof?.full_name ?? "", alias: prof?.alias ?? "", avatar_url: prof?.avatar_url ?? "", email: user?.email ?? "" }); }, [prof, user?.email]);
+  const [v, setV] = useState({ full_name: "", alias: "", avatar_url: "", email: "", bio: "" });
+  useEffect(() => { setV({ full_name: prof?.full_name ?? "", alias: prof?.alias ?? "", avatar_url: prof?.avatar_url ?? "", email: user?.email ?? "", bio: prof?.bio ?? "" }); }, [prof, user?.email]);
   const save = useMutation({ mutationFn: async () => {
     if (v.avatar_url && !/^https:\/\/\S+$/.test(v.avatar_url)) throw new Error("La foto debe ser un enlace https");
-    const r = await supabase.from("profiles").update({ full_name: v.full_name.trim() || null, alias: v.alias.trim() || null, avatar_url: v.avatar_url.trim() || null }).eq("id", user!.id); if (r.error) throw r.error;
+    if (!user) throw new Error("Inicia sesión");
+    await saveProfile(user.id, { full_name: v.full_name.trim() || null, alias: v.alias.trim() || null, avatar_url: v.avatar_url.trim() || null, bio: v.bio.trim() || null });
     if (v.email.trim() && v.email.trim() !== user?.email) { const e = await supabase.auth.updateUser({ email: v.email.trim() }); if (e.error) throw e.error; return "email"; }
     return "ok";
-  }, onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["profile"] }); toast.success(r === "email" ? "Te hemos enviado un correo para confirmar el nuevo email" : "Perfil guardado"); }, onError: (e) => toast.error(e instanceof Error ? e.message : String(e)) });
+  }, onSuccess: (r) => { qc.invalidateQueries({ queryKey: ["profile"] }); qc.invalidateQueries({ queryKey: ["coach-profile"] }); toast.success(r === "email" ? "Te hemos enviado un correo para confirmar el nuevo email" : "Perfil guardado"); }, onError: (e) => toast.error(e instanceof Error ? e.message : String(e)) });
   return <section className="mb-5 rounded-xl border border-border bg-card p-5"><div className="mb-4 flex items-center gap-3"><PersonAvatar name={v.full_name || user?.email || "?"} url={v.avatar_url || null} /><p className="text-sm text-muted-foreground">Tu foto y nombre se ven en las clases.</p></div>
     <div className="grid gap-3 sm:grid-cols-2">
       <div><Label>Nombre completo</Label><Input value={v.full_name} onChange={(e) => setV({ ...v, full_name: e.target.value })} /></div>
       <div><Label>Alias</Label><Input value={v.alias} onChange={(e) => setV({ ...v, alias: e.target.value })} placeholder="Cómo te llaman en el box" /></div>
       <div><Label>Foto (enlace https)</Label><Input value={v.avatar_url} onChange={(e) => setV({ ...v, avatar_url: e.target.value })} placeholder="https://…" /></div>
       <div><Label>Correo electrónico</Label><Input type="email" value={v.email} onChange={(e) => setV({ ...v, email: e.target.value })} /></div>
-    </div><Button className="mt-4" disabled={save.isPending} onClick={() => save.mutate()}>Guardar</Button></section>;
+    </div><div className="mt-3"><Label htmlFor="profile-bio">Sobre mí</Label><Textarea id="profile-bio" maxLength={500} value={v.bio} onChange={e => setV({ ...v, bio: e.target.value })}/><p className="mt-1 text-right text-xs text-muted-foreground">{v.bio.length}/500</p></div><Button className="mt-4" disabled={save.isPending} onClick={() => save.mutate()}>Guardar</Button></section>;
 }
 function PasswordForm() {
   const [current, setCurrent] = useState(""); const [a, setA] = useState(""); const [b, setB] = useState("");

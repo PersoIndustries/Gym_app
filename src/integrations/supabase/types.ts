@@ -716,6 +716,7 @@ export type Database = {
         Row: {
           alias: string | null
           avatar_url: string | null
+          bio: string | null
           created_at: string
           full_name: string | null
           hide_attendance: boolean
@@ -726,6 +727,7 @@ export type Database = {
         Insert: {
           alias?: string | null
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           hide_attendance?: boolean
@@ -736,6 +738,7 @@ export type Database = {
         Update: {
           alias?: string | null
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           full_name?: string | null
           hide_attendance?: boolean
@@ -1657,6 +1660,7 @@ export type Database = {
         Args: { _tenant: string; _week_start: string }
         Returns: number
       }
+      has_box_content_access: { Args: { _tenant: string }; Returns: boolean }
       has_tenant_role: {
         Args: {
           _roles: Database["public"]["Enums"]["tenant_role"][]
