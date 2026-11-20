@@ -32,6 +32,7 @@ function ClassPage() {
   const { classId } = Route.useParams();
   const { role, tenantId, user } = useSession();
   const [preview, setPreview] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
   const canManage = isBoxStaff(role);
   const staff = canManage && !preview;
   const qc = useQueryClient();
@@ -57,7 +58,6 @@ function ClassPage() {
   const blocks: Phase[] = [...phases, ...Array.from(new Set(wod.map(w => w.block))).filter(key => !phases.some(p => p.key === key)).map(key => ({ key, title: BLOCKS[key] ?? key, alternatives: "" }))];
   const allPhases = blocks;
   const rounding = Number(settings?.rounding_kg ?? 2.5);
-  const [dragId, setDragId] = useState<string | null>(null);
   const sortable = (list: WodItem[]) => list.sort((a,b)=>a.position-b.position).map(w => <div key={w.id} draggable={staff} onDragStart={e=>{ if(!staff) return; setDragId(w.id); e.dataTransfer.effectAllowed="move"; }} onDragEnd={()=>setDragId(null)} onDragOver={e=>{ if(staff && dragId && list.some(x=>x.id===dragId)) e.preventDefault(); }} onDrop={async e=>{ e.preventDefault(); if(!dragId || dragId===w.id) return; const ids=list.map(x=>x.id).filter(id=>id!==dragId); ids.splice(ids.indexOf(w.id) + (list.findIndex(x=>x.id===dragId) < list.findIndex(x=>x.id===w.id) ? 1 : 0), 0, dragId); setDragId(null); try { await reorderWod(ids); refresh(); } catch(err){ errorToast(err); } }} className={cn(staff && "flex gap-1", dragId===w.id && "opacity-40")}>{staff && <GripVertical className="mt-3 h-4 w-4 shrink-0 cursor-grab text-muted-foreground" aria-label="Arrastrar para ordenar"/>}<div className="min-w-0 flex-1">{renderItem(w)}{wod.filter(a=>a.alternative_to===w.id).map(renderItem)}</div></div>);
   const renderItem = (w: WodItem) => {
     const ex = exercises.find(e => e.id === w.exercise_id);
