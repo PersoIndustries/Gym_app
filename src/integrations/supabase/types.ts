@@ -615,36 +615,45 @@ export type Database = {
         Row: {
           allowed_activity_type_ids: string[]
           allowed_weekdays: number[]
+          classes_enabled: boolean
           created_at: string
+          facility_booking_enabled: boolean
           facility_windows: Json
           id: string
           name: string
           price_cents: number
           tenant_id: string
+          trial_class_limit: number | null
           updated_at: string
           weekly_class_limit: number | null
         }
         Insert: {
           allowed_activity_type_ids?: string[]
           allowed_weekdays?: number[]
+          classes_enabled?: boolean
           created_at?: string
+          facility_booking_enabled?: boolean
           facility_windows?: Json
           id?: string
           name: string
           price_cents?: number
           tenant_id: string
+          trial_class_limit?: number | null
           updated_at?: string
           weekly_class_limit?: number | null
         }
         Update: {
           allowed_activity_type_ids?: string[]
           allowed_weekdays?: number[]
+          classes_enabled?: boolean
           created_at?: string
+          facility_booking_enabled?: boolean
           facility_windows?: Json
           id?: string
           name?: string
           price_cents?: number
           tenant_id?: string
+          trial_class_limit?: number | null
           updated_at?: string
           weekly_class_limit?: number | null
         }
@@ -1677,6 +1686,13 @@ export type Database = {
       }
       join_tenant_with_code: { Args: { _code: string }; Returns: string }
       leave_class: { Args: { _class: string }; Returns: undefined }
+      my_trial_usage: {
+        Args: { _tenant: string }
+        Returns: {
+          class_ids: string[]
+          used: number
+        }[]
+      }
       promote_waitlist: { Args: { _class: string }; Returns: undefined }
       request_facility: {
         Args: { _facility: string; _start: string }
