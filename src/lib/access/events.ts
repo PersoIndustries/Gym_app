@@ -21,8 +21,8 @@ export function isRelevantForPlan(eventActivities: string[], planActivities: str
   return eventActivities.some(a => planActivities.includes(a));
 }
 
-/** Socios normales solo ven reservas si el box las activa y el espacio está activo; staff siempre. */
-export function facilitiesVisible(enabled: boolean, staff: boolean): boolean { return staff || enabled; }
+/** El menú de espacios solo aparece cuando las reservas están activadas. */
+export function facilitiesVisible(enabled: boolean, _staff: boolean): boolean { return enabled; }
 
 export interface LevelVariant { level: string; load_kg: number | null; percent_rm: number | null; reps: string | null }
 /** Variante del nivel preferido del socio, si existe. */

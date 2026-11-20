@@ -1,7 +1,8 @@
 # Mejoras durante desarrollo
-- [ ] Acceso de alumnos sin cuota: pantalla de espera y protección de lecturas; staff conserva gestión.
-- [ ] Ocultar fases vacías del entreno, ficha del profesor con biografía editable y tarjetas rediseñadas.
-- [ ] Compactar calendario y mover filtros debajo; verificar reglas y actualizar tareas.
+- [x] Ocultar Espacios del menú y accesos de Gestión cuando esté desactivado, también para admins/profesores; regla probada.
+- [x] Alumnos sin cuota: pantalla de espera y lecturas protegidas; staff conserva gestión. CONTENT_ACCESS_OK: 8 comprobaciones reales sin fixtures persistidos.
+- [x] Ocultar fases vacías, avatar del profesor con ficha y biografía editable para todos; logos a la derecha de la hora y tarjetas rediseñadas.
+- [x] Calendario compacto, filas mensuales necesarias y filtros debajo. Pruebas de reglas pasan; visualización autenticada pendiente por Supabase externo.
 - [x] Exigir cuota para participar; asignación automática por código y tras aprobación: QUOTAS_INVITES_OK (13) y CLASS_SPACES_OK (11), sin conservar fixtures.
 - [x] Calendario de selección de día sin tarjetas dentro; fondo de día cerrado y asistencia neutra sin seleccionar (verificación visual con sesión externa pendiente).
 - [x] Logos predeterminados de actividades/eventos y selección de tipos al crear gimnasio, respetando límites; 100 pruebas pasan.

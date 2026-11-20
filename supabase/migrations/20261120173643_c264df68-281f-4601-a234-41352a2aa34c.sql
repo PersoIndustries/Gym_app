@@ -1,0 +1,3 @@
+create policy "active quota events" on public.community_events as restrictive for select to authenticated using (scope='community' or public.is_platform_staff(auth.uid()) or public.has_box_content_access(tenant_id));
+create policy "active quota activities" on public.activity_types as restrictive for select to authenticated using (public.has_box_content_access(tenant_id));
+create policy "active quota profiles" on public.profiles as restrictive for select to authenticated using (id=auth.uid() or public.is_platform_admin(auth.uid()) or exists(select 1 from public.tenant_members m where m.user_id=profiles.id and public.has_box_content_access(m.tenant_id)));

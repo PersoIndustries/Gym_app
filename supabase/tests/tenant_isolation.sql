@@ -22,6 +22,8 @@ begin
   insert into public.tenant_members(tenant_id, user_id, role) values (ta, a_ath, 'athlete'), (ta, a_adm, 'admin'), (tb, b_ath, 'athlete'), (tb, b_adm, 'admin');
   insert into public.membership_plans(id,tenant_id,name,price_cents,allowed_weekdays) values(pb,tb,'Cuota B',1000,array[0,1,2,3,4,5,6]);
   insert into public.user_memberships(tenant_id,user_id,plan_id,starts_on,status) values(tb,b_ath,pb,current_date,'active');
+  insert into public.membership_plans(tenant_id,name,price_cents,allowed_weekdays) values(ta,'Cuota A',1000,array[0,1,2,3,4,5,6]);
+  insert into public.user_memberships(tenant_id,user_id,plan_id,starts_on,status) select ta,a_ath,id,current_date,'active' from public.membership_plans where tenant_id=ta;
   insert into public.activity_types(tenant_id,name,logo_url) values(tb,'Tipo B','https://example.com/b.webp');
   insert into storage.objects(bucket_id,name) values('gym-logos',tb::text||'/isolation.webp');
   insert into public.classes(id, tenant_id, title, starts_at, ends_at, capacity) values

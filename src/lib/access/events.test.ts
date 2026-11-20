@@ -22,7 +22,8 @@ describe("eventos", () => {
 
 describe("reservas activables", () => {
   it("si el admin las desactiva, un socio no las ve", () => expect(facilitiesVisible(false, false)).toBe(false));
-  it("el staff las sigue viendo para configurarlas", () => expect(facilitiesVisible(false, true)).toBe(true));
+  it("admins y profesores tampoco ven el menú si está desactivado", () => expect(facilitiesVisible(false, true)).toBe(false));
+  it("staff ve el menú cuando está activado", () => expect(facilitiesVisible(true, true)).toBe(true));
 });
 
 describe("niveles por ejercicio", () => {

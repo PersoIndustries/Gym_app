@@ -21,7 +21,8 @@ import { pageHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/_authenticated/admin/")({ head: pageHead("Gestión", "Gestión del box."), component: AdminHome });
 function AdminHome() {
-  const { role } = useSession(); const admin = role === "admin";
+  const { role, tenantId } = useSession(); const admin = role === "admin";
+  const { data: settings } = useQuery(settingsQuery(tenantId));
   const all = [
     { to: "/admin/classes", t: "Clases", d: admin ? "Horarios y capacidad" : "Clases de la semana y asistencia", icon: CalendarCog, coach: true },
     { to: "/admin/members", t: "Socios", d: admin ? "Roles y cuotas" : "Listado de socios", icon: Users, coach: true },
@@ -30,7 +31,7 @@ function AdminHome() {
     { to: "/spaces", t: "Espacios y reservas", d: "Sauna, pistas y solicitudes", icon: CalendarCog },
     { to: "/events", t: "Eventos y carreras", d: admin ? "Internos, comunidad y solicitudes" : "Proponer eventos al admin", icon: Trophy, coach: true },
   ];
-  const items = all.filter((i) => admin || ("coach" in i && i.coach));
+  const items = all.filter((i) => (i.to !== "/spaces" || !!settings?.facilities_enabled) && (admin || ("coach" in i && i.coach)));
   return (
     <AppShell title="Gestión del box">
       <div className="grid gap-3 sm:grid-cols-2">{items.map(({ to, t, d, icon: I }) => <Link key={to} to={to} className="rounded-lg border border-border bg-card p-5 hover:border-primary"><I className="h-5 w-5 text-primary" /><p className="mt-3 font-semibold">{t}</p><p className="text-sm text-muted-foreground">{d}</p></Link>)}</div>
