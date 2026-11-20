@@ -955,6 +955,7 @@ export type Database = {
           expires_at: string | null
           id: string
           max_uses: number | null
+          membership_plan_id: string | null
           requires_approval: boolean
           role: Database["public"]["Enums"]["tenant_role"]
           tenant_id: string
@@ -967,6 +968,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           max_uses?: number | null
+          membership_plan_id?: string | null
           requires_approval?: boolean
           role?: Database["public"]["Enums"]["tenant_role"]
           tenant_id: string
@@ -979,6 +981,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           max_uses?: number | null
+          membership_plan_id?: string | null
           requires_approval?: boolean
           role?: Database["public"]["Enums"]["tenant_role"]
           tenant_id?: string
@@ -986,6 +989,13 @@ export type Database = {
           uses?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "tenant_invites_membership_plan_id_fkey"
+            columns: ["membership_plan_id"]
+            isOneToOne: false
+            referencedRelation: "membership_plans"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tenant_invites_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -999,6 +1009,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          invite_id: string | null
           role: Database["public"]["Enums"]["tenant_role"]
           status: string
           tenant_id: string
@@ -1008,6 +1019,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          invite_id?: string | null
           role?: Database["public"]["Enums"]["tenant_role"]
           status?: string
           tenant_id: string
@@ -1017,6 +1029,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          invite_id?: string | null
           role?: Database["public"]["Enums"]["tenant_role"]
           status?: string
           tenant_id?: string
@@ -1024,6 +1037,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tenant_join_requests_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_invites"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tenant_join_requests_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -1497,6 +1517,10 @@ export type Database = {
         Args: { _class: string; _user: string }
         Returns: string
       }
+      assign_invite_membership: {
+        Args: { _invite: string; _user: string }
+        Returns: undefined
+      }
       book_class: { Args: { _class: string; _intent: string }; Returns: string }
       box_branding: {
         Args: { _code: string }
@@ -1557,6 +1581,25 @@ export type Database = {
           done: number
           pending: number
         }[]
+      }
+      create_gym_with_activities: {
+        Args: {
+          _activities: string[]
+          _billing: string
+          _cancel_hours: number
+          _city: string
+          _code: string
+          _facilities: boolean
+          _logo: string
+          _min_attendees: number
+          _name: string
+          _plan: string
+          _promo?: string
+          _requires_approval: boolean
+          _rounding: number
+          _theme: string
+        }
+        Returns: string
       }
       create_gym_with_plan: {
         Args: {
