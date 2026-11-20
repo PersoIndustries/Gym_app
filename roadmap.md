@@ -1,6 +1,6 @@
 # Mejoras durante desarrollo
-- [ ] Actualizar socios por plan (100/500/ilimitado) y tipos de clase (5/15/ilimitado), con límites SQL y pruebas.
-- [ ] Ampliar temas cerrados con fondos claros y aurora, vista previa en alta y gestión.
+- [x] Actualizar socios por plan (100/500/ilimitado) y tipos de clase (5/15/ilimitado), con límites SQL y pruebas autenticadas sin conservar fixtures.
+- [x] Ampliar temas cerrados con fondos claros y aurora, vista previa compartida en alta y gestión; 80 pruebas y visualización móvil/escritorio verificadas.
 - [x] Privacidad con asistente anónimo y avatar de interrogación.
 - [x] Peso pulsable con RM, porcentaje y edición del RM.
 - [x] Profesor añade asistentes y cambia nombre/vista de la clase.
