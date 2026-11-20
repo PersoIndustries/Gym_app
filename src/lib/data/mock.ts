@@ -93,5 +93,7 @@ export const ROADMAP_SEED: RoadmapItem[] = [
   "Pagos · Suscripción SaaS real del box|Checkout y facturas del plan del gimnasio con pasarela real.|pending|high|Pagos",
   "Onboarding · Checklist de primeros pasos del admin|Crear horario, cuotas, invitar coaches y compartir enlace/QR.|pending|medium|Onboarding",
   "Marca · Subida de logo a almacenamiento|Hoy el logo es una URL https; permitir subir el archivo.|pending|medium|Marca",
+  "Social · Foto post-clase con el WOD para redes|Al terminar la clase, hacer o subir foto, recortarla en vertical (Instagram), aplicar filtro y superponer el WOD. Logo del gym en una esquina y del tipo de clase/equipo en la otra. Descargar la imagen.|pending|medium|Social,Clases",
+  "Clases · Logo por tipo de clase|El admin sube un logo para cada tipo de clase; se ve sutil a la izquierda de cada clase, en el listado y en el calendario, quitando información innecesaria del calendario.|pending|medium|Clases,Marca,Calendario",
   "Acceso · QR y enlace compartible del box|Generar QR del enlace /b/código para el mostrador.|pending|medium|Onboarding",
 ].map((r, i) => { const [title = "", description = "", status = "pending", priority = "medium", tags = ""] = r.split("|"); return { id: `r${i + 1}`, title, description, status: status as RoadmapItem["status"], priority: priority as NonNullable<RoadmapItem["priority"]>, tags: tags.split(",").filter(Boolean), notes: "", due: null, sort_order: i + 1 }; });

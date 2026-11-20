@@ -23,3 +23,5 @@
 - [ ] Asistente de alta de gimnasio autoservicio (cuenta → box → plan → marca).
 - [ ] Suscripción SaaS real del box (pasarela de pago).
 - [ ] Checklist inicial del admin, QR del enlace y subida de logo.
+- [ ] Foto post-clase con el WOD superpuesto: recorte vertical, filtro, logos del gym y de la clase, descarga para redes.
+- [ ] Logo por tipo de clase (admin) visible en clase, listado y calendario; simplificar el calendario.
