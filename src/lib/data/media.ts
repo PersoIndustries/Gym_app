@@ -13,7 +13,7 @@ export async function resolveLogo(url: string | null | undefined): Promise<strin
   if (!url.startsWith(base)) return url;
   const path = decodeURIComponent(url.slice(base.length));
   const { data, error } = await supabase.storage.from(BUCKET).createSignedUrl(path, 3600);
-  return error ? null : data.signedUrl;
+  return error ? url : data.signedUrl;
 }
 export async function saveActivityLogo(tenant: string, id: string, logo: string | null) {
   const r = await supabase.from('activity_types').update({ logo_url: logo }).eq('tenant_id', tenant).eq('id', id).select('id').single(); if (r.error) throw r.error;

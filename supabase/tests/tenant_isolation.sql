@@ -61,7 +61,8 @@ begin
     update public.activity_types set logo_url='https://example.com/hack.webp' where tenant_id=tb; get diagnostics n=row_count; if n<>0 then raise exception 'FAIL modifica logos de tipos B'; end if;
     select count(*) into n from storage.objects where bucket_id='gym-logos' and name=tb::text||'/isolation.webp'; if n<>0 then raise exception 'FAIL lee archivo logo B'; end if;
     blocked:=false; begin insert into storage.objects(bucket_id,name) values('gym-logos',tb::text||'/hack.webp'); exception when insufficient_privilege then blocked:=true; end; if not blocked then raise exception 'FAIL sube logo en B'; end if;
-    delete from storage.objects where bucket_id='gym-logos' and name=tb::text||'/isolation.webp'; get diagnostics n=row_count; if n<>0 then raise exception 'FAIL borra archivo logo B'; end if;
+    -- Storage also rejects direct deletion before RLS; both denial paths are safe.
+    blocked:=false; begin delete from storage.objects where bucket_id='gym-logos' and name=tb::text||'/isolation.webp'; get diagnostics n=row_count; if n<>0 then raise exception 'FAIL borra archivo logo B'; end if; exception when insufficient_privilege then blocked:=true; end;
     checks:=checks+5;
 
     -- ESCRITURA: updates/deletes afectan 0 filas
