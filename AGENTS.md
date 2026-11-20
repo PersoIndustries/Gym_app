@@ -60,3 +60,4 @@ use the editor.
 - Empty workout phases are hidden from athletes; CoachProfile shares avatar-only triggers and profile bios; why: class summaries remain compact and empty programming does not look published.
 - Membership quotas separate facility windows, reservation permission, weekly classes and total trial allowance; SQL locks the member and membership during participation checks, and trials count non-cancelled enrollments from the membership start date; why: concurrent reservations cannot bypass allowances.
 - InfoHelp provides tap/click-accessible contextual explanations through shared popovers; why: guidance stays available on mobile without cluttering screens.
+- Netlify deploys use `netlify.toml` with `NITRO_PRESET=netlify` (publish `dist`); Lovable builds ignore it and keep their own target; why: self-hosting must not change the Lovable preview/publish build.
