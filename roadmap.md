@@ -27,9 +27,10 @@
 - [x] Logo por tipo de clase (admin) visible en clase, listado y calendario; simplificar el calendario.
 # Tareas
 - [x] Cancelación SQL cada 15 minutos: cron activo, ejecución real verificada.
-- [x] Recuperación por email y cambio de contraseña con contraseña actual (73 pruebas pasan; entrega del email sin verificar).
+- [x] Recuperación por email y cambio de contraseña con contraseña actual (74 pruebas pasan; entrega del email sin verificar).
 - [x] Logos WebP optimizados a 512 px, almacenamiento privado, marca y tipos de clase.
 - [x] Editor post-clase: recorte 9:16, filtros, WOD personalizado, marcas y descarga PNG 1080×1920 verificados.
+- [x] Seguridad de logos y cancelación: MEDIA_CANCEL_OK y TENANT_ISOLATION_OK (110 comprobaciones), sin conservar datos de prueba.
 - [ ] Logos subidos en acceso público: bloqueado por la política del workspace; permitir buckets públicos y cambiar gym-logos a público.
 - [ ] Validar recepción de email de recuperación y flujos autenticados: Supabase externo no permite sesión de prueba administrada.
 - [x] Copiar tareas al portapapeles (todas, filtradas, seleccionadas) y repaso de hechas.
