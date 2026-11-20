@@ -728,6 +728,57 @@ export type Database = {
         }
         Relationships: []
       }
+      saas_plans: {
+        Row: {
+          advanced_metrics: boolean
+          created_at: string
+          custom_domain: boolean
+          facilities: boolean
+          id: string
+          max_gyms: number
+          max_member_plans: number | null
+          max_members: number | null
+          max_staff: number | null
+          name: string
+          price_month_cents: number
+          price_year_cents: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          advanced_metrics: boolean
+          created_at?: string
+          custom_domain: boolean
+          facilities: boolean
+          id: string
+          max_gyms: number
+          max_member_plans?: number | null
+          max_members?: number | null
+          max_staff?: number | null
+          name: string
+          price_month_cents: number
+          price_year_cents: number
+          sort_order: number
+          updated_at?: string
+        }
+        Update: {
+          advanced_metrics?: boolean
+          created_at?: string
+          custom_domain?: boolean
+          facilities?: boolean
+          id?: string
+          max_gyms?: number
+          max_member_plans?: number | null
+          max_members?: number | null
+          max_staff?: number | null
+          name?: string
+          price_month_cents?: number
+          price_year_cents?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tenant_invites: {
         Row: {
           code: string
@@ -920,6 +971,54 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tenant_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_subscriptions: {
+        Row: {
+          billing: string
+          created_at: string
+          owner_id: string
+          plan_id: string
+          status: string
+          tenant_id: string
+          trial_ends_on: string
+          updated_at: string
+        }
+        Insert: {
+          billing?: string
+          created_at?: string
+          owner_id: string
+          plan_id: string
+          status?: string
+          tenant_id: string
+          trial_ends_on?: string
+          updated_at?: string
+        }
+        Update: {
+          billing?: string
+          created_at?: string
+          owner_id?: string
+          plan_id?: string
+          status?: string
+          tenant_id?: string
+          trial_ends_on?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "saas_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_subscriptions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: true
             referencedRelation: "tenants"
@@ -1255,6 +1354,23 @@ export type Database = {
           status: string
           user_id: string
         }[]
+      }
+      create_gym_with_plan: {
+        Args: {
+          _billing: string
+          _cancel_hours: number
+          _city: string
+          _code: string
+          _facilities: boolean
+          _logo: string
+          _min_attendees: number
+          _name: string
+          _plan: string
+          _requires_approval: boolean
+          _rounding: number
+          _theme: string
+        }
+        Returns: string
       }
       create_tenant: {
         Args: {
