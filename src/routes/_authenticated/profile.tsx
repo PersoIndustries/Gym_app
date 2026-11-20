@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
+import { InfoHelp } from "@/components/InfoHelp";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { MAIN_LIFTS } from "@/lib/data/mock";
@@ -58,14 +59,13 @@ function Profile() {
       <section className="rounded-xl border border-border bg-card p-5">
         <p className="font-display text-xl font-bold">{prof?.full_name || (user?.user_metadata?.["full_name"] as string) || "Sin nombre"}</p>
         <p className="text-sm text-muted-foreground">{user?.email}{tenantName ? ` · ${tenantName}` : ""}</p>
-        <div className="mt-4"><p className="mb-1.5 text-xs text-muted-foreground">Mi cuota</p><p className="font-semibold text-primary">{plan?.name ?? "Sin cuota activa"}</p>{plan && <><p className="mt-1 text-sm text-muted-foreground">{(plan.price_cents/100).toLocaleString("es-ES")} €/mes · {plan.weekly_class_limit ?? "Sin límite de"} clases semanales</p><p className="mt-2 text-sm">Clases: {plan.allowed_weekdays.map(d=>WEEKDAYS[d]).join(", ")}</p>{Array.isArray(plan.facility_windows) && (plan.facility_windows as FacilityWindow[]).map((w,i)=><p key={i} className="mt-1 text-sm text-muted-foreground">Instalaciones: {WEEKDAYS[w.weekday]} · {w.from}–{w.to}</p>)}</>}</div>
+        <div className="mt-4"><div className="flex items-center gap-1"><p className="text-xs text-muted-foreground">Mi cuota</p><InfoHelp label="Mi cuota">Tu gimnasio asigna la cuota y decide el acceso, las reservas y las clases permitidas. Los días de instalaciones y los de clases son independientes.</InfoHelp></div><p className="font-semibold text-primary">{plan?.name ?? "Sin cuota activa"}</p>{plan && <><p className="mt-1 text-sm text-muted-foreground">{(plan.price_cents/100).toLocaleString("es-ES")} €/mes · {plan.classes_enabled === false ? "Sin clases" : `${plan.weekly_class_limit ?? "Sin límite de"} clases semanales`}</p>{plan.classes_enabled !== false && <p className="mt-2 text-sm">Clases: {plan.allowed_weekdays.map(d=>WEEKDAYS[d]).join(", ") || "Sin días permitidos"}</p>}{plan.trial_class_limit != null && <p className="mt-2 text-sm text-primary">Prueba: {Math.max(0,plan.trial_class_limit-(plan.trial_used ?? 0))} de {plan.trial_class_limit} clases disponibles</p>}{Array.isArray(plan.facility_windows) && (plan.facility_windows as FacilityWindow[]).map((w,i)=><p key={i} className="mt-1 text-sm text-muted-foreground">Acceso a instalaciones: {WEEKDAYS[w.weekday]} · {w.from}–{w.to}</p>)}<p className="mt-2 text-sm text-muted-foreground">Reservas: {plan.facility_booking_enabled === false ? "No permitidas" : "Permitidas dentro de las franjas de acceso"}</p></>}</div>
       </section>
         </TabsContent>
         <TabsContent value="level">
       {levels.length > 0 && <label className="mb-5 flex items-center justify-between gap-4 border-b border-border pb-4"><span><span className="block">Mi nivel en los WOD</span><span className="text-xs text-muted-foreground">Se resalta en cada ejercicio con niveles.</span></span><Select value={prof?.preferred_level_name ?? "none"} onValueChange={v => level.mutate(v)}><SelectTrigger className="w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">Sin preferencia</SelectItem>{levels.map(l => <SelectItem key={l.id} value={l.name}>{l.name}</SelectItem>)}</SelectContent></Select></label>}
       {levels.length > 0 && exercises.length > 0 && <details className="mb-5 border-b border-border pb-4"><summary className="cursor-pointer font-medium">Mi nivel por ejercicio</summary><p className="mt-1 text-xs text-muted-foreground">Si no eliges, se usa tu nivel general.</p><div className="mt-3 space-y-2">{exercises.map(e => <div key={e.id} className="flex items-center justify-between gap-3 text-sm"><span className="min-w-0 break-words">{e.name}</span><Select value={exLevels[e.id] ?? "default"} onValueChange={v => exLevel.mutate({ ex: e.id, level: v })}><SelectTrigger className="w-36 shrink-0" aria-label={`Nivel en ${e.name}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="default">General</SelectItem>{levels.map(l => <SelectItem key={l.id} value={l.name}>{l.name}</SelectItem>)}</SelectContent></Select></div>)}</div></details>}
-      <h2 className="mt-6 mb-1 font-semibold">Mis RMs (1RM, kg)</h2>
-      <p className="mb-3 text-xs text-muted-foreground">Se usan para calcular tus kilos en cada WOD. Se guardan al salir del campo.</p>
+      <div className="mt-6 mb-3 flex items-center gap-1"><h2 className="font-semibold">Mis RMs (1RM, kg)</h2><InfoHelp label="Repetición máxima (1RM)">El máximo peso que puedes levantar una vez con buena técnica. Se utiliza con el porcentaje indicado por el profesor para calcular tus kilos del WOD. Se guarda al salir del campo.</InfoHelp></div>
       <div className="grid gap-2 sm:grid-cols-2">
         {MAIN_LIFTS.map((l) => (
           <label key={l} className="flex items-center justify-between gap-3 rounded-lg border border-border bg-card px-4 py-3">
@@ -76,7 +76,7 @@ function Profile() {
       </div>
         </TabsContent>
         <TabsContent value="privacy">
-      <label className="my-5 flex items-center justify-between gap-4 border-y border-border py-4"><span>Ocultar mi asistencia</span><Switch checked={prof?.hide_attendance ?? false} disabled={!prof || privacy.isPending} onCheckedChange={v => privacy.mutate(v)} /></label>
+      <div className="my-5 flex items-center justify-between gap-4 border-y border-border py-4"><div className="flex items-center gap-1"><span>Ocultar mi asistencia</span><InfoHelp label="Privacidad de asistencia">Seguirás apareciendo y ocupando una plaza, pero los demás verán Anónimo y un icono de interrogación en lugar de tu nombre y foto.</InfoHelp></div><Switch aria-label="Ocultar mi asistencia" checked={prof?.hide_attendance ?? false} disabled={!prof || privacy.isPending} onCheckedChange={v => privacy.mutate(v)} /></div>
           <PasswordForm /><HelpForm />
         </TabsContent>
         {staff && <TabsContent value="stats"><CoachStats /></TabsContent>}

@@ -1,4 +1,5 @@
 import { BrandImage } from "@/components/BrandImage";
+import { ScreenHelp } from "@/components/ScreenHelp";
 import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -59,7 +60,7 @@ export function AppShell({ title, children, action }: { title: string; children:
         <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-background/90 px-4 py-3 backdrop-blur md:px-8 md:py-5">
           <div>
             <p className="text-xs text-muted-foreground md:hidden">{tenantName ?? "BoxFlow"}</p>
-            <h1 className="text-xl font-bold md:text-2xl">{title}</h1>
+            <div className="flex items-center gap-1"><h1 className="min-w-0 break-words text-xl font-bold md:text-2xl">{title}</h1><ScreenHelp /></div>
           </div>
           <div className="flex items-center gap-2">{action}{canToggle && <button onClick={toggle} aria-label="Cambiar vista" className="rounded-md p-2 text-muted-foreground md:hidden"><Eye className="h-5 w-5" /></button>}<RoleSwitcher className="w-36 md:hidden" /></div>
         </header>

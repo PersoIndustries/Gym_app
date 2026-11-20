@@ -24,7 +24,8 @@ export const myPlanQuery = (tenant: string | null, user: string | undefined) => 
       if (!w || typeof w !== "object" || Array.isArray(w) || typeof w["weekday"] !== "number" || typeof w["from"] !== "string" || typeof w["to"] !== "string") return [];
       return [{weekday:w["weekday"],from:w["from"],to:w["to"]}];
     }) : [];
-    return { ...plan, facility_windows: windows } satisfies MembershipPlan;
+    const usage = plan.trial_class_limit === null ? null : result(await supabase.rpc("my_trial_usage", { _tenant: tenant }))[0];
+    return { ...plan, facility_windows: windows, trial_used: usage?.used ?? 0, trial_class_ids: usage?.class_ids ?? [] } satisfies MembershipPlan;
   },
 });
 export const tenantLinksQuery = () => queryOptions({ queryKey: ["tenant-links"], queryFn: async () => result(await supabase.from("tenants").select("id,name,city,slug,tenant_invites(code)").order("name")) });
@@ -53,3 +54,9 @@ export async function assignPlan(tenant: string, user: string, plan: string, exi
 }
 export async function changeMemberRole(tenant: string, id: string, role: "athlete" | "coach" | "admin") { assertOk(await supabase.from("tenant_members").update({ role }).eq("tenant_id", tenant).eq("id", id)); }
 export async function setInvitePlan(tenant: string, invite: string, plan: string) { assertOk(await supabase.from("tenant_invites").update({ membership_plan_id: plan === "none" ? null : plan }).eq("tenant_id", tenant).eq("id", invite)); }
+
+export const invitesQuery = (tenant: string | null) => queryOptions({ queryKey: ["invites", tenant], enabled: !!tenant, queryFn: async () => tenant ? result(await supabase.from("tenant_invites").select("*").eq("tenant_id", tenant).order("created_at", { ascending: false })) : [] });
+export async function saveInvite(tenant: string, id: string | null, values: { code: string; membership_plan_id: string | null; requires_approval: boolean; max_uses: number | null; expires_at: string | null }) {
+  if (id) assertOk(await supabase.from("tenant_invites").update(values).eq("tenant_id", tenant).eq("id", id));
+  else assertOk(await supabase.from("tenant_invites").insert({ ...values, tenant_id: tenant, role: "athlete" }));
+}

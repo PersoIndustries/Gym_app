@@ -4,6 +4,7 @@ import { BarChart3, Building2, Code2, LogOut, Ticket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "./Logo";
 import { RoleSwitcher } from "./RoleSwitcher";
+import { ScreenHelp } from "@/components/ScreenHelp";
 
 /** Consola web-first para Super Admin / Developer: sidebar fijo, contenido ancho y denso. */
 export function ConsoleShell({ title, subtitle, children, action }: { title: string; subtitle?: string; children: ReactNode; action?: ReactNode }) {
@@ -26,7 +27,7 @@ export function ConsoleShell({ title, subtitle, children, action }: { title: str
       </aside>
       <div className="min-w-0 flex-1">
         <header className="flex flex-wrap items-end justify-between gap-4 border-b border-border px-6 py-6 lg:px-10">
-          <div><h1 className="text-2xl font-bold lg:text-3xl">{title}</h1>{subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}</div>
+          <div><div className="flex items-center gap-1"><h1 className="text-2xl font-bold lg:text-3xl">{title}</h1><ScreenHelp /></div>{subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}</div>
           <div className="flex items-center gap-2">{action}<div className="lg:hidden"><RoleSwitcher className="w-40" /></div></div>
         </header>
         <main className="px-6 py-6 lg:px-10">{children}</main>

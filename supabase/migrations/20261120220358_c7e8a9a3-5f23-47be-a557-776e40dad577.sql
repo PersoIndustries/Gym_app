@@ -1,0 +1,1 @@
+alter function public.my_trial_usage(uuid) security invoker;

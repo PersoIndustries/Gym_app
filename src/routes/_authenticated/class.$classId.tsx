@@ -60,7 +60,7 @@ function ClassPage() {
   if (isLoading || !data) return <AppShell title="Clase"><p className="text-sm text-muted-foreground">Cargando…</p></AppShell>;
   const { cls, wod, attendees } = data;
   const activity = activities.find(a => a.id === cls.activity_type_id);
-  const access = canAccessClass(plan ?? null, { ...cls, activity_type_id: cls.activity_type_id ?? "", coach: cls.coach_name ?? "", booked: 0 });
+  const access = canAccessClass(plan ?? null, { ...cls, activity_type_id: cls.activity_type_id ?? "", coach: cls.coach_name ?? "", booked: 0 }, 0, Math.max(0, (plan?.trial_used ?? 0) - (plan?.trial_class_ids?.includes(cls.id) ? 1 : 0)));
   const me = attendees.find(a => a.user_id === user?.id);
   const booked = attendees.filter(a => a.status === "booked");
   const counts = { going: booked.filter(a => a.intent === "going").length, maybe: booked.filter(a => a.intent === "maybe").length, not_going: attendees.filter(a => a.status === "declined").length, waitlist: attendees.filter(a => a.status === "waitlist").length };

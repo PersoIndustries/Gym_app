@@ -11,9 +11,15 @@ export function canAccessFacility(windows: FacilityWindow[], startsAt: Date, end
   return windows.some(w => w.weekday === startsAt.getDay() && from >= minutes(w.from) && to <= minutes(w.to));
 }
 
+export function canReserveFacility(plan: MembershipPlan | null, startsAt: Date, endsAt: Date): boolean {
+  return !!plan && plan.facility_booking_enabled !== false && canAccessFacility(plan.facility_windows ?? [], startsAt, endsAt);
+}
+
 /** Decide si una cuota permite apuntarse a una clase. Pura: reutilizable en servidor/RLS más adelante. */
-export function canAccessClass(plan: MembershipPlan | null, gymClass: GymClass, bookedThisWeek = 0): AccessResult {
+export function canAccessClass(plan: MembershipPlan | null, gymClass: GymClass, bookedThisWeek = 0, trialUsed = plan?.trial_used ?? 0): AccessResult {
   if (!plan) return { allowed: false, reason: "Sin cuota activa" };
+  if (plan.classes_enabled === false) return { allowed: false, reason: "Tu cuota no permite clases" };
+  if (plan.trial_class_limit != null && trialUsed >= plan.trial_class_limit) return { allowed: false, reason: "Has agotado las clases de prueba" };
   const day = new Date(gymClass.starts_at).getDay();
   if (!plan.allowed_weekdays.includes(day)) return { allowed: false, reason: `Tu cuota "${plan.name}" no incluye este día` };
   if (plan.allowed_activity_type_ids.length > 0 && !plan.allowed_activity_type_ids.includes(gymClass.activity_type_id))
@@ -25,6 +31,7 @@ export function canAccessClass(plan: MembershipPlan | null, gymClass: GymClass, 
 
 export function canAccessEvent(plan: MembershipPlan | null, event: { starts_at: string; activity_type_ids: string[] }): AccessResult {
   if (!plan) return { allowed: false, reason: "Sin cuota activa" };
+  if (plan.classes_enabled === false) return { allowed: false, reason: "Tu cuota no permite participar en actividades" };
   if (!plan.allowed_weekdays.includes(new Date(event.starts_at).getDay())) return { allowed: false, reason: "Tu cuota no incluye este día" };
   if (plan.allowed_activity_type_ids.length > 0 && (event.activity_type_ids.length === 0 || event.activity_type_ids.some(id => !plan.allowed_activity_type_ids.includes(id)))) return { allowed: false, reason: "Tu cuota no incluye esta actividad" };
   return { allowed: true };

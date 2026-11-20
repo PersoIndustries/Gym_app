@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canAccessClass, canAccessFacility, canAccessEvent } from "./membership";
+import { canAccessClass, canAccessFacility, canAccessEvent, canReserveFacility } from "./membership";
 import type { GymClass, MembershipPlan } from "@/lib/domain/types";
 
 const base: MembershipPlan = { id: "p", tenant_id: "t", name: "Entre semana", price_cents: 0, allowed_weekdays: [1, 2, 3, 4, 5], allowed_activity_type_ids: [], weekly_class_limit: null };
@@ -21,6 +21,10 @@ describe("canAccessClass", () => {
   it("no plan means no access", () => {
     expect(canAccessClass(null, cls("2026-11-23T09:00:00")).allowed).toBe(false);
   });
+  it("zero weekly classes blocks the first booking", () => expect(canAccessClass({ ...base, weekly_class_limit: 0 }, cls("2026-11-23T09:00:00"), 0).allowed).toBe(false));
+  it("disabling classes overrides otherwise valid days", () => expect(canAccessClass({ ...base, classes_enabled: false }, cls("2026-11-23T09:00:00")).allowed).toBe(false));
+  it("a trial of 3 allows the third booking", () => expect(canAccessClass({ ...base, trial_class_limit: 3 }, cls("2026-11-23T09:00:00"), 0, 2).allowed).toBe(true));
+  it("a trial of 3 blocks a fourth booking even in another week", () => expect(canAccessClass({ ...base, trial_class_limit: 3 }, cls("2026-11-30T09:00:00"), 0, 3).allowed).toBe(false));
 });
 
 describe("Saturday facilities until midday", () => {
@@ -28,6 +32,12 @@ describe("Saturday facilities until midday", () => {
  it("allows a Saturday slot ending at 12:00",()=>expect(canAccessFacility(windows,new Date("2026-11-21T11:00:00"),new Date("2026-11-21T12:00:00"))).toBe(true));
  it("rejects a Saturday slot extending past 12:00",()=>expect(canAccessFacility(windows,new Date("2026-11-21T11:30:00"),new Date("2026-11-21T12:30:00"))).toBe(false));
  it("does not grant Saturday classes with facility access",()=>expect(canAccessClass(base,cls("2026-11-21T11:00:00")).allowed).toBe(false));
+ it("access does not imply permission to reserve", () => {
+   const p = { ...base, facility_windows: windows, facility_booking_enabled: false };
+   expect(canAccessFacility(windows, new Date("2026-11-21T09:00:00"), new Date("2026-11-21T10:00:00"))).toBe(true);
+   expect(canReserveFacility(p, new Date("2026-11-21T09:00:00"), new Date("2026-11-21T10:00:00"))).toBe(false);
+ });
+ it("reservation permission still requires a valid access window", () => expect(canReserveFacility({ ...base, facility_windows: windows, facility_booking_enabled: true }, new Date("2026-11-21T12:00:00"), new Date("2026-11-21T13:00:00"))).toBe(false));
 });
 
 describe("event membership", () => {

@@ -18,6 +18,7 @@ import { MAIN_LIFTS } from "@/lib/data/mock";
 import { useSession } from "@/lib/auth/session";
 import { pageHead } from "@/lib/seo";
 import { GymCalendar } from "@/components/GymCalendar";
+import { InfoHelp } from "@/components/InfoHelp";
 import { coachesQuery, activitiesQuery } from "@/lib/data/gym";
 
 export const Route = createFileRoute("/_authenticated/admin/classes")({ head: pageHead("Clases", "Horario, WODs, ejercicios y reglas del box."), component: AdminClasses });
@@ -55,7 +56,7 @@ function Week({ tenantId }: { tenantId: string }) {
   return (
     <div className="mt-4 space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Button onClick={() => gen.mutate()} disabled={gen.isPending}>Crear semana del {weekRange(week).from.toLocaleDateString("es-ES",{day:"numeric",month:"short"})}</Button>
+        <Button onClick={() => gen.mutate()} disabled={gen.isPending}>Crear semana del {weekRange(week).from.toLocaleDateString("es-ES",{day:"numeric",month:"short"})}</Button><InfoHelp label="Crear semana">Crea las clases a partir del horario fijo activo, sin duplicar las ya generadas. Los cambios en el horario fijo se aplican al generar nuevas clases.</InfoHelp>
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs text-muted-foreground">Clases</p><p className="font-display text-xl font-bold">{classes.length}</p></div>
@@ -150,7 +151,7 @@ function Rules({ tenantId }: { tenantId: string }) {
       <div><Label>Redondeo de kilos (disco más pequeño)</Label><Input inputMode="decimal" value={v.rounding_kg} onChange={(e) => setF({ ...v, rounding_kg: Number(e.target.value.replace(",", ".")) || 0 })} /></div>
       <div><Label>Horas antes para cancelar si no se llega al mínimo</Label><Input type="number" value={v.default_cancel_hours} onChange={(e) => setF({ ...v, default_cancel_hours: Number(e.target.value) })} /></div>
       <div><Label>Mínimo de confirmados por defecto</Label><Input type="number" value={v.default_min_attendees} onChange={(e) => setF({ ...v, default_min_attendees: Number(e.target.value) })} /></div>
-      <p className="text-xs text-muted-foreground">Mínimo de asistentes confirmados: solo «Voy».</p>
+      <InfoHelp label="Cancelación por mínimo">Solo Voy cuenta como confirmación. Al llegar a la antelación configurada, el gimnasio cancela las clases que no alcanzan el mínimo; la comprobación se realiza cada 15 minutos.</InfoHelp>
       <Button size="sm" onClick={() => save.mutate()}>Guardar</Button>
     </section>
   );
