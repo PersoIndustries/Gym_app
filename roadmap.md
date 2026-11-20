@@ -22,14 +22,16 @@
 - [x] Precios y planes SaaS (Starter/Pro/Elite, prueba 14 días).
 - [x] Asistente de alta de gimnasio autoservicio (cuenta → box → plan → marca).
 - [ ] Suscripción SaaS real del box (pasarela de pago).
-- [ ] Checklist inicial del admin, QR del enlace y subida de logo.
-- [ ] Foto post-clase con el WOD superpuesto: recorte vertical, filtro, logos del gym y de la clase, descarga para redes.
-- [ ] Logo por tipo de clase (admin) visible en clase, listado y calendario; simplificar el calendario.
+- [ ] QR del enlace (el checklist inicial y la subida de logo están implementados).
+- [x] Foto post-clase con el WOD superpuesto: recorte vertical, filtro, logos del gym y de la clase, descarga para redes.
+- [x] Logo por tipo de clase (admin) visible en clase, listado y calendario; simplificar el calendario.
 # Tareas
-- [ ] Cancelación automática cada 15 minutos (SQL), verificar ejecución.
-- [ ] Recuperación por email y cambio de contraseña con contraseña actual.
-- [ ] Logos optimizados en almacenamiento, marca del box y tipos de clase.
-- [ ] Editor de foto vertical post-clase con WOD, filtros, recorte y descarga.
+- [x] Cancelación SQL cada 15 minutos: cron activo, ejecución real verificada.
+- [x] Recuperación por email y cambio de contraseña con contraseña actual (73 pruebas pasan; entrega del email sin verificar).
+- [x] Logos WebP optimizados a 512 px, almacenamiento privado, marca y tipos de clase.
+- [x] Editor post-clase: recorte 9:16, filtros, WOD personalizado, marcas y descarga PNG 1080×1920 verificados.
+- [ ] Logos subidos en acceso público: bloqueado por la política del workspace; permitir buckets públicos y cambiar gym-logos a público.
+- [ ] Validar recepción de email de recuperación y flujos autenticados: Supabase externo no permite sesión de prueba administrada.
 - [x] Copiar tareas al portapapeles (todas, filtradas, seleccionadas) y repaso de hechas.
 
 ## Códigos, roles y perfil

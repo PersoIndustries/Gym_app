@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ROADMAP_SEED } from "@/lib/data/mock";
 import { useLocalState } from "@/lib/data/local-store";
-import { PRIORITIES, duplicateTask, moveTask, sortTasks } from "@/lib/data/tasks";
+import { PRIORITIES, syncDeliveredTasks, duplicateTask, moveTask, sortTasks } from "@/lib/data/tasks";
 import { useSession } from "@/lib/auth/session";
 import type { RoadmapItem, RoadmapStatus, TaskPriority } from "@/lib/domain/types";
 import { pageHead } from "@/lib/seo";
@@ -37,6 +37,7 @@ function Dev() {
   const [selected, setSelected] = useState<string[]>([]);
   // Las tareas del plan marcadas como hechas se actualizan si en este navegador siguen con el título original.
   useEffect(() => { setItems((cur) => { let changed = false; const next = cur.map((c) => { const seed = ROADMAP_SEED.find((r) => r.id === c.id && r.title === c.title); if (seed?.status === "done" && c.status !== "done") { changed = true; return { ...c, status: "done" as const }; } return c; }); return changed ? next : cur; }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { setItems(cur => syncDeliveredTasks(cur, ROADMAP_SEED)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   if (!platformRole) return <Navigate to="/dashboard" />;
 
   const save = (it: RoadmapItem) => setItems(items.some((i) => i.id === it.id) ? items.map((i) => (i.id === it.id ? it : i)) : [...items, it]);

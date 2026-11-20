@@ -25,3 +25,16 @@ export function moveTask(items: RoadmapItem[], id: string, dir: -1 | 1): Roadmap
   const idx = col.findIndex((i) => i.id === id); const other = col[idx + dir]; if (!other) return items;
   return items.map((i) => (i.id === it.id ? { ...i, sort_order: other.sort_order } : i.id === other.id ? { ...i, sort_order: it.sort_order } : i));
 }
+
+/** Reconcile delivered requests, including explicitly copied tasks, without replacing user notes. */
+export function syncDeliveredTasks(items: RoadmapItem[], seed: RoadmapItem[]) {
+  const requested = ["F2 · Cancelación automática por mínimo", "F1 · Recuperar y cambiar contraseña (usuario y admin)", "Marca · Subida de logo a almacenamiento", "Social · Foto post-clase con el WOD para redes", "Clases · Logo por tipo de clase"];
+  let changed = false;
+  const next = items.map(item => {
+    const canonical = item.title.replace(/(?: \(copia\))+$/, "");
+    const delivered = seed.find(r => r.title === canonical && r.status === "done");
+    if (!delivered || !requested.includes(canonical) || (item.status === "done" && item.description === delivered.description)) return item;
+    changed = true; return { ...item, status: "done" as const, description: delivered.description };
+  });
+  return changed ? next : items;
+}
