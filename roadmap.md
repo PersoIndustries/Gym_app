@@ -1,4 +1,7 @@
 # Mejoras durante desarrollo
+- [ ] Acceso de alumnos sin cuota: pantalla de espera y protección de lecturas; staff conserva gestión.
+- [ ] Ocultar fases vacías del entreno, ficha del profesor con biografía editable y tarjetas rediseñadas.
+- [ ] Compactar calendario y mover filtros debajo; verificar reglas y actualizar tareas.
 - [x] Exigir cuota para participar; asignación automática por código y tras aprobación: QUOTAS_INVITES_OK (13) y CLASS_SPACES_OK (11), sin conservar fixtures.
 - [x] Calendario de selección de día sin tarjetas dentro; fondo de día cerrado y asistencia neutra sin seleccionar (verificación visual con sesión externa pendiente).
 - [x] Logos predeterminados de actividades/eventos y selección de tipos al crear gimnasio, respetando límites; 100 pruebas pasan.
