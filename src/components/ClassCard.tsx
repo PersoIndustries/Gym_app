@@ -41,7 +41,7 @@ export function ClassCard({ c, counts, mine, blockedReason, onIntent, busy, coac
   if (manage) return (
     <Link to="/class/$classId" params={{ classId: c.id }} className={cn(box, "transition-colors hover:border-primary")}>
       {tag}{header}
-      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">Impartido por: <PersonAvatar name={c.coach_name ?? "Profesor"} url={coachAvatar} className="h-6 w-6"/><span className="truncate">{c.coach_name ?? "Sin profesor"}</span></div>
+      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">{c.coach_id || c.coach_name ? <>Impartido por: <PersonAvatar name={c.coach_name ?? "Profesor"} url={coachAvatar} className="h-6 w-6"/><span className="truncate">{c.coach_name}</span></> : "Sin profesor asignado"}</div>
       {cancelled && c.cancelled_reason && <p className="mt-2 text-xs text-destructive">{c.cancelled_reason}</p>}
       {!cancelled && !past && risk && <p className="mt-2 flex items-start gap-1 text-xs text-warning"><AlertTriangle className="h-3 w-3 shrink-0"/>Mínimo pendiente · revisión {c.cancel_hours_before} h antes</p>}
     </Link>

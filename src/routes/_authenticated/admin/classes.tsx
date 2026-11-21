@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/layout/AppShell";
 import { Button } from "@/components/ui/button";
@@ -76,14 +76,16 @@ function Schedule({ tenantId }: { tenantId: string }) {
   const { data: activities = [] } = useQuery(activitiesQuery(tenantId));
   const blank = { title: "WOD", weekday: 1, start_time: "18:00", duration_min: 60, coach_name: "", coach_id: null as string | null, activity_type_id: null as string | null, capacity: 16, min_attendees: 3, cancel_hours_before: 4 };
   const [f, setF] = useState(blank);
+  const [editing, setEditing] = useState<string | null>(null);
   const inv = () => qc.invalidateQueries({ queryKey: ["templates"] });
-  const add = useMutation({ mutationFn: async () => ok(await supabase.from("class_templates").insert({ ...f, tenant_id: tenantId, coach_name: f.coach_name || null })), onSuccess: () => { toast.success("Clase añadida al horario"); inv(); }, onError: err });
+  const add = useMutation({ mutationFn: async () => { const row = { ...f, coach_name: f.coach_name || null }; return editing ? ok(await supabase.from("class_templates").update(row).eq("id", editing)) : ok(await supabase.from("class_templates").insert({ ...row, tenant_id: tenantId })); }, onSuccess: () => { toast.success(editing ? "Clase actualizada · se aplica a las próximas semanas generadas" : "Clase añadida al horario"); if (editing) { setEditing(null); setF(blank); } inv(); }, onError: err });
+  const startEdit = (t: (typeof data)[number]) => { setEditing(t.id); setF({ title: t.title, weekday: t.weekday, start_time: t.start_time.slice(0, 5), duration_min: t.duration_min, coach_name: t.coach_name ?? "", coach_id: t.coach_id, activity_type_id: (t as { activity_type_id?: string | null }).activity_type_id ?? null, capacity: t.capacity, min_attendees: t.min_attendees, cancel_hours_before: t.cancel_hours_before }); window.scrollTo({ top: 0, behavior: "smooth" }); };
   const upd = useMutation({ mutationFn: async (v: { id: string; patch: { active: boolean } }) => ok(await supabase.from("class_templates").update(v.patch).eq("id", v.id)), onSuccess: inv, onError: err });
   const del = useMutation({ mutationFn: async (id: string) => ok(await supabase.from("class_templates").delete().eq("id", id)), onSuccess: inv, onError: err });
   return (
     <div className="mt-4 space-y-4">
-      <section className="rounded-xl border border-border bg-card p-4">
-        <p className="mb-3 text-sm font-semibold">Nueva clase semanal</p>
+      <section className={`rounded-xl border bg-card p-4 ${editing ? "border-primary" : "border-border"}`}>
+        <p className="mb-3 text-sm font-semibold">{editing ? "Editar clase del horario" : "Nueva clase semanal"}</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
           <Input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="Nombre" />
           <Select value={String(f.weekday)} onValueChange={(v) => setF({ ...f, weekday: Number(v) })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{[1, 2, 3, 4, 5, 6, 0].map((d) => <SelectItem key={d} value={String(d)}>{WEEKDAYS[d]}</SelectItem>)}</SelectContent></Select>
@@ -95,7 +97,7 @@ function Schedule({ tenantId }: { tenantId: string }) {
           <label className="text-xs text-muted-foreground">Mínimo<Input type="number" value={f.min_attendees} onChange={(e) => setF({ ...f, min_attendees: Number(e.target.value) })} /></label>
           <label className="text-xs text-muted-foreground">Cancelar (h antes)<Input type="number" value={f.cancel_hours_before} onChange={(e) => setF({ ...f, cancel_hours_before: Number(e.target.value) })} /></label>
         </div>
-        <Button className="mt-3" size="sm" onClick={() => add.mutate()}>Añadir al horario</Button>
+        <div className="mt-3 flex gap-2"><Button size="sm" disabled={add.isPending} onClick={() => add.mutate()}>{editing ? "Guardar cambios" : "Añadir al horario"}</Button>{editing && <Button size="sm" variant="ghost" onClick={() => { setEditing(null); setF(blank); }}>Cancelar</Button>}</div>
       </section>
       {[1, 2, 3, 4, 5, 6, 0].map((d) => { const rows = data.filter((t) => t.weekday === d); if (!rows.length) return null; return (
         <section key={d}><h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{WEEKDAYS[d]}</h3>
@@ -104,6 +106,7 @@ function Schedule({ tenantId }: { tenantId: string }) {
               <span className="w-12 font-display font-bold">{t.start_time.slice(0, 5)}</span>
               <span className="min-w-0 flex-1 truncate">{t.title} · {t.coach_name ?? "—"} <span className="text-xs text-muted-foreground">({t.min_attendees}-{t.capacity}, {t.cancel_hours_before} h)</span></span>
               <label className="flex items-center gap-2 text-xs"><Switch checked={t.active} onCheckedChange={(v) => upd.mutate({ id: t.id, patch: { active: v } })} aria-label={`Generar ${t.title} cada semana`} />{t.active ? "Se genera cada semana" : "Pausada"}</label>
+              <button aria-label={`Editar ${t.title}`} onClick={() => startEdit(t)} className="text-muted-foreground hover:text-primary"><Pencil className="h-4 w-4" /></button>
               <button aria-label="Borrar" onClick={() => confirm("¿Quitar del horario?") && del.mutate(t.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
             </div>))}</div></section>); })}
     </div>
