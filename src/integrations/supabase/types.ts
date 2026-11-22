@@ -1114,6 +1114,8 @@ export type Database = {
           created_at: string
           id: string
           role: Database["public"]["Enums"]["tenant_role"]
+          status: string
+          status_note: string | null
           tenant_id: string
           updated_at: string
           user_id: string
@@ -1122,6 +1124,8 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["tenant_role"]
+          status?: string
+          status_note?: string | null
           tenant_id: string
           updated_at?: string
           user_id: string
@@ -1130,6 +1134,8 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["tenant_role"]
+          status?: string
+          status_note?: string | null
           tenant_id?: string
           updated_at?: string
           user_id?: string
@@ -1692,6 +1698,10 @@ export type Database = {
           _tenant: string
           _uid: string
         }
+        Returns: boolean
+      }
+      is_member_suspended: {
+        Args: { _tenant: string; _uid: string }
         Returns: boolean
       }
       is_platform_admin: { Args: { _uid: string }; Returns: boolean }
