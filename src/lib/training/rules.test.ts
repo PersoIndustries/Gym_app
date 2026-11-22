@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { recommendedKg, describeLoad } from "./weights";
-import { INTENT_LABEL, atRisk, canSeeAttendee, isFull, shouldAutoCancel } from "@/lib/access/attendance";
+import { INTENTS, INTENT_LABEL, atRisk, canSeeAttendee, isFull, shouldAutoCancel } from "@/lib/access/attendance";
 
 describe("pesos según RM", () => {
   it("75% de 110 kg redondea a 82,5 kg con discos de 2,5", () => expect(recommendedKg(110, 75)).toBe(82.5));
@@ -11,7 +11,7 @@ describe("pesos según RM", () => {
 });
 
 describe("asistencia y cancelación", () => {
-  it("solo Voy, Dudas y No voy", () => expect(Object.values(INTENT_LABEL)).toEqual(["Voy", "Dudas", "No voy"]));
+  it("solo Asistiré y No asistiré", () => expect(INTENTS.map(i => INTENT_LABEL[i])).toEqual(["Asistiré", "No asistiré"]));
   const start = new Date("2026-11-20T18:00:00Z");
   const cls = { starts_at: start.toISOString(), capacity: 2, min_attendees: 3, cancel_hours_before: 4, status: "scheduled" };
   const two = { going: 2, maybe: 5, not_going: 4, waitlist: 0 };

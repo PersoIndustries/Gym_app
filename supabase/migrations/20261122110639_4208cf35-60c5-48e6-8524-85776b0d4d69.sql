@@ -1,0 +1,1 @@
+revoke execute on function public.is_member_suspended(uuid,uuid) from authenticated;

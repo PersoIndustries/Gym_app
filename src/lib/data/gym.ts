@@ -40,7 +40,7 @@ export async function savePlan(tenant: string, id: string | null, plan: Omit<Dat
 export async function deletePlan(id: string) { assertOk(await supabase.from("membership_plans").delete().eq("id", id)); }
 export const membersQuery = (tenant: string | null) => queryOptions({ queryKey: ["members", tenant], enabled: !!tenant, queryFn: async () => {
   if (!tenant) return { members: [], requests: [], invites: [], profiles: [], memberships: [] };
-  const members = result(await supabase.from("tenant_members").select("id,user_id,role").eq("tenant_id", tenant));
+  const members = result(await supabase.from("tenant_members").select("id,user_id,role,status,status_note").eq("tenant_id", tenant));
   const requests = result(await supabase.from("tenant_join_requests").select("id,user_id,role,created_at").eq("tenant_id", tenant).eq("status", "pending"));
   const invites = result(await supabase.from("tenant_invites").select("id,code,requires_approval,uses,membership_plan_id").eq("tenant_id", tenant));
   const ids = [...members.map(m => m.user_id), ...requests.map(r => r.user_id)];
@@ -65,4 +65,5 @@ export const invitesQuery = (tenant: string | null) => queryOptions({ queryKey: 
 export async function saveInvite(tenant: string, id: string | null, values: { code: string; membership_plan_id: string | null; requires_approval: boolean; max_uses: number | null; expires_at: string | null }) {
   if (id) assertOk(await supabase.from("tenant_invites").update(values).eq("tenant_id", tenant).eq("id", id));
   else assertOk(await supabase.from("tenant_invites").insert({ ...values, tenant_id: tenant, role: "athlete" }));
-}
+}export async function setMemberStatus(tenant: string, id: string, status: "active" | "suspended", note: string | null) { assertOk(await supabase.from("tenant_members").update({ status, status_note: note }).eq("tenant_id", tenant).eq("id", id)); }
+export async function removeMember(tenant: string, id: string) { assertOk(await supabase.from("tenant_members").delete().eq("tenant_id", tenant).eq("id", id)); }

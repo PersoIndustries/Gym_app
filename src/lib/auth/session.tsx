@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { AppRole, PlatformRole, TenantRole } from "@/lib/domain/types";
 import { useLocalState } from "@/lib/data/local-store";
 
-export interface Membership { tenant_id: string; role: TenantRole; tenant_name: string }
+export interface Membership { tenant_id: string; role: TenantRole; tenant_name: string; suspended: boolean }
 interface SessionCtx {
   user: User | null;
   loading: boolean;
@@ -16,6 +16,8 @@ interface SessionCtx {
   view: "box" | "console"; setView: (v: "box" | "console") => void;
   /** Rol real en el box activo (base de datos). */
   realRole: TenantRole | null;
+  /** El admin del box ha suspendido esta cuenta. */
+  suspended: boolean;
   /** Coach/admin pueden ver la app como usuario del gym; nunca eleva permisos. */
   boxMode: "athlete" | "staff"; setBoxMode: (m: "athlete" | "staff") => void;
   tenantId: string | null; setTenantId: (id: string | null) => void;
@@ -39,11 +41,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       if (!user) return { memberships: [] as Membership[], platformRole: null };
       const [m, p] = await Promise.all([
-        supabase.from("tenant_members").select("tenant_id, role, tenants(name)").eq("user_id", user.id),
+        supabase.from("tenant_members").select("tenant_id, role, status, tenants(name)").eq("user_id", user.id),
         supabase.from("platform_roles").select("role").eq("user_id", user.id),
       ]);
       if (m.error) throw m.error;
-      const memberships: Membership[] = (m.data ?? []).map((r) => ({ tenant_id: r.tenant_id, role: r.role, tenant_name: (r.tenants as { name: string } | null)?.name ?? "Box" }));
+      const memberships: Membership[] = (m.data ?? []).map((r) => ({ tenant_id: r.tenant_id, role: r.role, tenant_name: (r.tenants as { name: string } | null)?.name ?? "Box", suspended: r.status === "suspended" }));
       const roles = (p.data ?? []).map((r) => r.role);
       const platformRole: PlatformRole | null = roles.includes("super_admin") ? "super_admin" : roles.includes("developer") ? "developer" : null;
       return { memberships, platformRole };
@@ -57,7 +59,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const realRole = active?.role ?? null;
     const boxRole: TenantRole = realRole && realRole !== "athlete" && boxMode === "athlete" ? "athlete" : realRole ?? "athlete";
     const role: AppRole = effView === "console" && platformRole ? platformRole : boxRole;
-    return { user, loading: !user || q.isLoading, memberships, platformRole, role, view: effView, setView, realRole, boxMode, setBoxMode, tenantId: active?.tenant_id ?? null, tenantName: active?.tenant_name ?? null, setTenantId, refresh: () => void q.refetch() };
+    return { user, loading: !user || q.isLoading, memberships, platformRole, role, view: effView, setView, realRole, suspended: !!active?.suspended, boxMode, setBoxMode, tenantId: active?.tenant_id ?? null, tenantName: active?.tenant_name ?? null, setTenantId, refresh: () => void q.refetch() };
   }, [user, q.data, q.isLoading, storedTenant, view, boxMode]); // eslint-disable-line react-hooks/exhaustive-deps
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

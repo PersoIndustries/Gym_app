@@ -41,7 +41,12 @@ function Dev() {
   if (!platformRole) return <Navigate to="/dashboard" />;
 
   const save = (it: RoadmapItem) => setItems(items.some((i) => i.id === it.id) ? items.map((i) => (i.id === it.id ? it : i)) : [...items, it]);
-  const add = (e: FormEvent) => { e.preventDefault(); if (!title.trim()) return; save({ id: crypto.randomUUID(), title: title.trim(), description: "", status: "pending", priority: "medium", tags: [], notes: "", sort_order: Math.max(0, ...items.map((i) => i.sort_order)) + 1 }); setTitle(""); };
+  const add = (e: FormEvent) => {
+    e.preventDefault(); const t = title.trim(); if (!t) { toast.error("Escribe un título para la tarea"); return; }
+    const it: RoadmapItem = { id: crypto.randomUUID(), title: t, description: "", status: "pending", priority: "medium", tags: [], notes: "", sort_order: 0 };
+    setItems((cur) => [...cur, { ...it, sort_order: Math.max(0, ...cur.map((i) => i.sort_order)) + 1 }]);
+    setTitle(""); setQ(""); setPrio("all"); setEditing(it); toast.success("Tarea añadida en Pendiente");
+  };
   const copy = (i: RoadmapItem) => { setItems([...items, duplicateTask(i, items, crypto.randomUUID())]); toast.success("Tarea duplicada"); };
   const copyText = async (i: RoadmapItem) => { await navigator.clipboard.writeText(`[${prioLabel(i.priority)}] ${i.title}\n${i.description}${i.notes ? `\n\nNotas: ${i.notes}` : ""}`); toast.success("Copiada al portapapeles"); };
   const copyMany = async (list: RoadmapItem[], label: string) => { if (!list.length) { toast.error("No hay tareas para copiar"); return; } await navigator.clipboard.writeText(tasksToText(list)); toast.success(`${list.length} tareas copiadas (${label})`); };
@@ -55,7 +60,7 @@ function Dev() {
 
   return (
     <ConsoleShell title="Dev / Roadmap" subtitle={`${done} de ${items.length} hechas · ${urgent} urgentes abiertas`}
-      action={<form onSubmit={add} className="flex gap-2"><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nueva tarea…" className="w-64" /><Button type="submit">Añadir</Button></form>}>
+      action={<form onSubmit={add} className="flex w-full gap-2 sm:w-auto"><Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nueva tarea…" aria-label="Nueva tarea" className="min-w-0 flex-1 sm:w-64" /><Button type="submit">Añadir</Button></form>}>
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por texto o etiqueta…" className="w-72" />
         <Select value={prio} onValueChange={(v) => setPrio(v as typeof prio)}><SelectTrigger className="w-44"><SelectValue /></SelectTrigger>

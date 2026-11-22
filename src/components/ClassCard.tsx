@@ -34,7 +34,7 @@ export function ClassCard({ c, counts, mine, blockedReason, onIntent, busy, coac
       <ActivityMark url={activity?.logo_url} name={activity?.name ?? c.title} className="h-10 w-10 shrink-0"/>
       <p className="min-w-0 break-words font-display text-base font-bold leading-tight">{c.title}</p>
     </div>
-    <p className="mt-2 text-xs text-muted-foreground">{occupied(counts)}/{c.capacity} plazas · {confirmed(counts)}/{c.min_attendees} mín.{counts.maybe > 0 ? ` · ${counts.maybe} con dudas` : ""}</p>
+    <p className="mt-2 text-xs text-muted-foreground">{occupied(counts)}/{c.capacity} plazas · {confirmed(counts)}/{c.min_attendees} mín.</p>
   </>;
   const tag = <span className={cn("absolute right-0 top-0 rounded-bl-md rounded-tr-lg px-2 py-0.5 text-[11px] font-medium", STATE_STYLE[state])}>{STATE_LABEL[state]}</span>;
   const box = cn("relative block overflow-hidden rounded-lg border border-border bg-card p-4", cancelled && "opacity-60");

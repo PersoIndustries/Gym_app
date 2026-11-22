@@ -1,6 +1,7 @@
 export type Intent = "going" | "maybe" | "not_going";
-export const INTENTS: Intent[] = ["going", "maybe", "not_going"];
-export const INTENT_LABEL: Record<Intent, string> = { going: "Voy", maybe: "Dudas", not_going: "No voy" };
+/** "maybe" queda solo como tipo heredado: la base de datos ya no lo acepta. */
+export const INTENTS: Intent[] = ["going", "not_going"];
+export const INTENT_LABEL: Record<Intent, string> = { going: "Asistiré", maybe: "No asistiré", not_going: "No asistiré" };
 
 export interface ClassRules { starts_at: string; capacity: number; min_attendees: number; cancel_hours_before: number; status: string }
 export interface Counts { going: number; maybe: number; not_going: number; waitlist: number }

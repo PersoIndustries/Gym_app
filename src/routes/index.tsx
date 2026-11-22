@@ -8,7 +8,7 @@ import { AccountAccess } from "@/components/layout/AccountAccess";
 
 export const Route = createFileRoute("/")({ head: pageHead("Software para boxes de CrossFit", "Clases, WOD con kilos según tu RM, asistencia, cuotas y reservas para tu box. Desde 10 €/mes."), component: Landing });
 const FEATURES = [
-  { i: CalendarDays, t: "Clases y asistencia", d: "Voy, dudas o no voy, aforo, lista de espera y cancelación automática por mínimo." },
+  { i: CalendarDays, t: "Clases y asistencia", d: "Asistiré o no asistiré, aforo, lista de espera y cancelación automática por mínimo." },
   { i: Dumbbell, t: "WOD con kilos por RM", d: "Cada atleta ve su peso según su RM y su nivel: RX, Scaled u Open." },
   { i: Users, t: "Socios y cuotas", d: "Cuotas por días, actividades y franjas de acceso a instalaciones." },
   { i: Trophy, t: "Eventos y comunidad", d: "Competiciones internas y carreras de la comunidad, con búsqueda de pareja." },

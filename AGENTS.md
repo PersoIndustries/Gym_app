@@ -63,3 +63,4 @@ use the editor.
 - Netlify uses `netlify.toml` (`NITRO_PRESET=netlify`); Lovable builds ignore it; why: self-hosting must not change Lovable builds.
 
 - Activity `mode` comes from SQL `activity_catalog()` (mirrored in `brand/activities.ts`); non-WOD programming lives in `classes.session`; why: each discipline shows only its fields.
+- Member status (`tenant_members.status` active|suspended) is admin-managed; suspension is enforced by SQL triggers on bookings, and a guard trigger forbids self role/status changes and removing the last active admin; why: blocking must hold outside the UI.
