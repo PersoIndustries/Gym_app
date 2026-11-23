@@ -969,6 +969,44 @@ export type Database = {
         }
         Relationships: []
       }
+      tenant_custom_roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          permissions: string[]
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          permissions?: string[]
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          permissions?: string[]
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_custom_roles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_invites: {
         Row: {
           code: string
@@ -1112,6 +1150,7 @@ export type Database = {
       tenant_members: {
         Row: {
           created_at: string
+          custom_role_id: string | null
           id: string
           role: Database["public"]["Enums"]["tenant_role"]
           status: string
@@ -1122,6 +1161,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          custom_role_id?: string | null
           id?: string
           role?: Database["public"]["Enums"]["tenant_role"]
           status?: string
@@ -1132,6 +1172,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          custom_role_id?: string | null
           id?: string
           role?: Database["public"]["Enums"]["tenant_role"]
           status?: string
@@ -1141,6 +1182,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "tenant_members_custom_role_id_fkey"
+            columns: ["custom_role_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_custom_roles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tenant_members_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -1692,6 +1740,10 @@ export type Database = {
         Returns: number
       }
       has_box_content_access: { Args: { _tenant: string }; Returns: boolean }
+      has_tenant_permission: {
+        Args: { _perm: string; _tenant: string; _uid: string }
+        Returns: boolean
+      }
       has_tenant_role: {
         Args: {
           _roles: Database["public"]["Enums"]["tenant_role"][]
