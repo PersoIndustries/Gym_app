@@ -28,7 +28,7 @@ export function QuotaAccessCodes() {
   }, onSuccess: () => { setOpen(false); qc.invalidateQueries({ queryKey: ["invites"] }); qc.invalidateQueries({ queryKey: ["members"] }); toast.success("Código guardado"); }, onError: e => toast.error(message(e)) });
   if (role !== "admin") return null;
   return <section className="space-y-4">
-    <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-1"><h2 className="font-semibold">Códigos de acceso</h2><InfoHelp label="Códigos de acceso">Cada código invita al mismo gimnasio. Puedes asignar una cuota al entrar o dejarla pendiente para asignarla después. No son códigos de descuento de BoxFlow.</InfoHelp></div><Button size="sm" onClick={() => { setId(null); setF(blank); setOpen(true); }}><Plus />Nuevo código</Button></div>
+    <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-1"><h2 className="font-semibold">Códigos de acceso</h2><InfoHelp label="Códigos de acceso">Cada código invita al mismo gimnasio. Puedes asignar una cuota al entrar o dejarla pendiente para asignarla después. No son códigos de descuento de Meowscle.</InfoHelp></div><Button size="sm" onClick={() => { setId(null); setF(blank); setOpen(true); }}><Plus />Nuevo código</Button></div>
     {isError && <p role="alert" className="text-destructive">No se pudieron cargar los códigos.</p>}
     {isPending && <p className="text-sm text-muted-foreground">Cargando códigos…</p>}
     {!isPending && !invites.length && <p className="text-sm text-muted-foreground">Aún no hay códigos de acceso.</p>}

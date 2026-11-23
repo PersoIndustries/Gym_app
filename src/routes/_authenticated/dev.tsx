@@ -25,7 +25,7 @@ const prioLabel = (p?: TaskPriority) => PRIORITIES.find((x) => x.p === (p ?? "me
 export const Route = createFileRoute("/_authenticated/dev")({ head: pageHead("Dev / Roadmap", "Tareas de la plataforma con prioridades."), component: Dev });
 
 function Dev() {
-  const { platformRole } = useSession();
+  const { platformRole, loading } = useSession();
   const [items, setItems] = useLocalState<RoadmapItem[]>("bf.roadmap.v2", ROADMAP_SEED);
   // Añade tareas nuevas del plan sin pisar las editadas en este navegador.
   useEffect(() => { setItems((cur) => { const missing = ROADMAP_SEED.filter((r) => !cur.some((c) => c.id === r.id || c.title === r.title)); return missing.length ? [...cur, ...missing] : cur; }); }, [items.length]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -38,6 +38,7 @@ function Dev() {
   // Las tareas del plan marcadas como hechas se actualizan si en este navegador siguen con el título original.
   useEffect(() => { setItems((cur) => { let changed = false; const next = cur.map((c) => { const seed = ROADMAP_SEED.find((r) => r.id === c.id && r.title === c.title); if (seed?.status === "done" && c.status !== "done") { changed = true; return { ...c, status: "done" as const }; } return c; }); return changed ? next : cur; }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { setItems(cur => syncDeliveredTasks(cur, ROADMAP_SEED)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  if (loading) return null;
   if (!platformRole) return <Navigate to="/dashboard" />;
 
   const save = (it: RoadmapItem) => setItems(items.some((i) => i.id === it.id) ? items.map((i) => (i.id === it.id ? it : i)) : [...items, it]);

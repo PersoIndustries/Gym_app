@@ -17,7 +17,7 @@ import { brandingByCodeQuery, useApplyTheme } from "@/lib/brand/use-box-theme";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: validateAuthFlow,
-  head: pageHead("Entrar", "Accede o crea tu cuenta de BoxFlow."),
+  head: pageHead("Entrar", "Accede o crea tu cuenta de Meowscle."),
   component: AuthPage,
 });
 
@@ -57,7 +57,7 @@ function AuthPage() {
     <div className="grid min-h-screen place-items-center bg-hero px-5">
       <div className="w-full max-w-sm">
         {brand?.logo_url ? <BrandImage url={brand.logo_url} alt={brand.name} className="h-16 max-w-[12rem] object-contain" /> : <Logo />}
-        {!forgot && !sent && !resetSent && <h1 className="mt-6 text-2xl font-bold">{flow.intent === "create_gym" ? mode === "signup" ? "Crea tu cuenta de administrador" : "Entra para crear tu gimnasio" : brand ? `Tu cuenta en ${brand.name}` : "Tu cuenta BoxFlow"}</h1>}
+        {!forgot && !sent && !resetSent && <h1 className="mt-6 text-2xl font-bold">{flow.intent === "create_gym" ? mode === "signup" ? "Crea tu cuenta de administrador" : "Entra para crear tu gimnasio" : brand ? `Tu cuenta en ${brand.name}` : "Tu cuenta Meowscle"}</h1>}
         {pendingCode && <p className="mt-4 rounded-md border border-primary/40 bg-card px-3 py-2 text-sm">{brand ? <>Accede a <b>{brand.name}</b></> : <>Entrando al box con código <span className="font-mono text-primary">{pendingCode}</span></>}</p>}
         {resetSent ? <div className="mt-8 space-y-4"><h1 className="text-xl font-bold">Revisa tu correo</h1><p>Si existe una cuenta con ese correo, recibirás un enlace para restablecer la contraseña.</p><Button variant="outline" onClick={() => { setResetSent(false); setForgot(false); }}>Volver a entrar</Button></div> : sent ? (
           <div className="mt-8 rounded-xl border border-border bg-card p-6"><h1 className="text-xl font-bold">Revisa tu email</h1><p className="mt-2 text-sm text-muted-foreground">Te hemos enviado un enlace para confirmar tu cuenta en {email}.</p></div>

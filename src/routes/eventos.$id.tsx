@@ -8,7 +8,7 @@ import { eventQuery } from "@/lib/data/events";
 import { EVENT_FORMAT_LABEL, EVENT_KIND_LABEL } from "@/lib/access/events";
 import { pageHead } from "@/lib/seo";
 
-export const Route = createFileRoute("/eventos/$id")({ head: pageHead("Evento de la comunidad", "Detalles, categorías e inscripción del evento en BoxFlow."), component: PublicEvent });
+export const Route = createFileRoute("/eventos/$id")({ head: pageHead("Evento de la comunidad", "Detalles, categorías e inscripción del evento en Meowscle."), component: PublicEvent });
 
 function PublicEvent() {
   const { id } = Route.useParams();

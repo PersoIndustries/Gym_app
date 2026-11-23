@@ -19,7 +19,7 @@ import type { FacilityWindow } from "@/lib/access/membership";
 import { expandGroups, groupWindows, type WindowGroup } from "@/lib/access/window-groups";
 const PRESETS = [{ label: "L a V", days: [1, 2, 3, 4, 5] }, { label: "Fin de semana", days: [6, 0] }, { label: "Todos", days: [1, 2, 3, 4, 5, 6, 0] }];
 
-export const Route = createFileRoute("/_authenticated/admin/plans")({ head: pageHead("Cuotas y códigos", "Cuotas de BoxFlow: acceso, reservas, clases y códigos de entrada del gimnasio."), component: Plans });
+export const Route = createFileRoute("/_authenticated/admin/plans")({ head: pageHead("Cuotas y códigos", "Cuotas de Meowscle: acceso, reservas, clases y códigos de entrada del gimnasio."), component: Plans });
 const days = [1, 2, 3, 4, 5, 6, 0];
 const blank = { name: "", price: "0", weekdays: [1, 2, 3, 4, 5], activities: [] as string[], limit: "", classes: true, booking: true, trial: false, trialLimit: "", windows: [] as WindowGroup[] };
 function Plans() {

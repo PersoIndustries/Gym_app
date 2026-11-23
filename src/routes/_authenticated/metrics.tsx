@@ -11,10 +11,11 @@ import { pageHead } from "@/lib/seo";
 export const Route = createFileRoute("/_authenticated/metrics")({ head: pageHead("Métricas", "Métricas avanzadas de negocio y uso de la plataforma."), component: Metrics });
 
 function Metrics() {
-  const { platformRole } = useSession();
+  const { platformRole, loading } = useSession();
   const [tenants] = useLocalState<TenantOps[]>("bf.ops.tenants", TENANTS_OPS);
   const [invoices] = useLocalState<Invoice[]>("bf.ops.invoices", INVOICES);
   const [users] = useLocalState<PlatformUser[]>("bf.ops.users", PLATFORM_USERS);
+  if (loading) return null;
   if (!platformRole) return <Navigate to="/dashboard" />;
   const mrr = computeMrr(tenants); const active = tenants.filter((t) => t.status === "active");
   const tot = invoiceTotals(invoices); const billed = tot.paid + tot.failed + tot.pending;

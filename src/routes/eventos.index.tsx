@@ -6,7 +6,7 @@ import { EventCard } from "@/components/events/EventCard";
 import { calendarEventsQuery } from "@/lib/data/events";
 import { pageHead } from "@/lib/seo";
 
-export const Route = createFileRoute("/eventos/")({ head: pageHead("Calendario de la comunidad", "Carreras, competiciones y eventos abiertos de los boxes de BoxFlow."), component: PublicEvents });
+export const Route = createFileRoute("/eventos/")({ head: pageHead("Calendario de la comunidad", "Carreras, competiciones y eventos abiertos de los boxes de Meowscle."), component: PublicEvents });
 
 function PublicEvents() {
   const { data: events = [], isLoading } = useQuery(calendarEventsQuery(null));

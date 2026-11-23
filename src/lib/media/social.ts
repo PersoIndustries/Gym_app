@@ -64,6 +64,6 @@ export async function renderSocialPhoto(canvas: HTMLCanvasElement, o: SocialOpts
     let ly = by + 230 + statH + size; const heads = new Set(o.lines.filter(l => l && l === l.toUpperCase() && /[A-ZÁÉÍÓÚ]/.test(l)));
     for (const l of lines) { const head = heads.has(l); ctx.fillStyle = head ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.95)'; ctx.font = `${head ? 800 : 500} ${head ? size * 0.75 : size}px ${FONT}`; ctx.fillText(l, M + 44, ly); ly += size * 1.45; }
   }
-  ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = `600 20px ${FONT}`; ctx.textAlign = 'center'; ctx.fillText('POWERED BY BOXFLOW', W / 2, H - 44); ctx.textAlign = 'left';
+  ctx.shadowBlur = 0; ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = `600 20px ${FONT}`; ctx.textAlign = 'center'; ctx.fillText('POWERED BY MEOWSCLE', W / 2, H - 44); ctx.textAlign = 'left';
   return encode ? canvasBlob(canvas, 'image/jpeg', 0.92) : null;
 }

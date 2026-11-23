@@ -17,7 +17,7 @@ import { canReserveFacility } from "@/lib/access/membership";
 import { facilitySlots, overlaps } from "@/lib/access/facility-slots";
 import { settingsQuery } from "@/lib/data/box";
 import { pageHead } from "@/lib/seo";
-export const Route = createFileRoute("/_authenticated/spaces")({head:pageHead("Espacios y reservas","Reserva sauna, pistas y espacios de tu gimnasio en BoxFlow."),component:Spaces});
+export const Route = createFileRoute("/_authenticated/spaces")({head:pageHead("Espacios y reservas","Reserva sauna, pistas y espacios de tu gimnasio en Meowscle."),component:Spaces});
 const STATUS:Record<string,string>={booked:"Confirmada",pending:"Pendiente de aprobación",cancelled:"Cancelada",rejected:"Rechazada"};
 const error=(e:unknown)=>toast.error(e instanceof Error?e.message:String(e));
 function Spaces(){

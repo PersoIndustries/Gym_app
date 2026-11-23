@@ -27,7 +27,7 @@ import { createGym } from "@/lib/data/onboarding";
 const PLAN_IDS = ["starter", "pro", "elite"] as const;
 export const Route = createFileRoute("/empezar")({
   validateSearch: (s: Record<string, unknown>): { plan?: SaasPlanId } => (PLAN_IDS.includes(s["plan"] as SaasPlanId) ? { plan: s["plan"] as SaasPlanId } : {}),
-  head: pageHead("Crea tu gimnasio", "Da de alta tu box en BoxFlow en unos minutos: datos, plan, marca y ajustes básicos."),
+  head: pageHead("Crea tu gimnasio", "Da de alta tu box en Meowscle en unos minutos: datos, plan, marca y ajustes básicos."),
   component: Wizard,
 });
 const STEPS = ["Box", "Plan", "Marca", "Ajustes", "Listo"];

@@ -23,9 +23,10 @@ const eur = (c: number) => (c / 100).toLocaleString("es-ES", { style: "currency"
 const EMPTY: PromoInput = { code: "", plan_id: null, discount_pct: 20, duration_months: 3, max_uses: 50, expires_at: null, active: true, affiliate_name: null, affiliate_email: null, commission_pct: 0, notes: null };
 
 function Codes() {
-  const { platformRole } = useSession();
+  const { platformRole, loading } = useSession();
   const { data, isError } = useQuery({ ...promoCodesQuery(), enabled: platformRole === "super_admin" });
   const [edit, setEdit] = useState<{ id: string | null; v: PromoInput } | null>(null);
+  if (loading) return null;
   if (platformRole !== "super_admin") return <Navigate to="/platform" />;
   const codes = data?.codes ?? []; const red = data?.redemptions ?? [];
   const stats = (c: PromoCode) => { const rs = red.filter(r => r.code_id === c.id); const mrr = rs.reduce((s, r) => s + (r.billing === "year" ? Math.round(r.price_after_cents / 12) : r.price_after_cents), 0); return { gyms: rs.length, mrr, fee: commission(mrr, Number(c.commission_pct)) }; };

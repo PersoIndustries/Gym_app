@@ -12,8 +12,9 @@ export function RoleSwitcher({ className }: { className?: string }) {
   const value = view === "console" ? "console" : tenantId ?? "";
   return (
     <Select value={value} onValueChange={(v) => {
-      if (v === "console") { setView("console"); navigate({ to: "/platform" }); }
-      else { setTenantId(v); setView("box"); navigate({ to: "/dashboard" }); }
+      // Navegar primero: así ningún guard de la página actual intercepta el cambio de rol.
+      if (v === "console") void navigate({ to: "/platform" }).then(() => setView("console"));
+      else void navigate({ to: "/dashboard" }).then(() => { setTenantId(v); setView("box"); });
     }}>
       <SelectTrigger className={className} aria-label="Cambiar de box"><SelectValue /></SelectTrigger>
       <SelectContent>

@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import { canAccessClass } from "@/lib/access/membership";
 
 export const Route = createFileRoute("/_authenticated/class/$classId")({
-  head: pageHead("Clase y WOD", "Entreno del día, asistentes y pesos personalizados en BoxFlow."),
+  head: pageHead("Clase y WOD", "Entreno del día, asistentes y pesos personalizados en Meowscle."),
   component: ClassPage,
   errorComponent: () => <div role="alert" className="p-6">No se pudo cargar la clase.</div>,
 });

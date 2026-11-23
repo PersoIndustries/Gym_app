@@ -1,4 +1,4 @@
-/** Planes SaaS de BoxFlow. Espejo de la tabla saas_plans (los límites se aplican en SQL). */
+/** Planes SaaS de Meowscle. Espejo de la tabla saas_plans (los límites se aplican en SQL). */
 export type SaasPlanId = "starter" | "pro" | "elite";
 export interface SaasPlan { id: SaasPlanId; name: string; month: number; year: number; maxGyms: number; maxMembers: number | null; maxActivityTypes: number | null; maxStaff: number | null; maxMemberPlans: number | null; facilities: boolean; customDomain: boolean; advancedMetrics: boolean; tagline: string; features: string[] }
 export const SAAS_PLANS: SaasPlan[] = [

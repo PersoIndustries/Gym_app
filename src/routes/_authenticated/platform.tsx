@@ -29,13 +29,14 @@ const invVariant = (s: InvoiceStatus) => (s === "paid" ? "default" : s === "fail
 export const Route = createFileRoute("/_authenticated/platform")({ head: pageHead("Gimnasios", "Consola de plataforma: gestión operativa de gimnasios."), component: Platform });
 
 function Platform() {
-  const { platformRole } = useSession();
+  const { platformRole, loading } = useSession();
   const [tenants, setTenants] = useLocalState<TenantOps[]>("bf.ops.tenants", TENANTS_OPS);
   const [invoices, setInvoices] = useLocalState<Invoice[]>("bf.ops.invoices", INVOICES);
   const [users, setUsers] = useLocalState<PlatformUser[]>("bf.ops.users", PLATFORM_USERS);
   const [audit, setAudit] = useLocalState<AuditEntry[]>("bf.ops.audit", []);
   const [q, setQ] = useState(""); const [st, setSt] = useState<"all" | TenantStatus>("all");
   const [openId, setOpenId] = useState<string | null>(null);
+  if (loading) return null;
   if (!platformRole) return <Navigate to="/dashboard" />;
 
   const log = (action: string, target: string) => setAudit((a) => [{ id: crypto.randomUUID(), at: new Date().toISOString(), action, target }, ...a].slice(0, 200));

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Logo } from '@/components/layout/Logo';
 import { pageHead } from '@/lib/seo';
-export const Route = createFileRoute('/reset-password')({ head: pageHead('Restablecer contraseña', 'Elige una contraseña nueva para tu cuenta de BoxFlow.'), component: ResetPassword });
+export const Route = createFileRoute('/reset-password')({ head: pageHead('Restablecer contraseña', 'Elige una contraseña nueva para tu cuenta de Meowscle.'), component: ResetPassword });
 function ResetPassword() {
   const [ready, setReady] = useState(false); const [checked, setChecked] = useState(false); const [done, setDone] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const [password, setPassword] = useState(''); const [confirmation, setConfirmation] = useState('');
   useEffect(() => {
