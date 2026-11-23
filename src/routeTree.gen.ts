@@ -40,6 +40,7 @@ import { Route as AuthenticatedAdminCodesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminGymCalendarRouteImport } from './routes/_authenticated/admin/gym-calendar'
 import { Route as AuthenticatedAdminMembersRouteImport } from './routes/_authenticated/admin/members'
 import { Route as AuthenticatedAdminPlansRouteImport } from './routes/_authenticated/admin/plans'
+import { Route as AuthenticatedAdminRolesRouteImport } from './routes/_authenticated/admin/roles'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin/settings'
 import { Route as AuthenticatedClassClassIdRouteImport } from './routes/_authenticated/class.$classId'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events.index'
@@ -204,6 +205,11 @@ const AuthenticatedAdminPlansRoute = AuthenticatedAdminPlansRouteImport.update({
   path: '/plans',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminRolesRoute = AuthenticatedAdminRolesRouteImport.update({
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 const AuthenticatedAdminSettingsRoute =
   AuthenticatedAdminSettingsRouteImport.update({
     id: '/settings',
@@ -265,6 +271,7 @@ export interface FileRoutesByFullPath {
   '/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
   '/admin/members': typeof AuthenticatedAdminMembersRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/class/$classId': typeof AuthenticatedClassClassIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
   '/admin/members': typeof AuthenticatedAdminMembersRoute
   '/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/class/$classId': typeof AuthenticatedClassClassIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/gym-calendar': typeof AuthenticatedAdminGymCalendarRoute
   '/_authenticated/admin/members': typeof AuthenticatedAdminMembersRoute
   '/_authenticated/admin/plans': typeof AuthenticatedAdminPlansRoute
+  '/_authenticated/admin/roles': typeof AuthenticatedAdminRolesRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/class/$classId': typeof AuthenticatedClassClassIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
@@ -379,6 +388,7 @@ export interface FileRouteTypes {
     | '/admin/gym-calendar'
     | '/admin/members'
     | '/admin/plans'
+    | '/admin/roles'
     | '/admin/settings'
     | '/class/$classId'
     | '/events/$eventId'
@@ -415,6 +425,7 @@ export interface FileRouteTypes {
     | '/admin/gym-calendar'
     | '/admin/members'
     | '/admin/plans'
+    | '/admin/roles'
     | '/admin/settings'
     | '/class/$classId'
     | '/events/$eventId'
@@ -453,6 +464,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/gym-calendar'
     | '/_authenticated/admin/members'
     | '/_authenticated/admin/plans'
+    | '/_authenticated/admin/roles'
     | '/_authenticated/admin/settings'
     | '/_authenticated/class/$classId'
     | '/_authenticated/events/$eventId'
@@ -694,6 +706,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminPlansRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/roles': {
+      id: '/_authenticated/admin/roles'
+      path: '/roles'
+      fullPath: '/admin/roles'
+      preLoaderRoute: typeof AuthenticatedAdminRolesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/settings': {
       id: '/_authenticated/admin/settings'
       path: '/settings'
@@ -740,6 +759,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminGymCalendarRoute: typeof AuthenticatedAdminGymCalendarRoute
   AuthenticatedAdminMembersRoute: typeof AuthenticatedAdminMembersRoute
   AuthenticatedAdminPlansRoute: typeof AuthenticatedAdminPlansRoute
+  AuthenticatedAdminRolesRoute: typeof AuthenticatedAdminRolesRoute
   AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -752,6 +772,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminGymCalendarRoute: AuthenticatedAdminGymCalendarRoute,
   AuthenticatedAdminMembersRoute: AuthenticatedAdminMembersRoute,
   AuthenticatedAdminPlansRoute: AuthenticatedAdminPlansRoute,
+  AuthenticatedAdminRolesRoute: AuthenticatedAdminRolesRoute,
   AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }

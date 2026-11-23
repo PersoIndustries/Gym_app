@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Ban, CheckCircle2, MoreVertical, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { customRolesQuery, assignCustomRole } from "@/lib/data/roles";
 import { canChangeMember, filterMembers, type MemberFilter, type MemberRow } from "@/lib/access/members";
 const errText = (e: unknown) => (e && typeof e === "object" && "message" in e ? String((e as { message: unknown }).message) : String(e));
 
@@ -28,6 +29,8 @@ function Members() {
   const isAdmin = role === "admin";
   const { data, isError } = useQuery(membersQuery(tenantId));
   const { data: plans = [] } = useQuery(plansQuery(tenantId));
+  const { data: customRoles = [] } = useQuery({ ...customRolesQuery(tenantId), enabled: !!tenantId && role === "admin" });
+  const assign = useMutation({ mutationFn: async (v: { id: string; roleId: string | null }) => { if (!tenantId) throw new Error("Selecciona un box"); await assignCustomRole(tenantId, v.id, v.roleId); }, onSuccess: () => { inv(); toast.success("Permisos actualizados"); }, onError: (e) => toast.error(errText(e)) });
   const name = Object.fromEntries((data?.profiles ?? []).map(p=>[p.id,p.full_name ?? "Sin nombre"]));
   const inv = () => qc.invalidateQueries({ queryKey: ["members"] });
   const quota = useMutation({mutationFn:async(v:{uid:string;plan?:string;end?:string})=>{if(!tenantId)throw new Error("Selecciona un box");if(v.end)await endMembership(tenantId,v.end);else if(v.plan)await addMembership(tenantId,v.uid,v.plan);},onSuccess:(_d,v)=>{inv();qc.invalidateQueries({queryKey:["my-plan"]});toast.success(v.end?"Cuota retirada":"Cuota añadida");},onError:e=>toast.error(String(e))});
@@ -65,10 +68,13 @@ function Members() {
         return (
         <div key={m.id} className={`rounded-lg border bg-card px-4 py-3 ${r.status==="suspended" ? "border-destructive/40 opacity-80" : "border-border"}`}>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-3"><PersonAvatar name={r.name} url={data!.profiles.find(p=>p.id===m.user_id)?.avatar_url}/><div className="min-w-0"><p className="flex flex-wrap items-center gap-2 font-medium">{r.name}{m.user_id === user?.id && " (tú)"}<Badge variant="secondary">{ROLE[r.role]}</Badge>{r.status==="suspended" && <Badge variant="destructive">Suspendido</Badge>}</p><p className="text-xs text-muted-foreground">{active.length ? `${active.length} cuota${active.length>1?"s":""} · ${(total/100).toLocaleString("es-ES")} €/mes` : "Sin cuota activa"}{m.status_note ? ` · ${m.status_note}` : ""}</p></div></div>
+            <div className="flex min-w-0 items-center gap-3"><PersonAvatar name={r.name} url={data!.profiles.find(p=>p.id===m.user_id)?.avatar_url}/><div className="min-w-0"><p className="flex flex-wrap items-center gap-2 font-medium">{r.name}{m.user_id === user?.id && " (tú)"}<Badge variant="secondary">{ROLE[r.role]}</Badge>{m.custom_role_id && <Badge variant="outline">{customRoles.find(c=>c.id===m.custom_role_id)?.name ?? "Rol"}</Badge>}{r.status==="suspended" && <Badge variant="destructive">Suspendido</Badge>}</p><p className="text-xs text-muted-foreground">{active.length ? `${active.length} cuota${active.length>1?"s":""} · ${(total/100).toLocaleString("es-ES")} €/mes` : "Sin cuota activa"}{m.status_note ? ` · ${m.status_note}` : ""}</p></div></div>
             {editable && <DropdownMenu><DropdownMenuTrigger asChild><Button size="icon" variant="ghost" aria-label={`Acciones para ${r.name}`}><MoreVertical className="h-4 w-4"/></Button></DropdownMenuTrigger><DropdownMenuContent align="end">
               <DropdownMenuLabel>Rol</DropdownMenuLabel>
               {(Object.keys(ROLE) as TenantRole[]).filter(k=>k!==r.role).map(k=><DropdownMenuItem key={k} onClick={()=>setRole.mutate({id:m.id,role:k})}>{k==="coach"?"Hacer profesor":k==="admin"?"Hacer admin":"Pasar a alumno"}</DropdownMenuItem>)}
+              {r.role==="coach" && customRoles.length>0 && <><DropdownMenuSeparator/><DropdownMenuLabel>Nivel de profesor</DropdownMenuLabel>
+                <DropdownMenuItem onClick={()=>assign.mutate({id:m.id,roleId:null})}>{!m.custom_role_id?"✓ ":""}Profesor (todos los permisos)</DropdownMenuItem>
+                {customRoles.map(c=><DropdownMenuItem key={c.id} onClick={()=>assign.mutate({id:m.id,roleId:c.id})}>{m.custom_role_id===c.id?"✓ ":""}{c.name}</DropdownMenuItem>)}</>}
               <DropdownMenuSeparator/>
               {r.status==="active"
                 ? <DropdownMenuItem onClick={()=>{const note=prompt(`Motivo de la suspensión de ${r.name} (opcional)`); if(note!==null) status.mutate({id:m.id,status:"suspended",note:note.trim()||null});}}><Ban className="h-4 w-4"/>Suspender</DropdownMenuItem>

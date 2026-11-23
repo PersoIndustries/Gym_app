@@ -60,7 +60,7 @@ export const MAIN_LIFTS = ["Back Squat", "Front Squat", "Deadlift", "Clean", "Sn
 export const ROADMAP_SEED: RoadmapItem[] = [
   "F0 · Arquitectura multi-tenant y modelo de datos|Tablas con tenant_id, RLS y roles separados.|done|urgent|Fase 0,DB",
   "F0 · Auth email/contraseña y sesiones|Alta, login y rutas privadas.|done|urgent|Fase 0,Auth",
-  "F0 · Login con Google|Activar proveedor Google en Supabase y botón en /auth.|pending|high|Fase 0,Auth",
+  "Fase 5 · Login con Google|Activar proveedor Google en Supabase y botón en /auth.|pending|high|Fase 5,Auth",
   "F0 · Tests de aislamiento entre boxes|Comprobar que un socio nunca ve datos de otro box.|done|urgent|Fase 0,Seguridad",
   "F0 · RGPD y privacy by design|Registro de tratamientos, DPA por box, minimización.|pending|high|Fase 0,Legal",
   "F0 · CI/CD, entornos y monitorización|Entornos separados, logs y alertas.|pending|medium|Fase 0,Infra",
@@ -74,7 +74,7 @@ export const ROADMAP_SEED: RoadmapItem[] = [
   "F1 · Cuotas reales (user_memberships)|Sustituir la cuota demo y aplicar reglas por actividad.|done|urgent|Fase 1,Cuotas",
   "F1 · Pagos: suscripciones, facturas y devoluciones (Stripe)|Conectar la consola de facturas a cobros reales.|pending|high|Fase 1,Pagos",
   "F1 · Recuperar y cambiar contraseña (usuario y admin)|Recuperación por email en /reset-password y cambio con contraseña actual; pendiente verificar entrega de email en Supabase externo.|done|high|Fase 1,Auth",
-  "F1 · Notificaciones email + centro en la app|Recordatorios, riesgo de cancelación, avisos admin.|pending|high|Fase 1,Notificaciones",
+  "Fase 6 · Notificaciones push y centro en perfil|Preferencias en perfil, Web Push, aviso 4h por cupo mínimo, nuevos eventos y cierre de inscripciones a 5 días.|pending|high|Fase 6,Notificaciones",
   "F2 · Asistencia voy/dudas/voy seguro|Con aforo, mínimo y lista de espera.|done|urgent|Fase 2,Clases",
   "F2 · Cancelación automática por mínimo|Cancelación SQL cada 15 minutos (96 revisiones/día); ejecución verificada.|done|urgent|Fase 2,Jobs",
   "F2 · Reservas de instalaciones|Pistas, sauna; aceptación manual o automática.|done|medium|Fase 2,Instalaciones",
@@ -102,6 +102,7 @@ export const ROADMAP_SEED: RoadmapItem[] = [
   "Auth · Desactivar confirmación de email temporalmente|En Supabase externo: Authentication → Providers → Email → desactivar Confirm email. Autorizar los retornos de /auth con sus parámetros en URL Configuration para cada dominio de acceso. Configuración y entrega de correo sin verificar.|pending|high|Auth,Configuración",
   "Socios · Gestión completa y bloqueos|Buscador y filtros, suspender/reactivar con motivo, dar de baja, hacer profesor/admin. Suspendidos no reservan (bloqueo en base de datos).|done|urgent|Paso 1,Socios",
   "Cobros · Recibos y facturación del gym|Recibos mensuales por cuota, estados (pagado/pendiente/devuelto/exento), método (efectivo/banco/tarjeta), facturas con datos fiscales y exportación.|pending|high|Paso 2,Pagos",
-  "Roles · Roles personalizados y matriz de permisos|El admin crea roles (Head coach, Recepción…) y activa permisos atómicos; RLS por permiso.|pending|medium|Paso 3,Roles",
-  "Multi-sede · Organización con varios gimnasios|Organización paraguas sobre varios boxes, cuotas locales o globales y métricas consolidadas.|pending|low|Paso 4,Multi-tenant",
+  "Fase 3 · Roles personalizados y matriz de permisos|El admin crea roles y activa permisos (programar clases, asistencia, ver socios, eventos). Programar clases/WOD bloqueado en base de datos por permiso.|done|high|Fase 3,Roles",
+  "Fase 7 · Presskit y variantes de logo|Página de marca con logos en lima/blanco/negro, colores y descargas PNG/SVG.|pending|medium|Fase 7,Marca",
+  "Fase 4 · Multi-sede: Organización con varios gimnasios|Organización paraguas sobre varios boxes, cuotas locales o globales y métricas consolidadas.|pending|high|Fase 4,Multi-tenant",
 ].map((r, i) => { const [title = "", description = "", status = "pending", priority = "medium", tags = ""] = r.split("|"); return { id: `r${i + 1}`, title, description, status: status as RoadmapItem["status"], priority: priority as NonNullable<RoadmapItem["priority"]>, tags: tags.split(",").filter(Boolean), notes: "", due: null, sort_order: i + 1 }; });

@@ -40,7 +40,7 @@ export async function savePlan(tenant: string, id: string | null, plan: Omit<Dat
 export async function deletePlan(id: string) { assertOk(await supabase.from("membership_plans").delete().eq("id", id)); }
 export const membersQuery = (tenant: string | null) => queryOptions({ queryKey: ["members", tenant], enabled: !!tenant, queryFn: async () => {
   if (!tenant) return { members: [], requests: [], invites: [], profiles: [], memberships: [] };
-  const members = result(await supabase.from("tenant_members").select("id,user_id,role,status,status_note").eq("tenant_id", tenant));
+  const members = result(await supabase.from("tenant_members").select("id,user_id,role,status,status_note,custom_role_id").eq("tenant_id", tenant));
   const requests = result(await supabase.from("tenant_join_requests").select("id,user_id,role,created_at").eq("tenant_id", tenant).eq("status", "pending"));
   const invites = result(await supabase.from("tenant_invites").select("id,code,requires_approval,uses,membership_plan_id").eq("tenant_id", tenant));
   const ids = [...members.map(m => m.user_id), ...requests.map(r => r.user_id)];

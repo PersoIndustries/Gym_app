@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarCog, CreditCard, DoorOpen, Palette, Settings, Ticket, Trophy, Users, Zap, Palmtree } from "lucide-react";
+import { CalendarCog, CreditCard, DoorOpen, Palette, Settings, Ticket, Trophy, Users, Zap, Palmtree, ShieldCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "@/lib/auth/session";
 import { settingsQuery } from "@/lib/data/box";
@@ -14,6 +14,7 @@ function AdminHome() {
   const all = [
     { to: "/admin/classes", t: "Clases", d: "Horarios y WOD", icon: CalendarCog, coach: true },
     { to: "/admin/members", t: "Socios", d: admin ? "Roles y cuotas" : "Listado", icon: Users, coach: true },
+    { to: "/admin/roles", t: "Roles", d: "Permisos del equipo", icon: ShieldCheck },
     { to: "/admin/codes", t: "Códigos", d: "Invitaciones", icon: Ticket },
     { to: "/admin/plans", t: "Cuotas", d: "Planes y límites", icon: CreditCard },
     { to: "/admin/brand", t: "Tu marca", d: "Logo y tema", icon: Palette },
