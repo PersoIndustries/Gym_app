@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { signIn, signUp, signInWithGoogle } from "@/lib/data/auth";
@@ -71,6 +71,7 @@ function AuthPage() {
             <Button type="button" variant="link" className="w-full" onClick={() => setForgot(!forgot)}>{forgot ? "Volver a entrar" : "He olvidado mi contraseña"}</Button>
             {!forgot && <><div className="flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" />o<span className="h-px flex-1 bg-border" /></div>
             <Button type="button" variant="outline" className="w-full" onClick={google}>Continuar con Google</Button></>}
+            <p className="text-center text-xs text-muted-foreground">Al continuar aceptas los <Link to="/terminos" className="underline hover:text-foreground">términos de uso</Link> y la <Link to="/privacidad" className="underline hover:text-foreground">política de privacidad</Link>.</p>
           </form>
         )}
       </div>

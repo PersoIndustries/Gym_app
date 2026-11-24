@@ -15,7 +15,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DevHomeRouteImport } from './routes/dev-home'
 import { Route as EmpezarRouteImport } from './routes/empezar'
 import { Route as PreciosRouteImport } from './routes/precios'
+import { Route as PrivacidadRouteImport } from './routes/privacidad'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TerminosRouteImport } from './routes/terminos'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedBienvenidaRouteImport } from './routes/_authenticated/bienvenida'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
@@ -76,9 +78,19 @@ const PreciosRoute = PreciosRouteImport.update({
   path: '/precios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadRoute = PrivacidadRouteImport.update({
+  id: '/privacidad',
+  path: '/privacidad',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TerminosRoute = TerminosRouteImport.update({
+  id: '/terminos',
+  path: '/terminos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -247,7 +259,9 @@ export interface FileRoutesByFullPath {
   '/dev-home': typeof DevHomeRoute
   '/empezar': typeof EmpezarRoute
   '/precios': typeof PreciosRoute
+  '/privacidad': typeof PrivacidadRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terminos': typeof TerminosRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/bienvenida': typeof AuthenticatedBienvenidaRoute
   '/calendar': typeof AuthenticatedCalendarRoute
@@ -285,7 +299,9 @@ export interface FileRoutesByTo {
   '/dev-home': typeof DevHomeRoute
   '/empezar': typeof EmpezarRoute
   '/precios': typeof PreciosRoute
+  '/privacidad': typeof PrivacidadRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terminos': typeof TerminosRoute
   '/bienvenida': typeof AuthenticatedBienvenidaRoute
   '/calendar': typeof AuthenticatedCalendarRoute
   '/codes': typeof AuthenticatedCodesRoute
@@ -324,7 +340,9 @@ export interface FileRoutesById {
   '/dev-home': typeof DevHomeRoute
   '/empezar': typeof EmpezarRoute
   '/precios': typeof PreciosRoute
+  '/privacidad': typeof PrivacidadRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terminos': typeof TerminosRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/bienvenida': typeof AuthenticatedBienvenidaRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
@@ -364,7 +382,9 @@ export interface FileRouteTypes {
     | '/dev-home'
     | '/empezar'
     | '/precios'
+    | '/privacidad'
     | '/reset-password'
+    | '/terminos'
     | '/admin'
     | '/bienvenida'
     | '/calendar'
@@ -402,7 +422,9 @@ export interface FileRouteTypes {
     | '/dev-home'
     | '/empezar'
     | '/precios'
+    | '/privacidad'
     | '/reset-password'
+    | '/terminos'
     | '/bienvenida'
     | '/calendar'
     | '/codes'
@@ -440,7 +462,9 @@ export interface FileRouteTypes {
     | '/dev-home'
     | '/empezar'
     | '/precios'
+    | '/privacidad'
     | '/reset-password'
+    | '/terminos'
     | '/_authenticated/admin'
     | '/_authenticated/bienvenida'
     | '/_authenticated/calendar'
@@ -480,7 +504,9 @@ export interface RootRouteChildren {
   DevHomeRoute: typeof DevHomeRoute
   EmpezarRoute: typeof EmpezarRoute
   PreciosRoute: typeof PreciosRoute
+  PrivacidadRoute: typeof PrivacidadRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TerminosRoute: typeof TerminosRoute
   BCodeRoute: typeof BCodeRoute
   EventosIdRoute: typeof EventosIdRoute
   EventosIndexRoute: typeof EventosIndexRoute
@@ -531,11 +557,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PreciosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacidad': {
+      id: '/privacidad'
+      path: '/privacidad'
+      fullPath: '/privacidad'
+      preLoaderRoute: typeof PrivacidadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terminos': {
+      id: '/terminos'
+      path: '/terminos'
+      fullPath: '/terminos'
+      preLoaderRoute: typeof TerminosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -828,7 +868,9 @@ const rootRouteChildren: RootRouteChildren = {
   DevHomeRoute: DevHomeRoute,
   EmpezarRoute: EmpezarRoute,
   PreciosRoute: PreciosRoute,
+  PrivacidadRoute: PrivacidadRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TerminosRoute: TerminosRoute,
   BCodeRoute: BCodeRoute,
   EventosIdRoute: EventosIdRoute,
   EventosIndexRoute: EventosIndexRoute,
