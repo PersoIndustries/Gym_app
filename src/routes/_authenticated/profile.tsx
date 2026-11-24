@@ -24,6 +24,15 @@ import { PersonAvatar } from "@/components/PersonAvatar";
 import { supabase } from "@/integrations/supabase/client";
 import { changePassword } from "@/lib/data/passwords";
 import { isBoxStaff } from "@/lib/auth/session";
+import { useNavigate } from "@tanstack/react-router";
+import { LogOut } from "lucide-react";
+import { signOut } from "@/lib/data/auth";
+
+function SignOutButton() {
+  const qc = useQueryClient(); const navigate = useNavigate(); const { user } = useSession();
+  const out = async () => { try { await qc.cancelQueries(); qc.clear(); await signOut(); await navigate({ to: "/auth", search: {}, replace: true }); } catch { toast.error("No se pudo cerrar la sesión"); } };
+  return <section className="mt-5 rounded-xl border border-border bg-card p-5"><p className="text-sm text-muted-foreground">Conectado como <b className="text-foreground">{user?.email}</b></p><Button variant="destructive" className="mt-3" onClick={out}><LogOut className="h-4 w-4" />Cerrar sesión</Button></section>;
+}
 
 export const Route = createFileRoute("/_authenticated/profile")({ head: pageHead("Perfil", "Tu ficha, tus RMs y tu privacidad."), component: Profile });
 
@@ -79,7 +88,7 @@ function Profile() {
         <TabsContent value="privacy">
       <div className="my-5 flex items-center justify-between gap-4 border-y border-border py-4"><div className="flex items-center gap-1"><span>Ocultar mi asistencia</span><InfoHelp label="Privacidad de asistencia">Seguirás apareciendo en la lista, pero los demás verán Anónimo y un icono de interrogación en lugar de tu nombre y foto.</InfoHelp></div><Switch aria-label="Ocultar mi asistencia" checked={prof?.hide_attendance ?? false} disabled={!prof || privacy.isPending} onCheckedChange={v => privacy.mutate(v)} /></div>
           <div className="mb-5 flex items-center justify-between gap-4 border-b border-border pb-4"><div className="flex items-center gap-1"><span>Mostrar mi alias en lugar del nombre</span><InfoHelp label="Alias o nombre">Los demás atletas verán tu alias. Profesores y administradores verán tu alias junto a tu nombre completo.</InfoHelp></div><Switch aria-label="Mostrar mi alias" checked={prof?.show_alias ?? false} disabled={!prof || !prof.alias || alias.isPending} onCheckedChange={v => alias.mutate(v)} /></div>
-          <PasswordForm /><HelpForm />
+          <PasswordForm /><HelpForm /><SignOutButton />
         </TabsContent>
         {staff && <TabsContent value="stats"><CoachStats /></TabsContent>}
       </Tabs>
