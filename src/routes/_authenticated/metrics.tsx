@@ -29,7 +29,7 @@ function Metrics() {
   ];
   const cfg = { signups: { label: "Altas", color: "var(--primary)" }, bookings: { label: "Reservas", color: "var(--primary)" } };
   return (
-    <ConsoleShell title="Métricas" subtitle="Negocio y uso de toda la plataforma (datos de ejemplo)">
+    <ConsoleShell title="Métricas" subtitle="Negocio y uso de toda la plataforma">
       <div className="mb-6 grid grid-cols-2 gap-4 xl:grid-cols-4">{kpis.map(([l, v, s]) => (
         <div key={l} className="rounded-xl border border-border bg-card p-5"><p className="text-sm text-muted-foreground">{l}</p><p className="mt-1 font-display text-2xl font-bold">{v}</p>{s && <p className="text-xs text-muted-foreground">{s}</p>}</div>))}</div>
       <div className="grid gap-5 xl:grid-cols-2">

@@ -26,6 +26,6 @@ function Landing() {
     </section>
     <section className="mx-auto grid max-w-6xl gap-4 px-5 pb-20 sm:grid-cols-2 lg:grid-cols-3">{FEATURES.map(({ i: I, t, d }) => <div key={t} className="rounded-xl border border-border bg-card p-6"><I className="h-6 w-6 text-primary" /><h2 className="mt-3 font-semibold">{t}</h2><p className="mt-1 text-sm text-muted-foreground">{d}</p></div>)}</section>
     <section className="mx-auto max-w-6xl px-5 pb-24"><h2 className="mb-8 text-center text-3xl font-bold">Precios claros</h2><PricingCards /></section>
-    <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground"><Link to="/dev-home" className="hover:text-foreground">Inicio de desarrollo</Link> · <Link to="/eventos" className="hover:text-foreground">Comunidad</Link> · <Link to="/terminos" className="hover:text-foreground">Términos</Link> · <Link to="/privacidad" className="hover:text-foreground">Privacidad</Link></footer>
+    <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground"><Link to="/eventos" className="hover:text-foreground">Comunidad</Link> · <Link to="/terminos" className="hover:text-foreground">Términos</Link> · <Link to="/privacidad" className="hover:text-foreground">Privacidad</Link></footer>
   </div>;
 }

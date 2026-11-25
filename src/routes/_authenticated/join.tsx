@@ -40,7 +40,7 @@ function Join() {
       {pending ? <div className="max-w-sm space-y-4 text-center"><Logo /><h1 className="text-2xl font-bold">Solicitud enviada</h1><p className="text-muted-foreground">El box revisará tu solicitud. Te avisaremos cuando te acepten.</p></div> :
       <form onSubmit={submit} className="w-full max-w-sm space-y-5">
         <Logo />
-        <div><h1 className="text-3xl font-bold">Únete a tu box</h1><p className="mt-2 text-sm text-muted-foreground">Pide el código a tu gimnasio. Para probar: <span className="font-mono text-primary">IRON24</span></p></div>
+        <div><h1 className="text-3xl font-bold">Únete a tu box</h1><p className="mt-2 text-sm text-muted-foreground">Pide el código a tu gimnasio.</p></div>
         <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="CÓDIGO" className="h-14 text-center font-mono text-2xl uppercase tracking-[0.3em]" required />
         <Button type="submit" size="lg" className="w-full" disabled={busy}>Unirme</Button>
       </form>}

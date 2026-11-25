@@ -42,7 +42,7 @@ export function RealTenants() {
             {inv && <p className="mt-2 text-sm">Código <span className="font-mono text-primary">{inv.code}</span>{inv.requires_approval && " · con aprobación"}</p>}
           </div>);
       })}</div>
-      <p className="mt-2 text-xs text-muted-foreground">La tabla de abajo (facturas, operaciones) sigue con datos de ejemplo.</p>
+      
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent><DialogHeader><DialogTitle>Nuevo box</DialogTitle></DialogHeader>
           <div className="grid gap-3">

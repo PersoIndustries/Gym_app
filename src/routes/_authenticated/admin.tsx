@@ -5,10 +5,11 @@ import { isBoxStaff, useSession } from "@/lib/auth/session";
 const ADMIN_ONLY = ["/admin/plans", "/admin/gym-calendar", "/admin/roles"];
 export const Route = createFileRoute("/_authenticated/admin")({ component: AdminLayout });
 function AdminLayout() {
-  const { role, loading } = useSession();
+  const { role, loading, can } = useSession();
   const { pathname } = useLocation();
   if (loading) return null;
   if (!isBoxStaff(role)) return <Navigate to="/dashboard" />;
   if (role !== "admin" && ADMIN_ONLY.some((p) => pathname.startsWith(p))) return <Navigate to="/admin" />;
+  if (role === "coach" && ((pathname.startsWith("/admin/classes") && !can("classes.manage")) || (pathname.startsWith("/admin/members") && !can("members.view")))) return <Navigate to="/admin" />;
   return <Outlet />;
 }

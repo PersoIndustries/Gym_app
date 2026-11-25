@@ -4,8 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { AppRole, PlatformRole, TenantRole } from "@/lib/domain/types";
 import { useLocalState } from "@/lib/data/local-store";
+import { hasPermission, type Permission } from "@/lib/access/permissions";
 
-export interface Membership { tenant_id: string; role: TenantRole; tenant_name: string; suspended: boolean }
+export interface Membership { tenant_id: string; role: TenantRole; tenant_name: string; suspended: boolean; permissions: string[] | null }
 interface SessionCtx {
   user: User | null;
   loading: boolean;
@@ -23,6 +24,8 @@ interface SessionCtx {
   tenantId: string | null; setTenantId: (id: string | null) => void;
   tenantName: string | null;
   refresh: () => void;
+  /** Permiso efectivo en el box activo (espejo de has_tenant_permission). */
+  can: (perm: Permission) => boolean;
 }
 const Ctx = createContext<SessionCtx | null>(null);
 
@@ -41,11 +44,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     queryFn: async () => {
       if (!user) return { memberships: [] as Membership[], platformRole: null };
       const [m, p] = await Promise.all([
-        supabase.from("tenant_members").select("tenant_id, role, status, tenants(name)").eq("user_id", user.id),
+        supabase.from("tenant_members").select("tenant_id, role, status, tenants(name), tenant_custom_roles(permissions)").eq("user_id", user.id),
         supabase.from("platform_roles").select("role").eq("user_id", user.id),
       ]);
       if (m.error) throw m.error;
-      const memberships: Membership[] = (m.data ?? []).map((r) => ({ tenant_id: r.tenant_id, role: r.role, tenant_name: (r.tenants as { name: string } | null)?.name ?? "Box", suspended: r.status === "suspended" }));
+      const memberships: Membership[] = (m.data ?? []).map((r) => ({ tenant_id: r.tenant_id, role: r.role, tenant_name: (r.tenants as { name: string } | null)?.name ?? "Box", suspended: r.status === "suspended", permissions: (r.tenant_custom_roles as { permissions: string[] } | null)?.permissions ?? null }));
       const roles = (p.data ?? []).map((r) => r.role);
       const platformRole: PlatformRole | null = roles.includes("super_admin") ? "super_admin" : roles.includes("developer") ? "developer" : null;
       return { memberships, platformRole };
@@ -59,7 +62,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     const realRole = active?.role ?? null;
     const boxRole: TenantRole = realRole && realRole !== "athlete" && boxMode === "athlete" ? "athlete" : realRole ?? "athlete";
     const role: AppRole = effView === "console" && platformRole ? platformRole : boxRole;
-    return { user, loading: !user || q.isLoading, memberships, platformRole, role, view: effView, setView, realRole, suspended: !!active?.suspended, boxMode, setBoxMode, tenantId: active?.tenant_id ?? null, tenantName: active?.tenant_name ?? null, setTenantId, refresh: () => void q.refetch() };
+    return { user, loading: !user || q.isLoading, memberships, platformRole, role, view: effView, setView, realRole, suspended: !!active?.suspended, boxMode, setBoxMode, tenantId: active?.tenant_id ?? null, tenantName: active?.tenant_name ?? null, setTenantId, refresh: () => void q.refetch(), can: (perm) => hasPermission(boxRole, active?.permissions ?? null, perm) };
   }, [user, q.data, q.isLoading, storedTenant, view, boxMode]); // eslint-disable-line react-hooks/exhaustive-deps
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
