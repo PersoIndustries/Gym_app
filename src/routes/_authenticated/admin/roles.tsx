@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSession } from "@/lib/auth/session";
 import { pageHead } from "@/lib/seo";
-import { PERMISSIONS } from "@/lib/access/permissions";
+import { PERMISSIONS, PERMISSION_GROUPS } from "@/lib/access/permissions";
 import { customRolesQuery, deleteCustomRole, saveCustomRole, type CustomRole } from "@/lib/data/roles";
 
 export const Route = createFileRoute("/_authenticated/admin/roles")({ head: pageHead("Roles y permisos", "Roles personalizados del equipo y sus permisos."), component: Roles });
@@ -44,7 +44,7 @@ function Roles() {
         <form className="mt-4 space-y-3 rounded-lg border border-primary/50 bg-card p-4" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
           <Input required maxLength={40} placeholder="Nombre del rol (p. ej. Ayudante)" value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} />
           <Input maxLength={140} placeholder="Descripción (opcional)" value={edit.description} onChange={(e) => setEdit({ ...edit, description: e.target.value })} />
-          <div className="space-y-2">{PERMISSIONS.map((p) => <label key={p.key} className="flex items-start gap-2 text-sm"><Checkbox checked={edit.permissions.includes(p.key)} onCheckedChange={() => toggle(p.key)} /><span><span className="font-medium">{p.label}</span><span className="block text-xs text-muted-foreground">{p.help}</span></span></label>)}</div>
+          <div className="space-y-4">{PERMISSION_GROUPS.map((g) => <div key={g} className="space-y-2"><p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g}</p>{PERMISSIONS.filter((p) => p.group === g).map((p) => <label key={p.key} className="flex items-start gap-2 text-sm"><Checkbox checked={edit.permissions.includes(p.key)} onCheckedChange={() => toggle(p.key)} /><span><span className="font-medium">{p.label}</span><span className="block text-xs text-muted-foreground">{p.help}</span></span></label>)}</div>)}</div>
           <div className="flex gap-2"><Button type="submit" disabled={save.isPending}>Guardar</Button><Button type="button" variant="ghost" onClick={() => setEdit(null)}>Cancelar</Button></div>
         </form>
       ) : <Button className="mt-4" onClick={() => open()}><Plus className="h-4 w-4" />Nuevo rol</Button>}
