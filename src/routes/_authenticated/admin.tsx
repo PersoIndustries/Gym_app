@@ -1,5 +1,6 @@
 import { createFileRoute, Navigate, Outlet, useLocation } from "@tanstack/react-router";
 import { isBoxStaff, useSession } from "@/lib/auth/session";
+import { hasClassManagement } from "@/lib/access/permissions";
 
 // Guard de UI. La seguridad real la aplican las políticas RLS por tenant.
 const ADMIN_ONLY = ["/admin/plans", "/admin/gym-calendar", "/admin/roles"];
@@ -10,6 +11,6 @@ function AdminLayout() {
   if (loading) return null;
   if (!isBoxStaff(role)) return <Navigate to="/dashboard" />;
   if (role !== "admin" && ADMIN_ONLY.some((p) => pathname.startsWith(p))) return <Navigate to="/admin" />;
-  if (role === "coach" && ((pathname.startsWith("/admin/classes") && !can("classes.manage")) || (pathname.startsWith("/admin/members") && !can("members.view")))) return <Navigate to="/admin" />;
+  if (role === "coach" && ((pathname.startsWith("/admin/classes") && !hasClassManagement(can)) || (pathname.startsWith("/admin/members") && !can("members.view")))) return <Navigate to="/admin" />;
   return <Outlet />;
 }

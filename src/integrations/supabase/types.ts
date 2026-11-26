@@ -1620,6 +1620,11 @@ export type Database = {
           user_id: string
         }[]
       }
+      can_manage_class: {
+        Args: { _action: string; _class: string }
+        Returns: boolean
+      }
+      can_manage_item_levels: { Args: { _item: string }; Returns: boolean }
       cancel_underfilled_classes: { Args: never; Returns: number }
       change_facility_reservation: {
         Args: { _reservation: string; _status: string }

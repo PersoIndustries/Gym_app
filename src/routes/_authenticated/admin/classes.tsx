@@ -27,16 +27,16 @@ const err = (e: unknown) => toast.error(e instanceof Error ? e.message : "Error"
 const ok = <T,>(r: { error: unknown; data?: unknown }) => { if (r.error) throw r.error; return r.data as T; };
 
 function AdminClasses() {
-  const { tenantId } = useSession();
+  const { tenantId, role, can } = useSession(); const admin = role === "admin";
   if (!tenantId) return <AppShell title="Clases"><p className="text-sm text-muted-foreground">No tienes box activo.</p></AppShell>;
   return (
     <AppShell title="Clases">
       <Tabs defaultValue="week">
-        <TabsList className="w-full justify-start overflow-x-auto"><TabsTrigger value="week">Semana</TabsTrigger><TabsTrigger value="schedule">Horario fijo</TabsTrigger><TabsTrigger value="exercises">Ejercicios</TabsTrigger><TabsTrigger value="rules">Reglas</TabsTrigger></TabsList>
+        <TabsList className="w-full justify-start overflow-x-auto"><TabsTrigger value="week">Semana</TabsTrigger>{admin && <TabsTrigger value="schedule">Horario fijo</TabsTrigger>}{can("exercises.manage") && <TabsTrigger value="exercises">Ejercicios</TabsTrigger>}{admin && <TabsTrigger value="rules">Reglas</TabsTrigger>}</TabsList>
         <TabsContent value="week"><Week tenantId={tenantId} /></TabsContent>
-        <TabsContent value="schedule"><Schedule tenantId={tenantId} /></TabsContent>
-        <TabsContent value="exercises"><Exercises tenantId={tenantId} /></TabsContent>
-        <TabsContent value="rules"><Rules tenantId={tenantId} /></TabsContent>
+        {admin && <TabsContent value="schedule"><Schedule tenantId={tenantId} /></TabsContent>}
+        {can("exercises.manage") && <TabsContent value="exercises"><Exercises tenantId={tenantId} /></TabsContent>}
+        {admin && <TabsContent value="rules"><Rules tenantId={tenantId} /></TabsContent>}
       </Tabs>
     </AppShell>
   );
@@ -44,6 +44,7 @@ function AdminClasses() {
 
 function Week({ tenantId }: { tenantId: string }) {
   const [week, setWeek] = useState(0);
+  const { can } = useSession(); const canGenerate = can("classes.create_delete") && can("classes.assign_coach");
   const qc = useQueryClient();
   const { data } = useQuery(classesQuery(tenantId, week));
   const gen = useMutation({
@@ -56,7 +57,7 @@ function Week({ tenantId }: { tenantId: string }) {
   return (
     <div className="mt-4 space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <Button onClick={() => gen.mutate()} disabled={gen.isPending}>Crear semana del {weekRange(week).from.toLocaleDateString("es-ES",{day:"numeric",month:"short"})}</Button><InfoHelp label="Crear semana">Crea las clases a partir del horario fijo activo, sin duplicar las ya generadas. Los cambios en el horario fijo se aplican al generar nuevas clases.</InfoHelp>
+        <Button onClick={() => gen.mutate()} disabled={gen.isPending || !canGenerate}>Crear semana del {weekRange(week).from.toLocaleDateString("es-ES",{day:"numeric",month:"short"})}</Button><InfoHelp label="Crear semana">Crea las clases a partir del horario fijo activo, sin duplicar las ya generadas. Los cambios en el horario fijo se aplican al generar nuevas clases.</InfoHelp>
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
         <div className="rounded-lg border border-border bg-card p-3"><p className="text-xs text-muted-foreground">Clases</p><p className="font-display text-xl font-bold">{classes.length}</p></div>
