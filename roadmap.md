@@ -51,6 +51,8 @@
 - [x] Copiar tareas al portapapeles (todas, filtradas, seleccionadas) y repaso de hechas.
 
 ## Códigos, roles y perfil
+- [ ] Entrega C: aplicar permisos detallados de clases, WOD, profesores y asistencia en SQL y pantallas, conservando permisos antiguos.
+- [ ] Verificar Entrega C con pruebas de permisos y aislamiento; navegador con sesión sujeto a acceso Supabase externo.
 - [x] Códigos promocionales con descuento, usos y afiliados (Super Admin)
 - [x] Separación Admin / Profesor y solicitudes de eventos
 - [x] Perfil por secciones y "Mis datos" del profesor

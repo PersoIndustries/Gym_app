@@ -34,3 +34,22 @@ export function hasPermission(role: "athlete" | "coach" | "admin" | null, custom
   if (role !== "coach") return false;
   return customPerms === null ? true : implied(customPerms, perm);
 }
+
+export type PermissionCheck = (permission: Permission) => boolean;
+
+export function hasClassManagement(can: PermissionCheck): boolean {
+  return PERMISSIONS.some(({ key }) => (key.startsWith("classes.") || key.startsWith("wod.") || key.startsWith("attendance.") || key === "exercises.manage") && can(key));
+}
+
+export function classPermissions(can: PermissionCheck, userId: string | null | undefined, coachId: string | null | undefined) {
+  const own = !!userId && !!coachId && userId === coachId;
+  return {
+    edit: can("classes.edit_any") || (own && can("classes.edit_own")),
+    wod: can("wod.manage_any") || (own && can("wod.manage_own")),
+    attendance: can("attendance.manage_any") || (own && can("attendance.manage_own")),
+    assignCoach: can("classes.assign_coach"),
+    cancel: can("classes.cancel"),
+    createDelete: can("classes.create_delete"),
+    addParticipant: can("attendance.add_participant"),
+  };
+}
