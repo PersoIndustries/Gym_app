@@ -25,7 +25,7 @@ export function AppShell({ title, children, action }: { title: string; children:
   useApplyTheme(brand?.theme_preset);
   const canToggle = realRole === "coach" || realRole === "admin";
   // Navegar primero: así el guard de /admin no intercepta el cambio de vista a mitad de render.
-  const toggle = () => { const m = boxMode === "athlete" ? "staff" : "athlete"; void navigate({ to: m === "staff" ? "/admin" : "/dashboard" }).then(() => setBoxMode(m)); };
+  const toggle = () => { const m = boxMode === "athlete" ? "staff" : "athlete"; setBoxMode(m); void navigate({ to: m === "staff" ? "/admin" : "/dashboard" }); };
   const navigate = useNavigate();
   const items = [
     { to: "/dashboard" as const, label: "Inicio", icon: Home },
