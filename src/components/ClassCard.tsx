@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CoachProfile } from "@/components/CoachProfile";
 import { PersonAvatar } from "@/components/PersonAvatar";
-import { classState, STATE_LABEL, STATE_STYLE, INTENT_STYLE } from "@/lib/access/class-state";
+import { isMyClass, classState, STATE_LABEL, STATE_STYLE, INTENT_STYLE } from "@/lib/access/class-state";
 
 const fmt = (iso: string) => new Date(iso).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
 const mins = (c: BoxClass) => Math.round((new Date(c.ends_at).getTime() - new Date(c.starts_at).getTime()) / 60000);
@@ -46,11 +46,12 @@ export function ClassCard({ c, counts, mine, blockedReason, onIntent, busy, coac
       {!cancelled && !past && risk && <p className="mt-2 flex items-start gap-1 text-xs text-warning"><AlertTriangle className="h-3 w-3 shrink-0"/>Mínimo pendiente · revisión {c.cancel_hours_before} h antes</p>}
     </Link>
   );
+  const my = isMyClass(mine); const wait = mine?.status === "waitlist";
   return (
-    <div className={box}>
+    <div className={cn(box, my && (wait ? "border-warning/60 border-l-4 border-l-warning" : "border-primary/60 border-l-4 border-l-primary bg-primary/5"), past && !my && "opacity-60")}>
       {tag}
+      {my && <span className={cn("mb-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold", wait ? "bg-warning/15 text-warning" : "bg-primary text-primary-foreground")}>{wait ? "En lista de espera" : past ? "✓ Participaste" : "✓ Tu clase"}</span>}
       <div className="flex items-start justify-between gap-2"><Link to="/class/$classId" params={{ classId: c.id }} className="block min-w-0 flex-1 hover:text-primary">{header}</Link><div className="mt-6"><CoachProfile id={c.coach_id} name={c.coach_name} avatar={coachAvatar}/></div></div>
-      {mine?.status === "waitlist" && <p className="mt-1 text-xs text-primary">Estás en lista de espera</p>}
       {cancelled && c.cancelled_reason && <p className="mt-2 text-xs text-destructive">{c.cancelled_reason}</p>}
       {!cancelled && !past && risk && <p className="mt-2 flex items-start gap-1 text-xs text-warning"><AlertTriangle className="h-3 w-3 shrink-0"/>Mínimo pendiente · revisión {c.cancel_hours_before} h antes</p>}
       {!cancelled && !past && (

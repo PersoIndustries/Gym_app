@@ -1,9 +1,10 @@
 import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/layout/AppShell";
+import { Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { myPlanQuery } from "@/lib/data/gym";
-import { isUpcomingEnrollment } from "@/lib/access/class-state";
+import { isUpcomingEnrollment, recentFinished } from "@/lib/access/class-state";
 import { EMPTY_COUNTS, classesQuery } from "@/lib/data/box";
 import { atRisk, confirmed, occupied } from "@/lib/access/attendance";
 import { isBoxStaff, isPlatformRole, useSession } from "@/lib/auth/session";
@@ -41,12 +42,14 @@ function Dashboard() {
     );
   }
   const upcoming = classes.filter((c) => isUpcomingEnrollment(c,data?.mine[c.id])).slice(0, 3);
+  const done = recentFinished(classes, data?.mine ?? {});
   return (
     <AppShell title={`Hola, ${name}`}>
       <div className="rounded-xl border border-border bg-card bg-hero p-5">
         <p className="text-xs uppercase tracking-widest text-muted-foreground">{tenantName} · tu cuota</p>
         <p className="mt-1 font-display text-2xl font-bold">{plan?.name ?? "Sin cuota"}</p>
       </div>
+      {done && <Link to="/class/$classId" params={{ classId: done.id }} hash="foto" className="mt-4 flex items-center gap-3 rounded-xl border border-primary/60 bg-primary/10 p-4 hover:border-primary"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground"><Camera className="h-5 w-5"/></span><span className="min-w-0"><span className="block text-xs font-semibold uppercase tracking-wider text-primary">¡Entreno completado!</span><span className="block truncate font-semibold">{done.title}</span><span className="block text-sm text-muted-foreground">Haz tu foto finish y compártela</span></span></Link>}
       <h2 className="mt-6 mb-3 font-semibold">Próximas clases</h2>
       {upcoming.length ? <div className="space-y-2">{upcoming.map((c) => <Link key={c.id} to="/class/$classId" params={{ classId: c.id }} className="block rounded-lg border border-border bg-card p-4 hover:border-primary"><p className="font-semibold">{c.title}{c.status === "cancelled" && " · Cancelada"}</p><p className="text-sm capitalize text-muted-foreground">{new Date(c.starts_at).toLocaleString("es-ES", { weekday: "long", hour: "2-digit", minute: "2-digit" })} · ver WOD</p></Link>)}</div>
         : <div className="rounded-lg border border-dashed border-border p-6 text-center text-sm text-muted-foreground">Aún no tienes reservas.<div className="mt-3"><Button asChild size="sm"><Link to="/calendar">Ver calendario</Link></Button></div></div>}
